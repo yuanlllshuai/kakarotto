@@ -1,12 +1,13 @@
 import styles from './App.module.scss';
-import Bg from './components/bg';
+import Bg from './components/Bg';
+import Avatar from './components/Avatar';
 
 function App() {
 
   return (
     <Bg>
       <div className={styles.app}>
-        <h1>Kakarotto</h1>
+        <Avatar />
       </div>
     </Bg>
   )

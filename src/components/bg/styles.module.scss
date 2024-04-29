@@ -1,15 +1,15 @@
 .container {
     width: 100vw;
     height: 100vh;
-    background: -webkit-gradient(linear, 0 0, 0 100%, from(#000), to(#002));
-    
+    background: #fff;
+
 }
 
-@function getShadows($n) {
-    $shadows: '#{random(100)}vw #{random(100)}vh #fff';
+@function getShadows($n, $opacity) {
+    $shadows: '#{random(100)}vw #{random(100)}vh rgba(#{random(255)}, #{random(255)}, #{random(255)}, #{random(1) / $opacity })';
 
     @for $i from 2 through $n {
-        $shadows: '#{$shadows}, #{random(100)}vw #{random(100)}vh #fff'
+        $shadows: '#{$shadows}, #{random(100)}vw #{random(100)}vh rgba(#{random(255)}, #{random(255)}, #{random(255)}, #{random(1) / $opacity })'
     }
 
     @return unquote($shadows)
@@ -23,14 +23,14 @@ $count: 1000;
     $count: floor($count / 2);
 
     .layer#{$i} {
-        $size: #{$i}px;
+        $size: #{$i * 1.5}px;
         position: fixed;
         width: $size;
         height: $size;
         border-radius: 50%;
         left: 0;
         top: 0;
-        box-shadow: getShadows($count);
+        box-shadow: getShadows($count, 6 - $i);
         animation: moveUp $duration linear infinite;
 
         &::after {
