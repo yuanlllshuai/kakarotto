@@ -1,15 +1,12 @@
-import styles from './App.module.scss';
-import Bg from './components/Bg';
-import Avatar from './components/Avatar';
+import {
+  RouterProvider,
+} from "react-router-dom";
+import router from './routes';
 
 function App() {
 
   return (
-    <Bg>
-      <div className={styles.app}>
-        <Avatar />
-      </div>
-    </Bg>
+    <RouterProvider router={router} />
   )
 }
 

@@ -6,10 +6,10 @@
 }
 
 @function getShadows($n, $opacity) {
-    $shadows: '#{random(100)}vw #{random(100)}vh rgba(#{random(255)}, #{random(255)}, #{random(255)}, #{random(1) / $opacity })';
+    $shadows: '#{random(100)}vw #{random(100)}vh rgba(#{random(255)}, #{random(255)}, #{random(255)}, #{calc(random(1) / $opacity) })';
 
     @for $i from 2 through $n {
-        $shadows: '#{$shadows}, #{random(100)}vw #{random(100)}vh rgba(#{random(255)}, #{random(255)}, #{random(255)}, #{random(1) / $opacity })'
+        $shadows: '#{$shadows}, #{random(100)}vw #{random(100)}vh rgba(#{random(255)}, #{random(255)}, #{random(255)}, #{calc(random(1) / $opacity) })'
     }
 
     @return unquote($shadows)
@@ -19,8 +19,8 @@ $duration: 400s;
 $count: 1000;
 
 @for $i from 1 through 5 {
-    $duration: floor($duration / 2);
-    $count: floor($count / 2);
+    $duration: floor(calc($duration / 2));
+    $count: floor(calc($count / 2));
 
     .layer#{$i} {
         $size: #{$i * 1.5}px;
