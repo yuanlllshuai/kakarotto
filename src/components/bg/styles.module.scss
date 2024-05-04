@@ -6,7 +6,7 @@
 }
 
 @function getShadows($n, $opacity) {
-    $shadows: '#{random(100)}vw #{random(100)}vh rgba(#{random(255)}, #{random(255)}, #{random(255)}, #{calc(random(1) / $opacity) })';
+    $shadows: '#{random(100)}vw #{random(100)}vh rgba(#{random(255)} #{random(255)}, #{random(255)}, #{calc(random(1) / $opacity) })';
 
     @for $i from 2 through $n {
         $shadows: '#{$shadows}, #{random(100)}vw #{random(100)}vh rgba(#{random(255)}, #{random(255)}, #{random(255)}, #{calc(random(1) / $opacity) })'
@@ -30,7 +30,7 @@ $count: 1000;
         border-radius: 50%;
         left: 0;
         top: 0;
-        box-shadow: getShadows($count, 6 - $i);
+        box-shadow: getShadows($count, 6 - $i + 0.2);
         animation: moveUp $duration linear infinite;
 
         &::after {

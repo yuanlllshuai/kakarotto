@@ -1,0 +1,21 @@
+.avatar {
+    margin-top: -80px;
+    margin-bottom: 16px;
+}
+
+.side_bar {
+    padding: 16px;
+    height: 100%;
+    width: 260px;
+    box-sizing: border-box;
+    position: relative;
+    min-width: 260px;
+
+    &_main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border-radius: 4px;
+        background-color: #FFF;
+    }
+}

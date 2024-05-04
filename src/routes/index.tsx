@@ -1,25 +1,43 @@
 import { createBrowserRouter } from 'react-router-dom'
-import Main from '@/main/index/index';
+import Main from '@/main/index';
 import ErrorPage from '@/components/ErrorPage';
-import FormAction from '@/main/form-action';
+import Index from '@/main/home';
+
+// let res = { title: 'before' };
 
 const router = createBrowserRouter([
     {
         path: '/',
         element: <Main />,
         errorElement: <ErrorPage />,
-        loader: async () => {
-            const data = await new Promise(r => r({ title: 'charts' }));
-            return data;
-        },
-        action: async () => {
-            const data = await new Promise(r => r({ title: 'charts' }));
-            return data;
-        },
+        // loader: async () => {
+        //     const data = await new Promise(r => {
+        //         setTimeout(() => {
+        //             const d = { ...res }
+        //             r(d)
+        //         }, 0);
+        //     });
+        //     return data;
+        // },
+        // action: async (props: any) => {
+        //     // const { request, params } = props;
+        //     // const formData = await request.formData();
+        //     // const updates = Object.fromEntries(formData);
+        //     // console.log(updates, params)
+        //     res = { title: 'after' };
+        //     return res;
+        // },
         children: [
             {
-                path: '/formAction',
-                element: <FormAction />,
+                errorElement: <ErrorPage />,
+                children: [
+                    { index: true, element: <Index /> },
+                ]
+            },
+            {
+                path: '*',
+                errorElement: <ErrorPage />,
+                element: <ErrorPage />
             }
         ]
     }

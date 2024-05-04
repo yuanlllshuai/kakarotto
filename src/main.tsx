@@ -1,7 +1,19 @@
-import ReactDOM from 'react-dom/client'
+import {
+  // createRoot,
+  hydrateRoot
+} from 'react-dom/client'
+import axios from 'axios';
 import App from './App.tsx'
 import './index.css'
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <App />
-)
+axios.defaults.baseURL = 'http://localhost:3000';
+axios.defaults.headers.common['Authorization'] = 'Bearer token';
+axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
+
+const domNode = document.getElementById('root') as HTMLElement;
+hydrateRoot(domNode, <App />);
+
+// createRoot(domNode!).render(
+//   <App />
+// )
+

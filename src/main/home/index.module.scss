@@ -1,0 +1,16 @@
+.github_calendar {
+    background-color: #000;
+    display: flex;
+    justify-content: center;
+    // align-items: center;
+    color: #FFF;
+    padding: 20px 0;
+    padding-left: 40px;
+    flex-direction: column;
+
+    &_title {
+        margin-bottom: 14px;
+        font-weight: 600;
+        font-size: 18px;
+    }
+}

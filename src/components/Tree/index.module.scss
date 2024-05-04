@@ -1,0 +1,116 @@
+$border-radius: 6px;
+
+.main {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    font-size: 14px;
+    color: rgb(72, 78, 97, 0.7);
+    overflow: auto;
+}
+
+.base_item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    cursor: pointer;
+    border-radius: $border-radius;
+    font-weight: 500;
+}
+
+.item {
+    @extend .base_item;
+    height: 40px;
+    background-color: rgba(239, 241, 246, 0.7);
+
+    &_left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    &_node {
+        $delay: 0.5;
+        $delay_close: 0.2;
+
+        opacity: 0;
+        height: 0px;
+        margin-bottom: 0px;
+        background-color: transparent;
+        border-radius: $border-radius;
+
+        @for $i from 1 through 3 {
+            &:nth-of-type(#{$i}) {
+                transition: opacity unquote('#{calc((4 - $i) * $delay_close)}s'),
+                height unquote('#{calc((4 - $i) * $delay_close)}s'),
+                margin-bottom unquote('#{calc((4 - $i) * $delay_close)}s'),
+            }
+        }
+
+        &_active {
+            opacity: 1;
+            height: 40px;
+            margin-bottom: 6px;
+            background-color: rgba(239, 241, 246, 0.7);
+            border-radius: $border-radius;
+
+            @for $i from 1 through 3 {
+                &:nth-of-type(#{$i}) {
+                    transition: opacity unquote('#{calc($i * $delay)}s'),
+                    // height unquote('#{calc($i * $delay)}s'),
+                    margin-bottom unquote('#{calc($i * $delay)}s');
+                }
+            }
+        }
+    }
+
+    &_active {
+        background-color: var(--primary-color);
+        color: #FFF
+    }
+
+    &_active2 {
+        color: var(--primary-color);
+    }
+
+    &_hover {
+        transition: background-color 0.3s;
+
+        & .iconpark-icon {
+            color: transparent;
+        }
+
+        &:hover {
+            transition: background-color 0.3s;
+            background-color: var(--primary-color);
+            color: #FFF;
+
+            & iconpark-icon {
+                color: #FFF;
+            }
+        }
+    }
+
+    &_hover2 {
+        background-color: #FFF;
+
+        &:hover {
+            color: var(--primary-color);
+
+        }
+    }
+
+    & span:nth-of-type(2) {
+        cursor: pointer;
+    }
+}
+
+.children_container {
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.title {
+    font-weight: 600;
+}
