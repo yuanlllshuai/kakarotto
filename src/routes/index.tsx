@@ -2,6 +2,7 @@ import { createBrowserRouter } from 'react-router-dom'
 import Main from '@/main/index';
 import ErrorPage from '@/components/ErrorPage';
 import Index from '@/main/home';
+import ThreeLearn from '@/main/threeLearn';
 
 // let res = { title: 'before' };
 
@@ -33,6 +34,10 @@ const router = createBrowserRouter([
                 children: [
                     { index: true, element: <Index /> },
                 ]
+            },
+            {
+                path: 'three',
+                element: <ThreeLearn />
             },
             {
                 path: '*',

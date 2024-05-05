@@ -1,3 +1,9 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100%
+}
+
 .github_calendar {
     background-color: #000;
     display: flex;
@@ -13,4 +19,8 @@
         font-weight: 600;
         font-size: 18px;
     }
+}
+
+.three_container {
+    flex: 1
 }

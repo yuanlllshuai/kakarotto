@@ -11,9 +11,9 @@ export const navConfig = [
         ]
     },
     {
-        key: 'three', label: 'Three', paths: ['/bar1', '/line1', '/pie1'],
+        key: 'three', label: 'Three.js', paths: ['/three', '/line1', '/pie1'],
         children: [
-            { key: 'bar', label: '柱状图', path: '/bar1' },
+            { key: 'learn', label: '学习', path: '/three' },
             { key: 'line', label: '折线图', path: '/line1' },
             { key: 'pie', label: '饼图', path: '/pie1' },
         ]

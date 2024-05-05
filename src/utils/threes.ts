@@ -2,7 +2,7 @@ import * as THREE from 'three';
 //@ts-ignore
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
-const DEFAULT_SIZE = { width: window.innerWidth / 4, height: window.innerHeight / 4 };
+const DEFAULT_SIZE = { width: window.innerWidth, height: window.innerHeight };
 
 type Size = {
     width: number,
@@ -36,15 +36,6 @@ export class Base {
         (document.getElementById(id) as HTMLElement).appendChild(this.renderer.domElement);
     }
 
-    setController() {
-        new OrbitControls(this.camera, this.renderer.domElement)
-    }
-
-    setAxesHelper() {
-        const axesHelper = new THREE.AxesHelper(5);
-        this.scene.add(axesHelper);
-    }
-
     createScene() {
         this.scene = new THREE.Scene();
     }
@@ -55,6 +46,15 @@ export class Base {
 
     setCamera() {
         this.camera.position.z = 5;
+    }
+
+    setController() {
+        new OrbitControls(this.camera, this.renderer.domElement)
+    }
+
+    setAxesHelper() {
+        const axesHelper = new THREE.AxesHelper(5);
+        this.scene.add(axesHelper);
     }
 
     getRenderer() {
@@ -105,9 +105,9 @@ export class Line extends Base {
     createShape() {
         const material = new THREE.LineBasicMaterial({ color: 0x0000ff });
         const points = [];
-        points.push(new THREE.Vector3(- 10, 0, 0));
-        points.push(new THREE.Vector3(0, 10, 0));
-        points.push(new THREE.Vector3(10, 0, 0));
+        points.push(new THREE.Vector3(- 20, 0, 0));
+        points.push(new THREE.Vector3(0, 20, 0));
+        points.push(new THREE.Vector3(20, 0, 0));
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
         const line = new THREE.Line(geometry, material);
         this.scene.add(line);
