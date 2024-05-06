@@ -1,6 +1,6 @@
 import {
-  // createRoot,
-  hydrateRoot
+  createRoot,
+  // hydrateRoot
 } from 'react-dom/client'
 import axios from 'axios';
 import App from './App.tsx'
@@ -11,9 +11,9 @@ axios.defaults.headers.common['Authorization'] = 'Bearer token';
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 
 const domNode = document.getElementById('root') as HTMLElement;
-hydrateRoot(domNode, <App />);
+// hydrateRoot(domNode, <App />);
 
-// createRoot(domNode!).render(
-//   <App />
-// )
+createRoot(domNode!).render(
+  <App />
+)
 

@@ -70,6 +70,7 @@ const Index: FC<IndexProps> = ({ data }) => {
                 }
             </>
         )
+        // 一级节点没有子节点
         if (isLevel0 && !haveChildren) {
             return (
                 <NavLink
@@ -84,6 +85,7 @@ const Index: FC<IndexProps> = ({ data }) => {
                 </NavLink>
             )
         }
+        // 有子节点
         if (haveChildren) {
             return (
                 <div
@@ -98,6 +100,7 @@ const Index: FC<IndexProps> = ({ data }) => {
                 </div>
             )
         }
+        // 叶子节点
         return (
             <div className={classNames(!isLevel0 && nodeClassName)}>
                 <NavLink

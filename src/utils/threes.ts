@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 //@ts-ignore
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+//@ts-ignore
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
 const DEFAULT_SIZE = { width: window.innerWidth, height: window.innerHeight };
 
@@ -17,8 +19,9 @@ export class Base {
     cube: any;
     geometry: any;
     material: any;
+    axesHelper?: boolean
 
-    constructor({ id = '', size = DEFAULT_SIZE }) {
+    constructor({ id = '', size = DEFAULT_SIZE, axesHelper = false }) {
         //创建画布区域
         this.init(id, size);
         // 创建场景
@@ -26,8 +29,10 @@ export class Base {
         // 创建相机
         this.createCamera();
         this.setCamera();
-        this.setController();
-        this.setAxesHelper();
+        // this.setController();
+        if (axesHelper) {
+            this.setAxesHelper();
+        }
     }
     init(id: string, size: Size) {
         this.renderer = new THREE.WebGLRenderer();
@@ -38,6 +43,7 @@ export class Base {
 
     createScene() {
         this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(0xffffff);
     }
 
     createCamera() {
@@ -111,6 +117,25 @@ export class Line extends Base {
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
         const line = new THREE.Line(geometry, material);
         this.scene.add(line);
+    }
+}
+
+export class Gltf extends Base {
+    constructor(props: any) {
+        super(props);
+        this.createGltf();
+    }
+    createGltf() {
+        const that = this;
+        const loader = new GLTFLoader();
+        loader.load('/girl/scene.gltf', function (gltf: any) {
+            that.scene.add(gltf.scene);
+            const model = gltf.scene;
+            model.position.set(0, 0, 0);
+            model.scale.set(1, 1, 1);
+        }, undefined, function (error: any) {
+            console.error(error);
+        });
     }
 }
 

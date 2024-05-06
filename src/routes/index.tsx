@@ -3,6 +3,7 @@ import Main from '@/main/index';
 import ErrorPage from '@/components/ErrorPage';
 import Index from '@/main/home';
 import ThreeLearn from '@/main/threeLearn';
+import Gltf from '@/main/three/glft';
 
 // let res = { title: 'before' };
 
@@ -37,7 +38,16 @@ const router = createBrowserRouter([
             },
             {
                 path: 'three',
-                element: <ThreeLearn />
+                children: [
+                    {
+                        path: 'index',
+                        element: <ThreeLearn />
+                    },
+                    {
+                        path: 'gltf',
+                        element: <Gltf />
+                    }
+                ]
             },
             {
                 path: '*',
