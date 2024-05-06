@@ -29,7 +29,7 @@ export class Base {
         // 创建相机
         this.createCamera();
         this.setCamera();
-        // this.setController();
+        this.setController();
         if (axesHelper) {
             this.setAxesHelper();
         }
