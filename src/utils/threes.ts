@@ -2,13 +2,12 @@ import * as THREE from 'three';
 //@ts-ignore
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 //@ts-ignore
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+// import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
 const DEFAULT_SIZE = { width: window.innerWidth, height: window.innerHeight };
 
-type Size = {
-    width: number,
-    height: number
+type StartProps = {
+    animate?: boolean
 }
 
 export class Base {
@@ -22,23 +21,35 @@ export class Base {
     axesHelper?: boolean
 
     constructor({ id = '', size = DEFAULT_SIZE, axesHelper = false }) {
-        //创建画布区域
-        this.init(id, size);
+        // 创建画布区域
+        this.init(id);
         // 创建场景
         this.createScene();
         // 创建相机
-        this.createCamera();
-        this.setCamera();
+        this.createCamera(size);
+        // 添加灯光
+        this.setLight();
         this.setController();
         if (axesHelper) {
             this.setAxesHelper();
         }
     }
-    init(id: string, size: Size) {
-        this.renderer = new THREE.WebGLRenderer();
-        const { width, height } = size;
-        this.renderer.setSize(width, height);
-        (document.getElementById(id) as HTMLElement).appendChild(this.renderer.domElement);
+
+    private resizeRendererToDisplaySize(renderer: any) {
+        const canvas = renderer.domElement;
+        const pixelRatio = window.devicePixelRatio;
+        const width = Math.floor(canvas.clientWidth * pixelRatio);
+        const height = Math.floor(canvas.clientHeight * pixelRatio);
+        const needResize = canvas.width !== width || canvas.height !== height;
+        if (needResize) {
+            renderer.setSize(width, height, false);
+        }
+        return needResize;
+    }
+
+    init(id: string) {
+        const canvas = document.getElementById(id) as HTMLElement;
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
     }
 
     createScene() {
@@ -46,12 +57,22 @@ export class Base {
         this.scene.background = new THREE.Color(0xffffff);
     }
 
-    createCamera() {
-        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    createCamera(size = DEFAULT_SIZE) {
+        this.camera = new THREE.PerspectiveCamera(75, size.width / size.height, 0.1, 1000);
+        this.camera.position.x = 3;
+        this.camera.position.y = 3;
+        this.camera.position.z = 3;
     }
 
-    setCamera() {
-        this.camera.position.z = 5;
+    setLight() {
+        const color = 0xFFFFFF;
+        const intensity = 3;
+        const light1 = new THREE.DirectionalLight(color, intensity);
+        const light2 = new THREE.DirectionalLight(color, intensity);
+        light1.position.set(1, 2, 3);
+        light2.position.set(-1, -2, -3);
+        this.scene.add(light1);
+        this.scene.add(light2);
     }
 
     setController() {
@@ -72,10 +93,24 @@ export class Base {
     getCamera() {
         return this.camera
     }
-    render(r: any) {
-        const renderer = r || this.getRenderer();
-        renderer.render(this.scene, this.camera);
-        requestAnimationFrame(() => this.render(r));
+    render(time: number, that: any, props: StartProps) {
+        if (this.resizeRendererToDisplaySize(that.renderer)) {
+            const canvas = that.renderer.domElement;
+            that.camera.aspect = canvas.clientWidth / canvas.clientHeight;
+            that.camera.updateProjectionMatrix();
+        }
+        if (props?.animate) {
+            time *= 0.001;
+            that.cube.rotation.x = time;
+            that.cube.rotation.y = time;
+        }
+        that.renderer.render(that.scene, that.camera);
+        requestAnimationFrame((time: number) => that.render(time, that, props));
+    }
+
+    start(props: StartProps) {
+        const that = this;
+        requestAnimationFrame((time: number) => that.render(time, that, props));
     }
 }
 
@@ -88,9 +123,12 @@ export class Box extends Base {
 
     createShape() {
         // 盒子几何体
-        this.geometry = new THREE.BoxGeometry(1, 1, 1);
-        // 网格基础材料
-        this.material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const boxWidth = 1;
+        const boxHeight = 1;
+        const boxDepth = 1;
+        this.geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth, 1, 1, 1);
+        // 网格基础材料,MeshBasicMaterial不会受光源影响
+        this.material = new THREE.MeshPhongMaterial({ color: 0x44aa88 });
         // 创建立方体
         this.cube = new THREE.Mesh(this.geometry, this.material);
         this.scene.add(this.cube);
@@ -120,22 +158,22 @@ export class Line extends Base {
     }
 }
 
-export class Gltf extends Base {
-    constructor(props: any) {
-        super(props);
-        this.createGltf();
-    }
-    createGltf() {
-        const that = this;
-        const loader = new GLTFLoader();
-        loader.load('/girl/scene.gltf', function (gltf: any) {
-            that.scene.add(gltf.scene);
-            const model = gltf.scene;
-            model.position.set(0, 0, 0);
-            model.scale.set(1, 1, 1);
-        }, undefined, function (error: any) {
-            console.error(error);
-        });
-    }
-}
+// export class Gltf extends Base {
+//     constructor(props: any) {
+//         super(props);
+//         this.createGltf();
+//     }
+//     createGltf() {
+//         const that = this;
+//         const loader = new GLTFLoader();
+//         loader.load('/girl/scene.gltf', function (gltf: any) {
+//             that.scene.add(gltf.scene);
+//             const model = gltf.scene;
+//             model.position.set(0, 0, 0);
+//             model.scale.set(1, 1, 1);
+//         }, undefined, function (error: any) {
+//             console.error(error);
+//         });
+//     }
+// }
 

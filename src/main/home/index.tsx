@@ -43,10 +43,10 @@ const Index = () => {
             <div className={styles.github_calendar}>
                 <div>
                     <div className={styles.github_calendar_title}>@yuanlllshuai on GitHub</div>
-                    <GitHubCalendar username={'yuanlllshuai'} fontSize={14} />
+                    <GitHubCalendar username={'yuanlllshuai'} fontSize={14} colorScheme='dark' />
                 </div>
             </div>
-            <div className={styles.three_container}>
+            {/* <div className={styles.three_container}>
                 <Canvas>
                     <ambientLight intensity={Math.PI / 2} />
                     <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
@@ -54,7 +54,7 @@ const Index = () => {
                     <Box position={[-1.2, 0, 0]} />
                     <Box position={[1.2, 0, 0]} />
                 </Canvas>
-            </div>
+            </div> */}
         </div>
     )
 }

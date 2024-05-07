@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Line } from '@/utils/threes';
+import { Box } from '@/utils/threes';
 import { useResize } from '@/utils/hooks';
 import styles from './index.module.scss';
 
@@ -8,8 +8,8 @@ const Index = () => {
     const lineRef = useRef<any>(null);
 
     const load = (size: any) => {
-        lineRef.current = new Line({ id: 'threeLine', size, axesHelper: true });
-        lineRef.current.render();
+        lineRef.current = new Box({ id: 'threeBox', size, axesHelper: true });
+        lineRef.current.start({ animate: false });
     };
 
     useResize({
@@ -20,7 +20,7 @@ const Index = () => {
 
     return (
         <>
-            <div id="threeLine" className={styles.container} ref={domRef}></div>
+            <canvas id="threeBox" className={styles.container} ref={domRef} />
         </>
     )
 }
