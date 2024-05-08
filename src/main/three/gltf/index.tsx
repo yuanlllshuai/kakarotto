@@ -7,7 +7,7 @@ import {
 } from '@react-three/drei';
 
 const ModelGirl = () => {
-    const { scene } = useGLTF('/gift_models/girl/scene.gltf');
+    const { scene } = useGLTF('/gltf_models/girl/scene.gltf');
     return (
         <primitive object={scene} scale={0.6} position={[0, -6, 0]} />
     )

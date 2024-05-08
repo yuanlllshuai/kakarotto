@@ -7,7 +7,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 const DEFAULT_SIZE = { width: window.innerWidth, height: window.innerHeight };
 
 type StartProps = {
-    animate?: boolean
+    animateHandle?: (time: number, instence: Base) => void
 }
 
 export class Base {
@@ -20,15 +20,17 @@ export class Base {
     material: any;
     axesHelper?: boolean
 
-    constructor({ id = '', size = DEFAULT_SIZE, axesHelper = false }) {
+    constructor({ id = '', size = DEFAULT_SIZE, axesHelper = false, light = false }) {
         // 创建画布区域
         this.init(id);
         // 创建场景
         this.createScene();
         // 创建相机
         this.createCamera(size);
-        // 添加灯光
-        this.setLight();
+        if (light) {
+            // 添加灯光
+            this.setLight();
+        }
         this.setController();
         if (axesHelper) {
             this.setAxesHelper();
@@ -59,8 +61,8 @@ export class Base {
 
     createCamera(size = DEFAULT_SIZE) {
         this.camera = new THREE.PerspectiveCamera(75, size.width / size.height, 0.1, 1000);
-        this.camera.position.x = 3;
-        this.camera.position.y = 3;
+        this.camera.position.x = 0;
+        this.camera.position.y = 0;
         this.camera.position.z = 3;
     }
 
@@ -80,7 +82,7 @@ export class Base {
     }
 
     setAxesHelper() {
-        const axesHelper = new THREE.AxesHelper(5);
+        const axesHelper = new THREE.AxesHelper(10);
         this.scene.add(axesHelper);
     }
 
@@ -99,10 +101,8 @@ export class Base {
             that.camera.aspect = canvas.clientWidth / canvas.clientHeight;
             that.camera.updateProjectionMatrix();
         }
-        if (props?.animate) {
-            time *= 0.001;
-            that.cube.rotation.x = time;
-            that.cube.rotation.y = time;
+        if (props?.animateHandle) {
+            props?.animateHandle(time, that);
         }
         that.renderer.render(that.scene, that.camera);
         requestAnimationFrame((time: number) => that.render(time, that, props));
@@ -128,10 +128,114 @@ export class Box extends Base {
         const boxDepth = 1;
         this.geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth, 1, 1, 1);
         // 网格基础材料,MeshBasicMaterial不会受光源影响
-        this.material = new THREE.MeshPhongMaterial({ color: 0x44aa88 });
+        this.material = new THREE.MeshPhongMaterial({ color: 0x44aa88, flatShading: true });
         // 创建立方体
         this.cube = new THREE.Mesh(this.geometry, this.material);
         this.scene.add(this.cube);
+    }
+}
+
+export class SolarSystem extends Base {
+    objects: any[] = [];
+
+    solarSystem: any;
+    earthOrbit: any;
+    moonOrbit: any;
+
+    constructor(props: any) {
+        super(props);
+        this.systemInit();
+        this.setCamera();
+        this.setLight();
+        this.createStar();
+        // this.addAxesHelper();
+    }
+
+    systemInit() {
+        this.solarSystem = new THREE.Object3D();
+        this.scene.add(this.solarSystem);
+        this.objects.push(this.solarSystem);
+
+        this.earthOrbit = new THREE.Object3D();
+        this.earthOrbit.position.x = 7;
+        this.solarSystem.add(this.earthOrbit);
+        this.objects.push(this.earthOrbit);
+
+        this.moonOrbit = new THREE.Object3D();
+        this.moonOrbit.position.x = 1;
+        this.earthOrbit.add(this.moonOrbit);
+    }
+
+    createStar() {
+        const radius = 0.6;
+        const widthSegments = 99;
+        const heightSegments = 99;
+        const sphereGeometry = new THREE.SphereGeometry(
+            radius,
+            widthSegments,
+            heightSegments
+        );
+
+        this.createSun(sphereGeometry);
+        this.createEarth(sphereGeometry);
+        this.createMoon(sphereGeometry);
+    }
+
+    createSun(sphereGeometry: any) {
+        const sunMaterial = new THREE.MeshPhongMaterial({ emissive: 0xffff00 });
+        const sunMesh = new THREE.Mesh(sphereGeometry, sunMaterial);
+        sunMesh.scale.set(5, 5, 5); // 扩大太阳的大小
+        this.solarSystem.add(sunMesh);
+        this.objects.push(sunMesh);
+    }
+
+    createEarth(sphereGeometry: any) {
+        const earthMaterial = new THREE.MeshPhongMaterial({
+            color: 0x2233ff,
+            emissive: 0x112244,
+        });
+        const earthMesh = new THREE.Mesh(sphereGeometry, earthMaterial);
+        this.earthOrbit.add(earthMesh)
+        this.objects.push(earthMesh);
+    }
+
+    createMoon(sphereGeometry: any) {
+        const moonMaterial = new THREE.MeshPhongMaterial({ color: 0x888888, emissive: 0x222222 });
+        const moonMesh = new THREE.Mesh(sphereGeometry, moonMaterial);
+        moonMesh.scale.set(.3, .3, .3);
+        this.moonOrbit.add(moonMesh);
+        this.objects.push(moonMesh);
+    }
+
+    setLight() {
+        const color = 0xffffff;
+        // 强度
+        const intensity = 500;
+        const light = new THREE.PointLight(color, intensity);
+        this.scene.add(light);
+    }
+
+    setCamera() {
+        // // 设置摄像机位置，在y轴
+        // this.camera.position.set(0, 20, 0);
+        // // 在摄像机视角设置方位，z轴在摄像机的上方
+        // this.camera.up.set(0, 0, 1);
+        // // 摄像机俯视，向原点方向看
+        // this.camera.lookAt(0, 0, 0);
+
+        // 设置摄像机位置，在z轴
+        this.camera.position.set(0, 0, 20);
+        // 在摄像机视角设置方位，y轴在摄像机的上方
+        this.camera.up.set(0, 1, 0);
+        // 摄像机直视，向原点方向看
+        this.camera.lookAt(0, 0, 0);
+    }
+    addAxesHelper() {
+        this.objects.forEach((node: any) => {
+            const axes = new THREE.AxesHelper();
+            axes.renderOrder = 1;
+            node.add(axes);
+        });
     }
 }
 

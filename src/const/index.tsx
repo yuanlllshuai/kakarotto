@@ -11,11 +11,11 @@ export const navConfig = [
         ]
     },
     {
-        key: 'three', label: 'Three.js', paths: ['/three/index', '/three/gltf', '/pie1'],
+        key: 'three', label: 'Three.js', paths: ['/three/index', '/three/gltf', '/three/solar'],
         children: [
             { key: 'learn', label: '学习', path: '/three/index' },
             { key: 'line', label: 'Gltf', path: '/three/gltf' },
-            { key: 'pie', label: '饼图', path: '/pie1' },
+            { key: 'pie', label: '太阳系', path: '/three/solar' },
         ]
     },
     { key: 'settings', label: '设置', icon: 'settings', path: '/settings' },

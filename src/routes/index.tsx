@@ -2,8 +2,7 @@ import { createBrowserRouter } from 'react-router-dom'
 import Main from '@/main/index';
 import ErrorPage from '@/components/ErrorPage';
 import Index from '@/main/home';
-import ThreeLearn from '@/main/threeLearn';
-import Gltf from '@/main/three/glft';
+import { ThreeGltf, ThreeLearn, ThreeSolar } from '@/main/three';
 
 // let res = { title: 'before' };
 
@@ -45,7 +44,11 @@ const router = createBrowserRouter([
                     },
                     {
                         path: 'gltf',
-                        element: <Gltf />
+                        element: <ThreeGltf />
+                    },
+                    {
+                        path: 'solar',
+                        element: <ThreeSolar />
                     }
                 ]
             },
