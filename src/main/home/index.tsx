@@ -26,8 +26,6 @@ function Box(props: ThreeElements['mesh']) {
 }
 
 const Index = () => {
-
-
     useEffect(() => {
         // axios.get('/api/v1/user/getChannel')
         //     .then(response => {
@@ -36,7 +34,7 @@ const Index = () => {
         //     .catch(error => {
         //         console.error(error);
         //     });
-    }, [])
+    }, []);
 
     return (
         <div className={styles.container}>

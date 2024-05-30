@@ -3,6 +3,7 @@ import Main from '@/main/index';
 import ErrorPage from '@/components/ErrorPage';
 import Index from '@/main/home';
 import { ThreeGltf, ThreeLearn, ThreeSolar } from '@/main/three';
+import Settings from '@/main/settings';
 
 // let res = { title: 'before' };
 
@@ -51,6 +52,10 @@ const router = createBrowserRouter([
                         element: <ThreeSolar />
                     }
                 ]
+            },
+            {
+                path: 'settings',
+                element: <Settings />
             },
             {
                 path: '*',

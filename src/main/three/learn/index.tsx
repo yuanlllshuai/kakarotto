@@ -13,7 +13,7 @@ const Index = () => {
     };
 
     const animateHandle = (time: number, ins: any) => {
-        time *= 0.001;
+        time *= 0.0001;
         ins.cube.rotation.x = time;
         ins.cube.rotation.y = time;
     }
