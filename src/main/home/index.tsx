@@ -1,29 +1,29 @@
-import { useEffect, useRef, useState } from 'react';
-import * as THREE from 'three'
+import { useEffect } from 'react';
+// import * as THREE from 'three'
 import GitHubCalendar from 'react-github-calendar';
-import { Canvas, useFrame, ThreeElements } from '@react-three/fiber'
+// import { Canvas, useFrame, ThreeElements } from '@react-three/fiber'
 
 // import axios from 'axios';
 import styles from './index.module.scss';
 
-function Box(props: ThreeElements['mesh']) {
-    const ref = useRef<THREE.Mesh>(null!)
-    const [hovered, hover] = useState(false)
-    const [clicked, click] = useState(false)
-    useFrame((_state, delta) => (ref.current.rotation.x += delta))
-    return (
-        <mesh
-            {...props}
-            ref={ref}
-            scale={clicked ? 2 : 1.5}
-            onClick={() => click(!clicked)}
-            onPointerOver={() => hover(true)}
-            onPointerOut={() => hover(false)}>
-            <boxGeometry args={[1, 1, 1]} />
-            <meshStandardMaterial color={hovered ? 'hotpink' : 'orange'} />
-        </mesh>
-    )
-}
+// function Box(props: ThreeElements['mesh']) {
+//     const ref = useRef<THREE.Mesh>(null!)
+//     const [hovered, hover] = useState(false)
+//     const [clicked, click] = useState(false)
+//     useFrame((_state, delta) => (ref.current.rotation.x += delta))
+//     return (
+//         <mesh
+//             {...props}
+//             ref={ref}
+//             scale={clicked ? 2 : 1.5}
+//             onClick={() => click(!clicked)}
+//             onPointerOver={() => hover(true)}
+//             onPointerOut={() => hover(false)}>
+//             <boxGeometry args={[1, 1, 1]} />
+//             <meshStandardMaterial color={hovered ? 'hotpink' : 'orange'} />
+//         </mesh>
+//     )
+// }
 
 const Index = () => {
     useEffect(() => {
