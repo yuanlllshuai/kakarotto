@@ -1619,6 +1619,11 @@ lie@^3.0.2:
   dependencies:
     immediate "~3.0.5"
 
+lil-gui@^0.20.0:
+  version "0.20.0"
+  resolved "https://registry.npmmirror.com/lil-gui/-/lil-gui-0.20.0.tgz#c970391fcde9f88d5425b2648114c24d9bd30243"
+  integrity sha512-k7Ipr0ztqslMA2XvM5z5ZaWhxQtnEOwJBfI/hmSuRh6q4iMG9L0boqqrnZSzBR1jzyJ28OMl47l65ILzRe1TdA==
+
 localforage@^1.10.0:
   version "1.10.0"
   resolved "https://registry.npmmirror.com/localforage/-/localforage-1.10.0.tgz#5c465dc5f62b2807c3a84c0c6a1b1b3212781dd4"

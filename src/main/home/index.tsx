@@ -34,7 +34,53 @@ const Index = () => {
         //     .catch(error => {
         //         console.error(error);
         //     });
+        // const count = candy([1, 0, 2]);
+        const count = trap([0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1]);
+        console.log(count);
     }, []);
+
+    // 接雨水
+    const trap = (ratings: number[]): number => {
+        let ans = 0;
+        const stack = [];
+        const n = ratings.length;
+        for (let i = 0; i < n; ++i) {
+            while (stack.length && ratings[i] > ratings[stack[stack.length - 1]]) {
+                const top = stack.pop();
+                if (!stack.length) {
+                    break;
+                }
+                const left = stack[stack.length - 1];
+                const currWidth = i - left - 1;
+                const currHeight = Math.min(ratings[left], ratings[i]) - ratings[top as number];
+                ans += currWidth * currHeight;
+            }
+            stack.push(i);
+        }
+        return ans;
+    }
+
+    // 分发糖果
+    const candy = (ratings: number[]): number => {
+        const len = ratings.length;
+        const left = new Array(len).fill(1);
+        const right = new Array(len).fill(1);
+
+        for (let i = 1; i < len; i++) {
+            if (ratings[i] > ratings[i - 1]) {
+                left[i] = left[i - 1] + 1
+            }
+        }
+        let count = left[len - 1];
+        for (let i = len - 2; i >= 0; i--) {
+            if (ratings[i] > ratings[i + 1]) {
+                right[i] = right[i + 1] + 1;
+            }
+            count += Math.max(left[i], right[i])
+        }
+
+        return count
+    }
 
     return (
         <div className={styles.container}>

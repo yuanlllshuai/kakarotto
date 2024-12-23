@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { SolarSystem } from '@/utils/threes';
+import { SolarSystem } from '@/utils/3D/threejs';
 import { useResize } from '@/utils/hooks';
 import styles from './index.module.scss';
 
