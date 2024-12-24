@@ -157,10 +157,14 @@ export class Box extends Base {
     const repeats = planeSize / 2;
     texture.repeat.set(repeats, repeats);
     const planeGeo = new THREE.PlaneGeometry(planeSize, planeSize);
-    const planeMat = new THREE.MeshPhongMaterial({
+    // Reflect.deleteProperty(planeGeo.attributes, 'normal');
+    // Reflect.deleteProperty(planeGeo.attributes, 'uv');
+    const planeMat = new THREE.MeshStandardMaterial({
       map: texture,
       side: THREE.DoubleSide,
     });
+    console.log(planeMat)
+
     const mesh = new THREE.Mesh(planeGeo, planeMat);
     mesh.rotation.x = Math.PI * -.5;
     this.scene.add(mesh);

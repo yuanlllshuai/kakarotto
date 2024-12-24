@@ -1,16 +1,20 @@
-import { Suspense, useEffect, useState, useRef } from 'react'
-import { Canvas, useThree, useFrame  } from '@react-three/fiber'
+import { Suspense, useEffect, useState, useRef, memo, useCallback } from 'react'
+import { Canvas, useThree, useFrame, extend } from '@react-three/fiber'
 import {
   useGLTF,
   OrbitControls,
   useProgress,
   Html,
-  Billboard
+  Billboard,
+  useTexture
 } from '@react-three/drei';
 import { Progress } from 'antd'
 import styles from './index.module.scss';
 import * as THREE from 'three';
 import icon from '@/assets/local.jpg';
+import land from '../res/checker.png';
+import bg from '../res/bg.jpg';
+import border from '../res/border.png';
 
 const createGradient = (gradient: any, color: string) => {
   gradient.addColorStop(0, 'rgba(255,255,255,0)');
@@ -22,6 +26,78 @@ const createGradient = (gradient: any, color: string) => {
   gradient.addColorStop(0.7, 'rgba(255,255,255,0)');
   gradient.addColorStop(1, 'rgba(255,255,255,0)');
 }
+
+const InstancedGridOfSquares = memo(() => {
+  const instancedMeshRef = useRef<THREE.InstancedMesh>(null);
+  const [instancedMesh, setInstancedMesh] = useState<any>(null);
+
+  useEffect(() => {
+    const numSquaresPerRow = 200;
+    const numSquaresPerColumn = 200;
+    const totalSquares = numSquaresPerRow * numSquaresPerColumn;
+  
+    // Create a single geometry and material
+    const geometry = new THREE.PlaneGeometry(0.06, 0.06);
+    // geometry.rotateX = Math.PI / 2;
+    const material = new THREE.MeshBasicMaterial({
+      color: 0x00ff00,
+      transparent: true,
+      opacity: 0.5,
+      side: THREE.DoubleSide
+    });
+  
+    // Create an InstancedMesh
+    const instancedMesh = new THREE.InstancedMesh(geometry, material, totalSquares);
+  
+    // Set the positions for each instance
+    for (let i = 0; i < numSquaresPerRow; i++) {
+      for (let j = 0; j < numSquaresPerColumn; j++) {
+        const x = (i - (numSquaresPerRow - 1) / 2) * 0.2;
+        const y = (j - (numSquaresPerColumn - 1) / 2) * 0.2;
+        const position = new THREE.Vector3(x, y, 0);
+        const matrix = new THREE.Matrix4();
+        matrix.setPosition(position);
+        instancedMesh.setMatrixAt(i * numSquaresPerColumn + j, matrix);
+      }
+    }
+    instancedMesh.rotation.x = Math.PI / 2;
+    setInstancedMesh(instancedMesh);
+  }, []);
+
+  // useFrame((state, delta) => {
+  //   if (instancedMeshRef.current) {
+  //     const cameraPosition = state.camera.position;
+  //     const upVector = new THREE.Vector3(0, 1, 0);
+
+  //     for (let i = 0; i < 100*100; i++) {
+  //       const matrix = new THREE.Matrix4();
+  //       const position = new THREE.Vector3();
+  //       instancedMeshRef.current.getMatrixAt(i, matrix);
+  //       position.setFromMatrixPosition(matrix);
+
+  //       // Look at the camera
+  //       matrix.lookAt(position, cameraPosition, upVector);
+  //       matrix.setPosition(position);
+
+  //       instancedMeshRef.current.setMatrixAt(i, matrix);
+  //     }
+
+  //     instancedMeshRef.current.instanceMatrix.needsUpdate = true;
+  //   }
+  // });
+
+  if (!instancedMesh) {
+    return <></>
+  }
+
+  return (
+    <primitive
+      object={instancedMesh}
+      ref={instancedMeshRef}
+    />
+  );
+});
+
 
 const PointLabel = ({ position, label, scale, visible }: any) => {
   return (
@@ -50,7 +126,7 @@ const PointLabel = ({ position, label, scale, visible }: any) => {
         >
           <div style={{
             padding: '40px 70px',
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
             borderRadius: 20,
             color: '#FFF'
           }}>
@@ -61,6 +137,85 @@ const PointLabel = ({ position, label, scale, visible }: any) => {
     </>
   )
 }
+
+const vertexShader = `
+    uniform float time;
+    varying vec3 pos;
+    void main()	{
+      pos = position;
+      vec3 p = position;
+      //p.y = sin(p.x * .1 - time) * cos(p.z * .1 - time) * 5.;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(p,1.0);
+    }
+  `;
+  const fragmentShader = `
+    varying vec3 pos;
+    uniform float time;
+    
+    float line(float width, vec3 step){
+      vec3 tempCoord = pos / step;
+      
+      vec2 coord = tempCoord.xz;
+
+      vec2 grid = abs(fract(coord - 0.5) - 0.5) / fwidth(coord * width);
+      float line = min(grid.x, grid.y);
+      
+      return 1. - min(line, 1.0);
+    }
+    
+    void main() {
+      float v = line(1., vec3(1.)) + line(1.5, vec3(10.));      
+      vec3 c = v * vec3(0., 1., 1.) * (sin(time * 5. - length(pos.xz) * .5) * .5 + .5);
+      c = mix(vec3(0.5), c, v);
+      
+      gl_FragColor = vec4(c, 1.0);
+    }
+  `;
+
+class LightCircleMaterial extends THREE.ShaderMaterial{
+  
+  constructor() {
+    super({
+      uniforms: {
+        time: {
+          value: 0
+        }
+      },
+      vertexShader: vertexShader,
+      fragmentShader: fragmentShader,
+      side:THREE.DoubleSide,
+    })
+  }
+}
+
+// extend({ LightCircleMaterial });
+
+// const LightCircle = () => {
+
+//   const ref = useRef();
+//   const count = useRef();
+//   const clock = new THREE.Clock();
+//   let time = 0;
+//   let delta = 0;
+//   console.log(ref)
+
+//   useFrame(() => {
+//     if (ref.current) {
+//       delta = clock.getDelta();
+//       time += delta;
+//       ref.current.uniforms.time.value = time;
+//     }
+    
+//   });
+//   return (
+//     <mesh rotation-x={Math.PI/2}>
+//       <planeGeometry
+//         args={[200, 200]}
+//       />
+//       <lightCircleMaterial ref={ ref} />
+//     </mesh>
+//   )
+// }
 
 const FlyLine = ({ position } :any) => {
 
@@ -122,7 +277,7 @@ const FlyLine = ({ position } :any) => {
   )
 }
 
-const OriginPoint = () => {
+const OriginPoint = memo(() => {
   const [radius, setRadius] = useState(0);
   const [opacity, setOpacity] = useState(1);
 
@@ -153,7 +308,7 @@ const OriginPoint = () => {
       />
     </mesh>
   )
-}
+})
 
 
 
@@ -161,7 +316,7 @@ const OriginPoint = () => {
 const ModelMap = () => {
   const partRef = useRef();
   const { raycaster, camera, mouse } = useThree();
-  const { scene } = useGLTF('/gltf_models/map/map4.gltf');
+  const { scene } = useGLTF('/gltf_models/map/map11.gltf');
   // const { scene } = useGLTF('http://111.229.183.248/gltf_models/girl/scene.gltf');
   const [labelPosition, setLabelPosition] = useState<any>({ x: 0, y: 0, z: 0 });
   const [labelText, setLabelText] = useState('');
@@ -174,20 +329,41 @@ const ModelMap = () => {
   const isClickDown = useRef(false);
   const clickNum = useRef(0);
   const showTagRef = useRef(false);
+  const countRef = useRef(0);
+
+  const [texture] = useTexture([border]);
+  texture.repeat.set(1, 1);
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.magFilter = THREE.NearestFilter;
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.rotation = Math.PI;
+
   
   useEffect(() => {
     if (partRef.current) {
+      console.log(scene)
       const luminances: any = {};
       (partRef.current as any).traverse((child: any) => {
         if (child.isMesh) {
           if (child.name.includes('市')) {
             child.material.side = THREE.DoubleSide;
+            child.material.transparent = true;
+            child.material.opacity = 0.7;
             const hsl = { h: 0, s: 0, l: 0 };
             child.material.color.getHSL(hsl);
             luminances[child.uuid] = { ...hsl };
           }
           if (child.name.includes('河南边界')) {
             dealBorder(child);
+          }
+          if (child.name === '底') {
+            child.material.transparent = true;
+            child.material.opacity = 0;
+          }
+          if (child.name === '底边界') {
+            child.material.transparent = true;
+            child.material.opacity = 0.3;
           }
         }
       });
@@ -206,35 +382,10 @@ const ModelMap = () => {
     };
   }, []);
 
-  const createGradientTexture=(width: number, height: number)=> {
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    const context = canvas.getContext('2d')!;
-    const gradient = context.createLinearGradient(0, 0, width, 0);
-    createGradient(gradient,'black');
-    context.fillStyle = gradient;
-    context.fillRect(0, 0, width, height);
-    const texture = new THREE.CanvasTexture(canvas);
-    // texture.offset.x = -linrOffset; // 初始偏移量
-    texture.repeat.set(1, 1); // 防止重复
-    texture.wrapS = THREE.RepeatWrapping; // 防止拉伸
-    texture.wrapT = THREE.RepeatWrapping; // 防止拉伸
-    return texture;
-  }
-
   const dealBorder = (mesh: any) => {
-    console.log(mesh)
-
-    // mesh.material.color= 'red'
-    const texture = createGradientTexture(4, 1);
-    // mesh.material.color.g = 1;
-    // mesh.material.map = texture;
-    const material = new THREE.MeshStandardMaterial({
-      map: texture,
-      // color:'red'
-    });
-    mesh.material = material;
+    mesh.material.color= new THREE.Color('#FFF')
+    mesh.material.map = texture;
+    mesh.material.metalness = 0;
   }
 
   const handleMouseDown = (event: any) => {
@@ -326,6 +477,9 @@ const ModelMap = () => {
       const newScale = 1 / (distance / 10)
       setLabelScale(Math.max(0.7, Math.min(0.8, newScale)));
     }
+
+    countRef.current += 0.01;
+    texture.offset.y =1- countRef.current % 1;
   })
 
   return (
@@ -344,7 +498,9 @@ const ModelMap = () => {
       {
         labelPosition.x !== 0 &&<FlyLine position={labelPosition} />
       }
-      <OriginPoint/>
+      <OriginPoint />
+      <InstancedGridOfSquares />
+      {/* <LightCircle /> */}
     </>
   )
 }
@@ -364,11 +520,11 @@ function Index() {
   const render = () => {
     return (
       <div className={styles.model} style={{ opacity: loading ? 0 : 1 }}>
-        <Canvas shadows camera={{ position: [20, 20, 20] }}>
-          <axesHelper scale={100} />
+        <Canvas shadows camera={{ position: [20, 20, 20] }} scene={{background:new THREE.Color('rgb(2, 3, 34)')}}>
+          {/* <axesHelper scale={100} /> */}
           <OrbitControls makeDefault />
-          <ambientLight intensity={1} />
-          <pointLight position={[100, 100, 100]} decay={0} intensity={2} />
+          <ambientLight intensity={3} />
+          {/* <pointLight position={[100, 100, 100]} decay={0} intensity={2} /> */}
           <directionalLight position={[10, 10, 10]} intensity={0.5} />
           <Suspense fallback={<></>}>
             <ModelMap />
