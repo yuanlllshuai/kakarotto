@@ -24,8 +24,6 @@ const MapModel = () => {
   const luminanceMap = useRef<any>({});
   const [labelScale, setLabelScale] = useState(1);
   const [showTag, setShowTag] = useState(false);
-  const [borderLine, setBorderLine] = useState<any>(null);
-
 
   const isDragging = useRef(false);
   const isConsole = useRef();
@@ -35,7 +33,8 @@ const MapModel = () => {
   const countRef = useRef(0);
   const gradientTextureRef = useRef<any>(null);
   const borderMesh = useRef<any>();
-  const originHeight = useRef(0);
+  const bottomY = useRef(0);
+  const begin = useRef(false);
   // const borderTextureRef = useRef<any>(null);
 
   const [texture] = useTexture([border]);
@@ -60,18 +59,21 @@ const MapModel = () => {
             const hsl = { h: 0, s: 0, l: 0 };
             child.material.color.getHSL(hsl);
             luminances[child.uuid] = { ...hsl };
-            child.position.y -= 0.4;
+            child.position.y -= 0.46;
           }
-          if (child.name.includes('挤压')) {
-            child.material.side = THREE.DoubleSide;
-            child.material.metalness = 0;
-            // child.scale.x = 0.2;
-            // child.scale.y = 0.2;
-            child.position.y -= 0.11;
-            dealBorderLine(child);
-          }
+          // if (child.name.includes('挤压')) {
+          //   child.material.side = THREE.DoubleSide;
+          //   child.material.metalness = 0;
+          //   // child.scale.x = 0.2;
+          //   // child.scale.y = 0.2;
+          //   child.position.y -= 0.11;
+          //   dealBorderLine(child);
+          // }
           if (child.name.includes('河南边界')) {
-            child.scale.y = 0;
+            borderMesh.current = child;
+            bottomY.current = child.position.y;
+            borderMesh.current.scale.y = 0.01;
+            borderMesh.current.position.y -= 0.27;
             dealBorder(child);
             // const geometryHeight = child.geometry.boundingBox.max.y - child.geometry.boundingBox.min.y;
             // console.log(geometryHeight,child.scale.y)
@@ -93,6 +95,9 @@ const MapModel = () => {
         }
       });
       luminanceMap.current = luminances;
+      setTimeout(() => {
+        begin.current = true;
+      },2000)
     }
   }, [partRef.current]);
 
@@ -186,7 +191,6 @@ const MapModel = () => {
     // mesh.material.color= new THREE.Color('#FFF')
     mesh.material.map = texture;
     mesh.material.metalness = 0;
-    borderMesh.current = mesh;
   }
 
   const handleMouseDown = (event: any) => {
@@ -280,7 +284,7 @@ const MapModel = () => {
     }
 
     countRef.current += 0.01;
-    // texture.offset.y = 1 - countRef.current % 1;
+    texture.offset.y = 1 - countRef.current % 1;
     
     if (gradientTextureRef.current) {
       gradientTextureRef.current.offset.x += 0.005;
@@ -300,21 +304,28 @@ const MapModel = () => {
       //   borderLine.geometry.attributes.position.needsUpdate = true;
       // }
     }
-    const paddingTime = 1;
-    const times = paddingTime / delta;
-    if (borderMesh.current) {
-      const speed1 = 1 / times;
-      if (borderMesh.current.scale.y<1) {
-        borderMesh.current.scale.y += speed1;
+    if (begin.current) {
+      const pending = 0.5;
+      const times = pending / delta;
+      
+      if (borderMesh.current && borderMesh.current.scale.y < 1) {
+        const speed = 1 / times;
+        // borderMesh.current.scale.y = countRef.current;
+        borderMesh.current.scale.y += speed;
       }
-      const speed2 = 0.8 / times;
-      (partRef.current as any).traverse((child: any) => {
-        if (child.isMesh) {
-          if (child.name.includes('市')&& child.position.y<=0.2) { 
+      if (borderMesh.current && borderMesh.current.position.y < bottomY.current / 2) {
+        const speed= 0.27 / times
+        // borderMesh.current.position.y +=0.01;
+        borderMesh.current.position.y += speed;
+        // console.log(borderMesh.current.position.y)
+
+        const speed2 = 0.48 / times;
+        (partRef.current as any).children[2].children[0].children.forEach((child: any) => {
+          if (child.isMesh && child.name.includes('市')) { 
             child.position.y += speed2;
           }
-        }
-      })
+        })
+      }
     }
     // if (countRef.current<=0.8) {
     //   scene.children[2].children[0].children.map(i => {
