@@ -210,8 +210,8 @@ const MapModel = ({begin}:any) => {
     tubeMesh.position.copy(mesh.position);
     tubeMesh.rotation.copy(mesh.rotation);
     tubeMesh.scale.copy(mesh.scale);
-    tubeMesh.position.y = -0.4;
-    tubeMesh.scale.z = 0.4;
+    tubeMesh.position.y = -0.46;
+    // tubeMesh.position.y -= 0.46;
     setFlowLight(tubeMesh);
 
     // 边缘线
