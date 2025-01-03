@@ -48,7 +48,7 @@ const Wave = memo(() => {
   return (
     <mesh
       ref={circleRef}
-      position={[0, 0.6, 0]}
+      position={[0, -0.4, 0]}
       rotation-x={Math.PI / 2}
     >
       <circleGeometry args={[radius, 32]} />

@@ -10,7 +10,13 @@ const PointLabel = ({ position, label, scale, visible }: any) => {
       <Billboard
         position={[position.x, 0.8, position.z]}
       >
-        <Html transform={true}>
+        <Html
+          transform={true}
+          style={{
+            opacity: visible ? 1 : 0,
+            transition: 'all 0.3s',
+          }}
+        >
           <img src={icon} style={{ width: 20, height: 26 }} />
         </Html>
       </Billboard>

@@ -25,7 +25,7 @@ function Index() {
   const render = () => {
     return (
       <div className={styles.model} style={{ opacity: loading ? 0 : 1 }}>
-        <Canvas shadows camera={{ position: [-12, 6, -12] }} scene={{background:new THREE.Color('rgb(2, 3, 34)')}}>
+        <Canvas shadows camera={{ position: [20, 6, 20] }} scene={{background:new THREE.Color('rgb(2, 3, 34)')}}>
           {/* <axesHelper scale={100} /> */}
           <OrbitControls makeDefault />
           <ambientLight intensity={3} />

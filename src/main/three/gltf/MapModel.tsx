@@ -64,9 +64,9 @@ const MapModel = () => {
   mapTexture.colorSpace = THREE.SRGBColorSpace;
   mapTexture.rotation = Math.PI;
 
-  
   useEffect(() => {
     if (partRef.current) {
+      // console.log(scene)
       const blockColors: any = {};
       (partRef.current as any).traverse((child: any) => {
         if (child.isMesh) {
@@ -76,11 +76,11 @@ const MapModel = () => {
             blockColors[child.uuid] = { ...hsl };
             dealCity(child);
           }
-          if (child.name.includes('挤压')) {
-            dealFlowLight(child);
-          }
           if (child.name.includes('河南边界')) {
             dealBorder(child);
+          }
+          if (child.name.includes('挤压')) {
+            dealFlowLight(child);
           }
           if (child.name === '底') {
             child.material.transparent = true;
@@ -118,18 +118,46 @@ const MapModel = () => {
     mesh.position.y -= 0.46;
   }
 
+  const filterPoints = (points: any) => {
+    const offsetX = 0.6;
+    const offsetY = 0.8;
+    const numPoints = points.length / 3;
+    const vertices = [new THREE.Vector3(points[0], points[1], points[2])];
+    let errorIndex = null;
+    let isError = false;
+    let i = 1;
+    while (i < numPoints) {
+      const beginIndex = errorIndex || i;
+      const prevX = points[(beginIndex - 1) * 3];
+      const prevY = points[(beginIndex - 1) * 3 + 1];
+
+      const currX = points[i * 3];
+      const currY = points[i * 3 + 1];
+      const currZ = points[i * 3 + 2];
+
+      if (Math.abs(currX - prevX) > offsetX || Math.abs(currY - prevY) > offsetY) {
+        i += 1;
+        isError = true;
+      } else {
+        i += 1;
+        if (isError) {
+          isError=false
+        } else {
+          vertices.push(new THREE.Vector3(currX, currY, currZ))
+        }
+        errorIndex = i;
+      }
+    }
+    return vertices;
+  }
+
   // 生成流光
   const dealFlowLight = (mesh: any) => {
     const edgesGeometry = new THREE.EdgesGeometry(mesh.geometry);
     const positions = edgesGeometry.attributes.position.array;
-    const vertices = [];
-    const len = edgesGeometry.attributes.position.count;
-    for (let i = 0; i < len; i++) {
-        const x = positions[i * 3];
-        const y = positions[i * 3 + 1];
-        const z = positions[i * 3 + 2];
-        vertices.push(new THREE.Vector3(x, y, z));
-    }
+    const vertices = filterPoints(positions);
+    const len = vertices.length;
+    console.log(len)
     const curve = new THREE.CatmullRomCurve3(vertices, false);
     const points = curve.getPoints(len);
     const smoothCurve = new THREE.CatmullRomCurve3(points, false); 
@@ -142,7 +170,7 @@ const MapModel = () => {
     const gradient = context.createLinearGradient(0, 0, 0, 100);
     const createGradient = (gradient: any, color: string) => {
       gradient.addColorStop(0, color);
-      gradient.addColorStop(0.1, 'rgba(255,255,255,0)');
+      gradient.addColorStop(0.1, color);
       gradient.addColorStop(0.2, 'rgba(255,255,255,0)');
       gradient.addColorStop(0.3, 'rgba(255,255,255,0)');
       gradient.addColorStop(0.4, 'rgba(255,255,255,0)');
@@ -151,7 +179,7 @@ const MapModel = () => {
       gradient.addColorStop(0.7, 'rgba(255,255,255,0)');
       gradient.addColorStop(1, 'rgba(255,255,255,0)');
     }
-    createGradient(gradient,'#9400D3');
+    createGradient(gradient,'#A020F0');
     context.fillStyle = gradient;
     context.fillRect(0, 0, 1, 100);
     const texture = new THREE.CanvasTexture(canvas);
@@ -159,7 +187,7 @@ const MapModel = () => {
     texture.wrapS = THREE.RepeatWrapping; // 防止拉伸
     texture.wrapT = THREE.RepeatWrapping; // 防止拉伸
     texture.rotation = Math.PI / 2;
-    const material = new THREE.MeshBasicMaterial({
+    const material = new THREE.MeshStandardMaterial({
       map: texture,
       side: THREE.DoubleSide,
       transparent: true,
@@ -171,9 +199,11 @@ const MapModel = () => {
     tubeMesh.position.copy(mesh.position);
     tubeMesh.rotation.copy(mesh.rotation);
     tubeMesh.scale.copy(mesh.scale);
-    tubeMesh.position.y = 0.56;
+    tubeMesh.position.y = -0.46;
+    tubeMesh.scale.z = 0.2;
     setFlowLight(tubeMesh);
 
+    // 边缘线
     const lineGeometry = new THREE.BufferGeometry();
     lineGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 1 });
@@ -204,12 +234,14 @@ const MapModel = () => {
     event.preventDefault();
     if (isClickDownRef.current) {
       isDraggingRef.current = true;
+    } else {
+      isDraggingRef.current = false;
     }
   };
 
   const handleMouseUp = (event: any) => {
     event.preventDefault();
-    if (!isDraggingRef.current||clickNumRef.current===0) {
+    if (!isDraggingRef.current || clickNumRef.current === 0) {
       handleClick(event);
       clickNumRef.current += 1;
     }
@@ -233,6 +265,7 @@ const MapModel = () => {
         setTimeout(() => {
           setShowTag(true);
           showTagRef.current = true;
+          console.log(intersect.point)
           setLabelPosition(intersect.point);
         },300)
         setMeshColor(intersect.object.uuid)
@@ -295,22 +328,19 @@ const MapModel = () => {
             child.position.y += speed2;
           }
         })
+        flowLight.position.y += speed2;
       }
     }
   })
   return (
     <>
       <primitive ref={partRef} object={scene} scale={1} position={[0, -22, 0]} />
-      {
-        labelPosition.x !== 0 && (
-          <PointLabel
-            position={labelPosition}
-            scale={labelScale}
-            label={labelText}
-            visible={showTag}
-          />
-        )
-      }
+      <PointLabel
+        position={labelPosition}
+        scale={labelScale}
+        label={labelText}
+        visible={showTag}
+      />
       {
         labelPosition.x !== 0 &&<FlyLine position={labelPosition} />
       }
