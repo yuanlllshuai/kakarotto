@@ -81,7 +81,3 @@ export function makeXYZGUI(gui: any, vector3: any, name: any, onChangeFn: any) {
 }
 
 export const DEFAULT_SIZE = { width: window.innerWidth, height: window.innerHeight };
-
-export type StartProps = {
-  animateHandle?: (time: number, instence: Base) => void
-}

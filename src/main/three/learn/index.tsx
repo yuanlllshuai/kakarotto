@@ -8,8 +8,8 @@ const Index = () => {
     const lineRef = useRef<any>(null);
 
     const load = (size: any) => {
-        lineRef.current = new Box({ id: 'threeBox', size, axesHelper: true, light: false });
-        lineRef.current.start({ animateHandle:false });
+        lineRef.current = new Box({ id: 'threeBox', size, axesHelper: true, light: false, animateHandle: false });
+        lineRef.current.start();
     };
 
     const animateHandle = (time: number, ins: any) => {
@@ -19,9 +19,9 @@ const Index = () => {
     }
 
     useResize({
-        once: true,
-        container: domRef,
-        cb: load
+      // once: true,
+      container: domRef,
+      cb: load
     });
 
     return (

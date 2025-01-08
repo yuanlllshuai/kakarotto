@@ -8,19 +8,19 @@ const Index = () => {
     const lineRef = useRef<any>(null);
 
     const load = (size: any) => {
-        lineRef.current = new SolarSystem({ id: 'threeSolar', size, axesHelper: true });
-        lineRef.current.start({ animateHandle });
+        lineRef.current = new SolarSystem({ id: 'threeSolar', size, axesHelper: true, animateHandle });
+        lineRef.current.start();
     };
 
     const animateHandle = (time: number, ins: any) => {
         time *= 0.001;
         ins.objects.forEach((i: any) => {
-            i.rotation.y = time;
+          i.rotation.y = time;
         });
     }
 
     useResize({
-        once: true,
+        // once: true,
         container: domRef,
         cb: load
     });

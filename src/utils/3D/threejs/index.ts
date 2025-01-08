@@ -4,9 +4,10 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 //@ts-ignore
 // import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { GUI } from 'lil-gui';
-import { ColorGUIHelper, DegRadHelper, makeXYZGUI, DEFAULT_SIZE, StartProps } from './common';
+import { ColorGUIHelper, DegRadHelper, makeXYZGUI, DEFAULT_SIZE } from './common';
 
 export class Base {
+  private renderRequested: boolean = false;
 
   renderer: any;
   camera: any;
@@ -14,9 +15,12 @@ export class Base {
   cube: any;
   geometry: any;
   material: any;
-  axesHelper?: boolean
+  controls: any;
+  axesHelper?: boolean;
+  animateHandle?: ((time: number, ins: any) => void) | null;
 
-  constructor({ id = '', size = DEFAULT_SIZE, axesHelper = false, light = false }) {
+  constructor({ id = '', size = DEFAULT_SIZE, axesHelper = false, light = false, animateHandle = null }) {
+    this.animateHandle = animateHandle;
     // 创建画布区域
     this.init(id);
     // 创建场景
@@ -78,7 +82,12 @@ export class Base {
   }
 
   setController() {
-    new OrbitControls(this.camera, this.renderer.domElement)
+    const that = this;
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    if (!this.animateHandle) {
+      this.controls.enableDamping = true;
+      this.controls.addEventListener('change', () => that.requestRenderIfNotRequested());
+    }
   }
 
   setAxesHelper() {
@@ -95,24 +104,40 @@ export class Base {
   getCamera() {
     return this.camera
   }
-  render(time: number, that: any, props: StartProps) {
+
+  requestRenderIfNotRequested() {
+    if (!this.renderRequested) {
+      this.renderRequested = true;
+      requestAnimationFrame(() => this.start());
+    }
+  }
+  
+  render(that: any, time: number = 0) {
+    this.renderRequested = false;
+    this.controls.update();
     if (this.resizeRendererToDisplaySize(that.renderer)) {
       const canvas = that.renderer.domElement;
       // 将相机宽高比设为canvas的宽高比，解决拉伸问题
       that.camera.aspect = canvas.clientWidth / canvas.clientHeight;
       that.camera.updateProjectionMatrix();
     }
-    if (props?.animateHandle) {
-      props?.animateHandle(time, that);
+    if (this.animateHandle) {
+      this.animateHandle(time, that);
     }
     that.renderer.render(that.scene, that.camera);
-    requestAnimationFrame((time: number) => that.render(time, that, props));
+    if (this.animateHandle) {
+      requestAnimationFrame((time: number) => that.render(that, time));
+    }
   }
 
-  start(props: StartProps) {
+  start() {
     const that = this;
-    // 自动旋转、拖拽、缩放均需循环渲染
-    requestAnimationFrame((time: number) => that.render(time, that, props));
+    if (this.animateHandle) {
+      // 自动旋转、拖拽、缩放均需循环渲染
+      requestAnimationFrame((time: number) => that.render(that, time));
+    } else {
+      that.render(that)
+    }
   }
 }
 
@@ -149,25 +174,26 @@ export class Box extends Base {
   addGround() {
     const planeSize = 16;
     const loader = new THREE.TextureLoader();
-    const texture = loader.load('/gltf_models/common/checker.png');
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.magFilter = THREE.NearestFilter;
-    texture.colorSpace = THREE.SRGBColorSpace;
-    const repeats = planeSize / 2;
-    texture.repeat.set(repeats, repeats);
-    const planeGeo = new THREE.PlaneGeometry(planeSize, planeSize);
-    // Reflect.deleteProperty(planeGeo.attributes, 'normal');
-    // Reflect.deleteProperty(planeGeo.attributes, 'uv');
-    const planeMat = new THREE.MeshStandardMaterial({
-      map: texture,
-      side: THREE.DoubleSide,
+    loader.load('/gltf_models/common/checker.png', (texture) => {
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.magFilter = THREE.NearestFilter;
+      texture.colorSpace = THREE.SRGBColorSpace;
+      const repeats = planeSize / 2;
+      texture.repeat.set(repeats, repeats);
+      const planeGeo = new THREE.PlaneGeometry(planeSize, planeSize);
+      // Reflect.deleteProperty(planeGeo.attributes, 'normal');
+      // Reflect.deleteProperty(planeGeo.attributes, 'uv');
+      const planeMat = new THREE.MeshStandardMaterial({
+        map: texture,
+        side: THREE.DoubleSide,
+      });
+  
+      const mesh = new THREE.Mesh(planeGeo, planeMat);
+      mesh.rotation.x = Math.PI * -.5;
+      this.scene.add(mesh);
+      this.start();
     });
-    console.log(planeMat)
-
-    const mesh = new THREE.Mesh(planeGeo, planeMat);
-    mesh.rotation.x = Math.PI * -.5;
-    this.scene.add(mesh);
   }
 
   // 半球光（环境光AmbientLight的替代方案）

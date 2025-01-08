@@ -8,8 +8,8 @@ const InstancedGridOfSquares = memo(() => {
   const { camera } = useThree();
 
   useEffect(() => {
-    const numSquaresPerRow = 200;
-    const numSquaresPerColumn = 200;
+    const numSquaresPerRow = 400;
+    const numSquaresPerColumn = 400;
     const totalSquares = numSquaresPerRow * numSquaresPerColumn;
     const geometry = new THREE.PlaneGeometry(0.06, 0.06);
     const material = new THREE.MeshBasicMaterial({
@@ -47,8 +47,8 @@ const InstancedGridOfSquares = memo(() => {
 
   useFrame(() => {
     if (instancedMeshRef.current) {
-      const numSquaresPerRow = 200;
-      const numSquaresPerColumn = 200;
+      const numSquaresPerRow = 400;
+      const numSquaresPerColumn = 400;
       const totalSquares = numSquaresPerRow * numSquaresPerColumn;
       const cameraPosition = camera.position;
       const upVector = new THREE.Vector3(0, 1, 0);

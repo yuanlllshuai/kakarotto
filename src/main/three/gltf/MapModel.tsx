@@ -14,7 +14,7 @@ import Wave from './Wave';
 
 import mapHeightPng from '../res/border.png';
 
-const MapModel = () => {
+const MapModel = ({begin}:any) => {
   const { raycaster, camera, mouse } = useThree();
   const { scene } = useGLTF('/gltf_models/map/map.gltf');
   // const { scene } = useGLTF('http://111.229.183.248/gltf_models/girl/scene.gltf');
@@ -66,7 +66,7 @@ const MapModel = () => {
 
   useEffect(() => {
     if (partRef.current) {
-      // console.log(scene)
+      console.log(scene)
       const blockColors: any = {};
       (partRef.current as any).traverse((child: any) => {
         if (child.isMesh) {
@@ -93,9 +93,9 @@ const MapModel = () => {
         }
       });
       blockColorMapRef.current = blockColors;
-      setTimeout(() => {
-        beginRef.current = true;
-      },1000)
+      // setTimeout(() => {
+      //   beginRef.current = true;
+      // },1000)
     }
   }, [partRef.current]);
 
@@ -110,12 +110,18 @@ const MapModel = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (begin) {
+      beginRef.current = true;
+    }
+  },[begin])
+
   // 处理市区
   const dealCity = (mesh: any) => {
     mesh.material.side = THREE.DoubleSide;
     mesh.material.transparent = true;
     mesh.material.opacity = 0.7;
-    mesh.position.y -= 0.46;
+    mesh.position.y -=0.46;
   }
 
   const filterPoints = (points: any) => {
@@ -155,13 +161,14 @@ const MapModel = () => {
   const dealFlowLight = (mesh: any) => {
     const edgesGeometry = new THREE.EdgesGeometry(mesh.geometry);
     const positions = edgesGeometry.attributes.position.array;
+    // console.log(edgesGeometry.attributes.position.count)
     const vertices = filterPoints(positions);
     const len = vertices.length;
-    console.log(len)
+    // console.log(len)
     const curve = new THREE.CatmullRomCurve3(vertices, false);
     const points = curve.getPoints(len);
     const smoothCurve = new THREE.CatmullRomCurve3(points, false); 
-    const tubeGeometry = new THREE.TubeGeometry(smoothCurve, len, 0.1, 8, false);
+    const tubeGeometry = new THREE.TubeGeometry(smoothCurve, len, 0.08, 8, false);
     
     const canvas = document.createElement('canvas');
     canvas.width = 1;
@@ -170,7 +177,7 @@ const MapModel = () => {
     const gradient = context.createLinearGradient(0, 0, 0, 100);
     const createGradient = (gradient: any, color: string) => {
       gradient.addColorStop(0, color);
-      gradient.addColorStop(0.1, color);
+      gradient.addColorStop(0.1, 'rgba(255,255,255,0)');
       gradient.addColorStop(0.2, 'rgba(255,255,255,0)');
       gradient.addColorStop(0.3, 'rgba(255,255,255,0)');
       gradient.addColorStop(0.4, 'rgba(255,255,255,0)');
@@ -199,8 +206,8 @@ const MapModel = () => {
     tubeMesh.position.copy(mesh.position);
     tubeMesh.rotation.copy(mesh.rotation);
     tubeMesh.scale.copy(mesh.scale);
-    tubeMesh.position.y = -0.46;
-    tubeMesh.scale.z = 0.2;
+    tubeMesh.position.y = -0.4;
+    tubeMesh.scale.z = 0.4;
     setFlowLight(tubeMesh);
 
     // 边缘线
@@ -219,9 +226,10 @@ const MapModel = () => {
     mesh.material.map = mapTexture;
     mesh.material.metalness = 0;
     borderMeshRef.current = mesh;
+    mesh.geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0.28, 0));
     mapOriginHeightRef.current = mesh.position.y;
     borderMeshRef.current.scale.y = 0.01;
-    borderMeshRef.current.position.y -= 0.27;
+    borderMeshRef.current.position.y = -0.8;
   }
 
   const handleMouseDown = (event: any) => {
@@ -300,13 +308,13 @@ const MapModel = () => {
       setLabelScale(Math.max(0.7, Math.min(0.8, newScale)));
     }
 
-    // 地图高度动画
+    // 地图边缘纹理动画
     mapHeightCountRef.current += 0.01;
     mapTexture.offset.y = 1 - mapHeightCountRef.current % 1;
 
     // 流光动画
     if (flowLightTexture) {
-      mapBorderCountRef.current += 0.001;
+      mapBorderCountRef.current += 0.0005;
       flowLightTexture.offset.y = 1 - mapBorderCountRef.current % 1;
     }
     
@@ -317,17 +325,16 @@ const MapModel = () => {
       
       if (borderMeshRef.current && borderMeshRef.current.scale.y < 1) {
         const speed = 1 / times;
+        // 地图厚度增加
         borderMeshRef.current.scale.y += speed;
-      }
-      if (borderMeshRef.current && borderMeshRef.current.position.y < mapOriginHeightRef.current / 2) {
-        const speed= 0.27 / times
-        borderMeshRef.current.position.y += speed;
-        const speed2 = 0.48 / times;
+        const speed2 = 0.96 / times;
+        // 地面高度增加
         (partRef.current as any).children[2].children[0].children.forEach((child: any) => {
           if (child.isMesh && child.name.includes('市')) { 
             child.position.y += speed2;
           }
         })
+        // 流光高度增加
         flowLight.position.y += speed2;
       }
     }
