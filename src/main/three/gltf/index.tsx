@@ -19,8 +19,8 @@ const Camera = ({ setBegin, begin }: any) => {
   const points=useRef<any>([]);
 
   useEffect(() => {
-    const beginPos = [-14, 12, 8];
-    const endPos = [-10, 10, 12];
+    const beginPos = [-18, 12, 12];
+    const endPos = [-10, 10, 20];
     const center = [
       (beginPos[0] + endPos[0]) / 2,
       (beginPos[1] + endPos[1]) / 2,

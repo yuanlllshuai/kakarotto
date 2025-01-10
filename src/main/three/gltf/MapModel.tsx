@@ -11,6 +11,7 @@ import FlyLine from './FlyLine';
 import OriginPoint from './OriginPoint';
 import InstancedGridOfSquares from './InstancedGridOfSquares';
 import Wave from './Wave';
+import Name from './Name';
 
 import mapHeightPng from '../res/border.png';
 
@@ -66,7 +67,7 @@ const MapModel = ({begin}:any) => {
 
   useEffect(() => {
     if (partRef.current) {
-      console.log(scene)
+      // console.log(scene)
       const blockColors: any = {};
       (partRef.current as any).traverse((child: any) => {
         if (child.isMesh) {
@@ -81,6 +82,9 @@ const MapModel = ({begin}:any) => {
           }
           if (child.name.includes('挤压')) {
             dealFlowLight(child);
+          }
+          if (child.name.includes('光柱')) {
+            child.visible = false;
           }
           if (child.name === '底') {
             child.material.transparent = true;
@@ -356,6 +360,7 @@ const MapModel = ({begin}:any) => {
       <Wave />
       {/* {borderLine && <primitive object={borderLine} />} */}
       {flowLight && (<primitive object={flowLight} />)}
+      <Name/>
     </>
   )
 }

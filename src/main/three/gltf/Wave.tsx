@@ -12,8 +12,8 @@ const Wave = memo(() => {
   useFrame(() => {
     if (circleRef.current) {
       countRef.current += 0.2;
-      const r = 0 + countRef.current % 30;
-      const o = 1 - (countRef.current/30) % 1;
+      const r = 0 + countRef.current % 40;
+      const o = 1 - (countRef.current/40) % 1;
       setRadius(r);
       setOpacity(o);
     }
@@ -34,7 +34,7 @@ const Wave = memo(() => {
     gradient.addColorStop(0.4, 'rgba(0,0,0,0)');
     gradient.addColorStop(0.5, 'rgba(0 ,191, 255,0.2)');
     gradient.addColorStop(0.6, 'rgba(0 ,191, 255,0.5)');
-    gradient.addColorStop(0.7, 'rgba(0 ,191 ,255,0.8)');
+    gradient.addColorStop(0.7, 'rgba(0 ,191 ,255,0.7)');
     gradient.addColorStop(0.8, 'rgba(0 ,191 ,255,0.5)');
     gradient.addColorStop(0.9, 'rgba(0 ,191 ,255,0.1)');
     gradient.addColorStop(1, 'rgba(0,0,0,0)');
@@ -51,7 +51,7 @@ const Wave = memo(() => {
       position={[0, -0.4, 0]}
       rotation-x={Math.PI / 2}
     >
-      <circleGeometry args={[radius, 32]} />
+      <circleGeometry args={[radius, 40]} />
       <meshBasicMaterial
         // color="#FFF"
         map={createGradientTexture}
