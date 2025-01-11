@@ -181,6 +181,7 @@ const MapModel = ({begin}:any) => {
     const gradient = context.createLinearGradient(0, 0, 0, 100);
     const createGradient = (gradient: any, color: string) => {
       gradient.addColorStop(0, color);
+      gradient.addColorStop(0.05, color);
       gradient.addColorStop(0.1, 'rgba(255,255,255,0)');
       gradient.addColorStop(0.2, 'rgba(255,255,255,0)');
       gradient.addColorStop(0.3, 'rgba(255,255,255,0)');
@@ -277,7 +278,6 @@ const MapModel = ({begin}:any) => {
         setTimeout(() => {
           setShowTag(true);
           showTagRef.current = true;
-          console.log(intersect.point)
           setLabelPosition(intersect.point);
         },300)
         setMeshColor(intersect.object.uuid)
