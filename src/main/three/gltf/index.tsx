@@ -11,27 +11,41 @@ import * as THREE from 'three';
 
 import MapModel from './MapModel';
 
-const Camera = () => {
+const Camera = ({ setBegin, begin }: any) => {
+  const [curve, setCurve] = useState<any>();
+
   const cameraRef = useRef<any>(null);
   const count = useRef(0);
+  const points=useRef<any>([]);
 
-  // 定义贝塞尔曲线的起点、控制点和终点
-  const startPoint = new THREE.Vector3(20, 10, 20);
-  const controlPoint1 = new THREE.Vector3(30, 10, -30); // 第一个控制点
-  const controlPoint2 = new THREE.Vector3(2, 6, -20); // 第二个控制点
-  const endPoint = new THREE.Vector3(-12, 6, -12);
-
-  // 创建贝塞尔曲线
-  const curve = new THREE.CubicBezierCurve3(startPoint, controlPoint1, controlPoint2, endPoint);
-  const points = curve.getPoints(200);
+  useEffect(() => {
+    const beginPos = [-18, 12, 12];
+    const endPos = [-10, 10, 20];
+    const center = [
+      (beginPos[0] + endPos[0]) / 2,
+      (beginPos[1] + endPos[1]) / 2,
+      (beginPos[2] + endPos[2]) / 2,
+    ];
+    const curve = new THREE.QuadraticBezierCurve3(
+      new THREE.Vector3(...beginPos),
+      new THREE.Vector3(...center),
+      new THREE.Vector3(...endPos)
+    );
+    const pArr = curve.getPoints(80);
+    points.current = pArr;
+    setCurve(curve);
+  },[])
 
   useFrame(() => {
-    if (cameraRef.current) {
-      if (count.current < points.length) {
-        points[count.current].x&&(cameraRef.current.position.x = points[count.current].x);
-        points[count.current].y&&(cameraRef.current.position.y = points[count.current].y);
-        points[count.current].z&&(cameraRef.current.position.z = points[count.current].z);
+    if (cameraRef.current && points.current) {
+      const p = points.current;
+      if (count.current < p.length) {
+        p[count.current].x&&(cameraRef.current.position.x = p[count.current].x);
+        p[count.current].y&&(cameraRef.current.position.y = p[count.current].y);
+        p[count.current].z&&(cameraRef.current.position.z = p[count.current].z);
         count.current += 1;
+      } else if (!begin) {
+        setBegin(true)
       }
     }
   });
@@ -42,17 +56,21 @@ const Camera = () => {
         ref={cameraRef}
         makeDefault
         args={[75, window.innerWidth / window.innerHeight, 0.1, 1000]}
-        position={[20, 10, 20]}
+        position={[-14, 6, 10]}
       />
-      {/* <mesh>
-        <tubeGeometry
-          args={[curve, 100, 0.02, 10, false]}
-        />
-        <meshBasicMaterial
-          side={THREE.DoubleSide}
-          color={new THREE.Color('red')}
-        />
-      </mesh> */}
+      {/* {
+        curve && (
+          <mesh>
+            <tubeGeometry
+              args={[curve, 100, 0.02, 10, false]}
+            />
+            <meshBasicMaterial
+              side={THREE.DoubleSide}
+              color={new THREE.Color('red')}
+            />
+          </mesh>
+        )
+      } */}
     </>
   )
 }
@@ -76,10 +94,12 @@ function Index() {
         <Canvas
           shadows
           // camera={{ position: [20, 6, 20] }}
-          scene={{ background: new THREE.Color('rgb(2, 3, 34)') }}
+          scene={{
+            background: new THREE.Color('rgb(2, 3, 34)'),
+          }}
         >
           {/* <axesHelper scale={100} /> */}
-          <Camera/>
+          <Camera begin={begin} setBegin={setBegin} />
           <OrbitControls makeDefault />
           <ambientLight intensity={3} />
           {/* <pointLight position={[100, 100, 100]} decay={0} intensity={2} /> */}

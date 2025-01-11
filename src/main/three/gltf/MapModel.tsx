@@ -181,7 +181,6 @@ const MapModel = ({begin}:any) => {
     const gradient = context.createLinearGradient(0, 0, 0, 100);
     const createGradient = (gradient: any, color: string) => {
       gradient.addColorStop(0, color);
-      gradient.addColorStop(0.05, color);
       gradient.addColorStop(0.1, 'rgba(255,255,255,0)');
       gradient.addColorStop(0.2, 'rgba(255,255,255,0)');
       gradient.addColorStop(0.3, 'rgba(255,255,255,0)');
