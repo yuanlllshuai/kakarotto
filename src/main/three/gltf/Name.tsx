@@ -1,19 +1,19 @@
 import { Html } from '@react-three/drei';
-import style from './style.module.css';
+import style from './style.module.scss';
 
-const PointLabel = () => {
+const PointLabel = ({begin}:{begin:boolean}) => {
 
   return (
     <>
       <Html
-        position={[-4, 0, 10]}
+        position={[-4, 0.4, 10]}
         rotation-y={-Math.PI / 8}
         transform={true}
         style={{}}
-        className={style.reflect}
+        className={begin?style.reflect:style.reflect_hide}
       >
         <div>河南省</div>
-        <div style={{fontSize:16}}>HENANSHENG</div>
+        <div style={{fontSize:13}}>HENAN PROVINCE</div>
       </Html>
     </>
   );

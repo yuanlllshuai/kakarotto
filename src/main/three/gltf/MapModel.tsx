@@ -359,7 +359,7 @@ const MapModel = ({begin}:any) => {
       <Wave />
       {/* {borderLine && <primitive object={borderLine} />} */}
       {flowLight && (<primitive object={flowLight} />)}
-      <Name/>
+      <Name begin={ begin} />
     </>
   )
 }
