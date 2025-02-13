@@ -51,8 +51,6 @@ const MapModel = ({begin}:any) => {
   const mapBorderCountRef = useRef(0);
   // 地图高度边缘
   const borderMeshRef = useRef<any>();
-  // 地图原始高度
-  const mapOriginHeightRef = useRef(0);
   // 是否开始动画
   const beginRef = useRef(false);
 
@@ -66,10 +64,10 @@ const MapModel = ({begin}:any) => {
   mapTexture.rotation = Math.PI;
 
   useEffect(() => {
-    if (partRef.current) {
-      // console.log(scene)
+    if (scene) {
+      console.log(scene)
       const blockColors: any = {};
-      (partRef.current as any).traverse((child: any) => {
+      scene.traverse((child: any) => {
         if (child.isMesh) {
           if (child.name.includes('市')) {
             const hsl = { h: 0, s: 0, l: 0 };
@@ -101,7 +99,7 @@ const MapModel = ({begin}:any) => {
       //   beginRef.current = true;
       // },1000)
     }
-  }, [partRef.current]);
+  }, [scene]);
 
   useEffect(() => {
     window.addEventListener('mousedown', handleMouseDown);
@@ -125,9 +123,11 @@ const MapModel = ({begin}:any) => {
     mesh.material.side = THREE.DoubleSide;
     mesh.material.transparent = true;
     mesh.material.opacity = 0.7;
-    mesh.position.y -=0.46;
+    // 0.165
+    mesh.position.y = -0.8;
   }
 
+  // 过滤不正确的坐标点
   const filterPoints = (points: any) => {
     const offsetX = 0.6;
     const offsetY = 0.8;
@@ -229,11 +229,10 @@ const MapModel = ({begin}:any) => {
   const dealBorder = (mesh: any) => {
     mesh.material.map = mapTexture;
     mesh.material.metalness = 0;
+    mesh.scale.y = 0.01;
+    mesh.position.y = -0.8;
+    mesh.geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0.52, 0));
     borderMeshRef.current = mesh;
-    mesh.geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0.28, 0));
-    mapOriginHeightRef.current = mesh.position.y;
-    borderMeshRef.current.scale.y = 0.01;
-    borderMeshRef.current.position.y = -0.8;
   }
 
   const handleMouseDown = (event: any) => {
@@ -317,7 +316,7 @@ const MapModel = ({begin}:any) => {
 
     // 流光动画
     if (flowLightTexture) {
-      mapBorderCountRef.current += 0.0005;
+      mapBorderCountRef.current += 0.001;
       flowLightTexture.offset.y = 1 - mapBorderCountRef.current % 1;
     }
     
@@ -330,7 +329,7 @@ const MapModel = ({begin}:any) => {
         const speed = 1 / times;
         // 地图厚度增加
         borderMeshRef.current.scale.y += speed;
-        const speed2 = 0.96 / times;
+        const speed2 = (0.165+0.8) / times;
         // 地面高度增加
         (partRef.current as any).children[2].children[0].children.forEach((child: any) => {
           if (child.isMesh && child.name.includes('市')) { 
