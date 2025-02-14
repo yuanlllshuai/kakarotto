@@ -16,7 +16,8 @@ export const navConfig = [
             { key: 'learn', label: '学习', path: '/three/index' },
             { key: 'line', label: 'Gltf', path: '/three/gltf' },
             { key: 'pie', label: '太阳系', path: '/three/solar' },
-            { key: 'pie', label: '测试', path: '/three/test' },
+            { key: 'pie', label: '地图平面', path: '/three/map-plane' },
+            { key: 'pie', label: '着色器', path: '/three/shader' },
         ]
     },
     { key: 'settings', label: '设置', icon: 'settings', path: '/settings' },
