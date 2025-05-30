@@ -2,9 +2,12 @@ import { useEffect, useState, useRef } from 'react'
 import { useThree, useFrame } from '@react-three/fiber'
 import {
   useGLTF,
-  useTexture
+  useTexture,
+  Cylinder 
 } from '@react-three/drei';
 import * as THREE from 'three';
+import { EffectComposer, SelectiveBloom } from '@react-three/postprocessing';
+import { BlurPass, Resolution, KernelSize } from 'postprocessing'
 
 import PointLabel from './PointLabel';
 import FlyLine from './FlyLine';
@@ -53,6 +56,8 @@ const MapModel = ({begin}:any) => {
   const borderMeshRef = useRef<any>();
   // 是否开始动画
   const beginRef = useRef(false);
+  const cylinderRef = useRef<any>(null);
+  const flylineRef = useRef<any>(null);
 
   // 地图边缘纹理
   const [mapTexture] = useTexture([mapHeightPng]);
@@ -357,8 +362,23 @@ const MapModel = ({begin}:any) => {
       <InstancedGridOfSquares />
       <Wave />
       {/* {borderLine && <primitive object={borderLine} />} */}
-      {flowLight && (<primitive object={flowLight} />)}
-      <Name begin={ begin} />
+      {flowLight && (<primitive object={flowLight} ref={ flylineRef} />)}
+      <Name begin={begin} />
+      <Cylinder  position={[0, 3, 0]}  args={[0.1, 0.1, 5, 32]} ref={cylinderRef} >
+        <meshStandardMaterial color="cyan" emissive="cyan" emissiveIntensity={1} />
+      </Cylinder >
+      <EffectComposer>
+        <SelectiveBloom
+          selection={[cylinderRef]} // 只对圆柱体应用辉光
+          intensity={0.5} // 辉光强度
+          luminanceThreshold={0.1} // 亮度阈值
+          luminanceSmoothing={0.5} // 亮度平滑度
+          width={Resolution.AUTO_SIZE} // render width
+          height={Resolution.AUTO_SIZE} // render height
+          kernelSize={KernelSize.LARGE} // blur kernel size
+          radius={0.4}  
+        />
+      </EffectComposer>
     </>
   )
 }

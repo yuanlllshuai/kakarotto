@@ -12,6 +12,7 @@
   "dependencies": {
     "@react-three/drei": "^9.105.6",
     "@react-three/fiber": "^8.16.3",
+    "@react-three/postprocessing": "2.16.5",
     "@types/three": "^0.164.0",
     "antd": "^5.17.4",
     "axios": "^1.6.8",
@@ -20,6 +21,7 @@
     "localforage": "^1.10.0",
     "lodash": "^4.17.21",
     "match-sorter": "^6.3.4",
+    "postprocessing": "^6.37.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-github-calendar": "^4.1.3",
