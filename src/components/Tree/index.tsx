@@ -65,7 +65,7 @@ const Index: FC<IndexProps> = ({ data }) => {
                 </div>
                 {
                     haveChildren && (
-                        routes.includes(key) ? <Icon name='xiadown' size="16" /> : <Icon name='shangup' size="16" />
+                        routes.includes(key) ? <Icon name='shangup' size="16" /> : <Icon name='xiadown' size="16" />
                     )
                 }
             </>

@@ -1,6 +1,6 @@
-import { useEffect, useState, useRef, memo } from 'react'
-import { useThree, useFrame } from '@react-three/fiber'
-import * as THREE from 'three';
+import { useEffect, useState, useRef, memo } from "react";
+import { useThree, useFrame } from "@react-three/fiber";
+import * as THREE from "three";
 
 const InstancedGridOfSquares = memo(() => {
   const instancedMeshRef = useRef<any>(null);
@@ -13,16 +13,21 @@ const InstancedGridOfSquares = memo(() => {
     const totalSquares = numSquaresPerRow * numSquaresPerColumn;
     const geometry = new THREE.PlaneGeometry(0.06, 0.06);
     const material = new THREE.MeshBasicMaterial({
-      color: 0x1E90FF,
+      color: 0x1e90ff,
       // vertexColors:true,
       transparent: true,
       opacity: 0.5,
       side: THREE.DoubleSide,
+
       // depthWrite:false,
       // depthTest:false
     });
-  
-    const instancedMesh = new THREE.InstancedMesh(geometry, material, totalSquares);
+
+    const instancedMesh = new THREE.InstancedMesh(
+      geometry,
+      material,
+      totalSquares
+    );
     // const colors = new Float32Array(totalSquares * 3);
     // for (let i = 0; i < totalSquares; i++) {
     //   colors[i * 3] = 0; // Red component
@@ -42,7 +47,6 @@ const InstancedGridOfSquares = memo(() => {
     }
     instancedMesh.position.y = -0.4;
     setInstancedMesh(instancedMesh);
-
   }, []);
 
   useFrame(() => {
@@ -65,15 +69,10 @@ const InstancedGridOfSquares = memo(() => {
   });
 
   if (!instancedMesh) {
-    return <></>
+    return <></>;
   }
 
-  return (
-    <primitive
-      object={instancedMesh}
-      ref={instancedMeshRef}
-    />
-  ); 
+  return <primitive object={instancedMesh} ref={instancedMeshRef} />;
 });
 
 export default InstancedGridOfSquares;

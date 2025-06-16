@@ -32,10 +32,10 @@ const Wave = memo(() => {
     gradient.addColorStop(0.2, 'rgba(0,0,0,0)');
     gradient.addColorStop(0.3, 'rgba(0,0,0,0)');
     gradient.addColorStop(0.4, 'rgba(0,0,0,0)');
-    gradient.addColorStop(0.5, 'rgba(0 ,191, 255,0.2)');
-    gradient.addColorStop(0.6, 'rgba(0 ,191, 255,0.5)');
-    gradient.addColorStop(0.7, 'rgba(0 ,191 ,255,0.7)');
-    gradient.addColorStop(0.8, 'rgba(0 ,191 ,255,0.5)');
+    gradient.addColorStop(0.5, 'rgba(0 ,191, 255,0.1)');
+    gradient.addColorStop(0.6, 'rgba(0 ,191, 255,0.3)');
+    gradient.addColorStop(0.7, 'rgba(0 ,191 ,255,0.5)');
+    gradient.addColorStop(0.8, 'rgba(0 ,191 ,255,0.3)');
     gradient.addColorStop(0.9, 'rgba(0 ,191 ,255,0.1)');
     gradient.addColorStop(1, 'rgba(0,0,0,0)');
     context.fillStyle = gradient;
