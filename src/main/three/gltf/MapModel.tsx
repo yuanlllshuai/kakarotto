@@ -1,9 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
-import { useGLTF, useTexture, Cylinder } from "@react-three/drei";
+import { useGLTF, useTexture, CycleRaycast } from "@react-three/drei";
 import * as THREE from "three";
-import { EffectComposer, SelectiveBloom } from "@react-three/postprocessing";
-import { KernelSize } from "postprocessing";
 
 import PointLabel from "./PointLabel";
 import FlyLine from "./FlyLine";
@@ -11,6 +9,7 @@ import OriginPoint from "./OriginPoint";
 import InstancedGridOfSquares from "./InstancedGridOfSquares";
 import Wave from "./Wave";
 import Name from "./Name";
+import LightCylinder from "./LightCylinder";
 
 import mapHeightPng from "../res/border.png";
 
@@ -30,7 +29,11 @@ const MapModel = ({ begin }: any) => {
   // 流光纹理
   const [flowLightTexture, setFlowLightTexture] = useState<any>();
 
-  const [borderLine, setBorderLine] = useState<any>();
+  // const [borderLine, setBorderLine] = useState<any>();
+  // 地图动画是否结束
+  const [mapAnimationEnd, setMapAnimationEnd] = useState(false);
+
+  const [composerBegin, setComposerBegin] = useState(false);
 
   // 地图ref
   const partRef = useRef();
@@ -52,7 +55,6 @@ const MapModel = ({ begin }: any) => {
   const borderMeshRef = useRef<any>();
   // 是否开始动画
   const beginRef = useRef(false);
-  const cylinderRef = useRef<any[]>([]);
   const flylineRef = useRef<any>(null);
 
   // 地图边缘纹理
@@ -65,8 +67,13 @@ const MapModel = ({ begin }: any) => {
   mapTexture.rotation = Math.PI;
 
   useEffect(() => {
+    if (mapTexture) {
+      setComposerBegin(true);
+    }
+  }, [mapTexture]);
+
+  useEffect(() => {
     if (scene) {
-      console.log(scene);
       const blockColors: any = {};
       scene.traverse((child: any) => {
         if (child.isMesh) {
@@ -96,22 +103,19 @@ const MapModel = ({ begin }: any) => {
         }
       });
       blockColorMapRef.current = blockColors;
-      // setTimeout(() => {
-      //   beginRef.current = true;
-      // },1000)
     }
   }, [scene]);
 
-  useEffect(() => {
-    window.addEventListener("mousedown", handleMouseDown);
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-    return () => {
-      window.removeEventListener("mousedown", handleMouseDown);
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, []);
+  // useEffect(() => {
+  //   window.addEventListener("mousedown", handleMouseDown);
+  //   window.addEventListener("mousemove", handleMouseMove);
+  //   window.addEventListener("mouseup", handleMouseUp);
+  //   return () => {
+  //     window.removeEventListener("mousedown", handleMouseDown);
+  //     window.removeEventListener("mousemove", handleMouseMove);
+  //     window.removeEventListener("mouseup", handleMouseUp);
+  //   };
+  // }, []);
 
   useEffect(() => {
     if (begin) {
@@ -169,10 +173,8 @@ const MapModel = ({ begin }: any) => {
   const dealFlowLight = (mesh: any) => {
     const edgesGeometry = new THREE.EdgesGeometry(mesh.geometry);
     const positions = edgesGeometry.attributes.position.array;
-    // console.log(edgesGeometry.attributes.position.count)
     const vertices = filterPoints(positions);
     const len = vertices.length;
-    // console.log(len)
     const curve = new THREE.CatmullRomCurve3(vertices, false);
     const points = curve.getPoints(len);
     const smoothCurve = new THREE.CatmullRomCurve3(points, false);
@@ -225,21 +227,21 @@ const MapModel = ({ begin }: any) => {
     setFlowLight(tubeMesh);
 
     // 边缘线
-    const lineGeometry = new THREE.BufferGeometry();
-    lineGeometry.setAttribute(
-      "position",
-      new THREE.BufferAttribute(positions, 3)
-    );
-    const lineMaterial = new THREE.LineBasicMaterial({
-      color: 0xffffff,
-      linewidth: 1,
-    });
-    const line = new THREE.LineSegments(lineGeometry, lineMaterial);
-    line.position.copy(mesh.position);
-    line.rotation.copy(mesh.rotation);
-    line.scale.copy(mesh.scale);
-    line.position.y = 0.56;
-    setBorderLine(line);
+    // const lineGeometry = new THREE.BufferGeometry();
+    // lineGeometry.setAttribute(
+    //   "position",
+    //   new THREE.BufferAttribute(positions, 3)
+    // );
+    // const lineMaterial = new THREE.LineBasicMaterial({
+    //   color: 0xffffff,
+    //   linewidth: 1,
+    // });
+    // const line = new THREE.LineSegments(lineGeometry, lineMaterial);
+    // line.position.copy(mesh.position);
+    // line.rotation.copy(mesh.rotation);
+    // line.scale.copy(mesh.scale);
+    // line.position.y = 0.56;
+    // setBorderLine(line);
   };
 
   const dealBorder = (mesh: any) => {
@@ -247,47 +249,70 @@ const MapModel = ({ begin }: any) => {
     mesh.material.metalness = 0;
     mesh.scale.y = 0.01;
     mesh.position.y = -0.8;
-    mesh.geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0.52, 0));
+    // mesh.position.y = -0.26;
+    // mesh.geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0.52, 0));
     borderMeshRef.current = mesh;
   };
 
-  const handleMouseDown = (event: any) => {
-    event.preventDefault();
-    isDraggingRef.current = false;
-    isClickDownRef.current = true;
-  };
+  // const handleMouseDown = (event: any) => {
+  //   event.preventDefault();
+  //   isDraggingRef.current = false;
+  //   isClickDownRef.current = true;
+  // };
 
-  const handleMouseMove = (event: any) => {
-    event.preventDefault();
-    if (isClickDownRef.current) {
-      isDraggingRef.current = true;
-    } else {
-      isDraggingRef.current = false;
-    }
-  };
+  // const handleMouseMove = (event: any) => {
+  //   event.preventDefault();
+  //   if (isClickDownRef.current) {
+  //     isDraggingRef.current = true;
+  //   } else {
+  //     isDraggingRef.current = false;
+  //   }
+  // };
 
-  const handleMouseUp = (event: any) => {
-    event.preventDefault();
-    if (!isDraggingRef.current || clickNumRef.current === 0) {
-      handleClick(event);
-      clickNumRef.current += 1;
-    }
-    isDraggingRef.current = false;
-    isClickDownRef.current = false;
-  };
+  // const handleMouseUp = (event: any) => {
+  //   event.preventDefault();
+  //   if (event.target.tagName !== "CANVAS") {
+  //     return;
+  //   }
+  //   if (!isDraggingRef.current || clickNumRef.current === 0) {
+  //     handleClick(event);
+  //     clickNumRef.current += 1;
+  //   }
+  //   isDraggingRef.current = false;
+  //   isClickDownRef.current = false;
+  // };
 
-  // 处理点击事件
-  const handleClick = (event: any) => {
-    event.preventDefault();
-    raycaster.setFromCamera(mouse, camera);
-    if (!partRef.current) {
-      return;
-    }
-    const intersects = raycaster.intersectObjects(
-      scene.children[2].children[0].children
-    );
-    if (intersects.length > 0) {
-      const intersect: any = intersects[0];
+  // // 处理点击事件
+  // const handleClick = (event: any) => {
+  //   event.preventDefault();
+  //   raycaster.setFromCamera(mouse, camera);
+  //   if (!partRef.current) {
+  //     return;
+  //   }
+  //   const intersects = raycaster.intersectObjects(
+  //     scene.children[2].children[0].children.filter((i) =>
+  //       i.name.includes("市")
+  //     )
+  //   );
+  //   if (intersects.length > 0) {
+  //     const intersect: any = intersects[0];
+  //     if (intersect.object.name.includes("市")) {
+  //       setShowTag(false);
+  //       showTagRef.current = false;
+  //       setTimeout(() => {
+  //         setShowTag(true);
+  //         showTagRef.current = true;
+  //         setLabelPosition(intersect.point);
+  //       }, 300);
+  //       setMeshColor(intersect.object.uuid);
+  //       setLabelText(intersect.object.name);
+  //     }
+  //   }
+  // };
+
+  const onRaycastChanged = (hits: THREE.Intersection[]) => {
+    if (hits.length > 0) {
+      const intersect: any = hits[0];
       if (intersect.object.name.includes("市")) {
         setShowTag(false);
         showTagRef.current = false;
@@ -300,6 +325,7 @@ const MapModel = ({ begin }: any) => {
         setLabelText(intersect.object.name);
       }
     }
+    return null;
   };
 
   const setMeshColor = (uuid: string) => {
@@ -344,14 +370,16 @@ const MapModel = ({ begin }: any) => {
 
     // 地图厚度动画
     if (beginRef.current) {
-      const pending = 0.5;
-      const times = pending / delta;
+      const pending = 0.5; // 动画持续时间
+      const times = pending / delta; // 执行完动画的总帧数
 
       if (borderMeshRef.current && borderMeshRef.current.scale.y < 1) {
-        const speed = 1 / times;
+        const speed = 1 / times; // 每帧增加的厚度
+        const speed3 = 0.54 / times;
         // 地图厚度增加
         borderMeshRef.current.scale.y += speed;
-        const speed2 = (0.165 + 0.8) / times;
+        borderMeshRef.current.position.y += speed3;
+        const speed2 = (0.165 + 0.8) / times; // 每帧增加的高度
         // 地面高度增加
         (partRef.current as any).children[2].children[0].children.forEach(
           (child: any) => {
@@ -362,6 +390,8 @@ const MapModel = ({ begin }: any) => {
         );
         // 流光高度增加
         flowLight.position.y += speed2;
+      } else {
+        setMapAnimationEnd(true);
       }
     }
   });
@@ -373,7 +403,8 @@ const MapModel = ({ begin }: any) => {
         object={scene}
         scale={1}
         position={[0, -22, 0]}
-      />
+        onClick={(e: any) => e.stopPropagation()}
+      ></primitive>
       <PointLabel
         position={labelPosition}
         scale={labelScale}
@@ -387,42 +418,17 @@ const MapModel = ({ begin }: any) => {
       {/* {borderLine && <primitive object={borderLine} />} */}
       {flowLight && <primitive object={flowLight} ref={flylineRef} />}
       <Name begin={begin} />
-      {begin && (
-        <>
-          <Cylinder
-            position={[0, 3, 0]}
-            args={[0.1, 0.1, 5, 32]}
-            ref={(el) => (cylinderRef.current[0] = el)}
-          >
-            <meshStandardMaterial
-              color="cyan"
-              emissive="cyan"
-              emissiveIntensity={0.5}
-            />
-          </Cylinder>
-          <Cylinder
-            position={[3, 3, 3]}
-            args={[0.1, 0.1, 5, 32]}
-            ref={(el) => (cylinderRef.current[1] = el)}
-          >
-            <meshStandardMaterial
-              color="cyan"
-              emissive="cyan"
-              emissiveIntensity={0.5}
-            />
-          </Cylinder>
-          <EffectComposer enabled={true}>
-            <SelectiveBloom
-              selection={cylinderRef.current} // 只对圆柱体应用辉光
-              intensity={0.5} // 辉光强度
-              luminanceThreshold={0} // 亮度阈值
-              luminanceSmoothing={0.9} // 亮度平滑度
-              kernelSize={KernelSize.LARGE} // blur kernel size
-              radius={0.4}
-            />
-          </EffectComposer>
-        </>
-      )}
+      <LightCylinder
+        mapAnimationEnd={mapAnimationEnd}
+        composerBegin={composerBegin}
+      />
+      <CycleRaycast
+        preventDefault={true} // Call event.preventDefault() (default: true)
+        scroll={false} // Wheel events (default: true)
+        keyCode={0} // Keyboard events (default: 9 [Tab])
+        onChanged={onRaycastChanged}
+        portal={partRef.current}
+      />
     </>
   );
 };

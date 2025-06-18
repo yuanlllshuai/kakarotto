@@ -12,7 +12,7 @@ import * as THREE from "three";
 import MapModel from "./MapModel";
 
 const Camera = ({ setBegin, begin }: any) => {
-  const [curve, setCurve] = useState<any>();
+  // const [curve, setCurve] = useState<any>();
 
   const cameraRef = useRef<any>(null);
   const count = useRef(0);
@@ -33,7 +33,7 @@ const Camera = ({ setBegin, begin }: any) => {
     );
     const pArr = curve.getPoints(80);
     points.current = pArr;
-    setCurve(curve);
+    // setCurve(curve);
   }, []);
 
   useFrame(() => {
@@ -76,7 +76,7 @@ const Camera = ({ setBegin, begin }: any) => {
   );
 };
 
-function Index() {
+export const Component = () => {
   const { progress } = useProgress();
   const [loading, setLoading] = useState<boolean>(true);
   const [begin, setBegin] = useState<boolean>(false);
@@ -93,7 +93,7 @@ function Index() {
     return (
       <div className={styles.model} style={{ opacity: loading ? 0 : 1 }}>
         <Canvas
-          shadows
+          frameloop={"demand"}
           // camera={{ position: [20, 6, 20] }}
           scene={{
             background: new THREE.Color("rgb(2, 3, 34)"),
@@ -104,7 +104,7 @@ function Index() {
           <OrbitControls makeDefault />
           <ambientLight intensity={3} />
           {/* <pointLight position={[100, 100, 100]} decay={0} intensity={2} /> */}
-          <directionalLight position={[10, 10, 10]} intensity={0.5} />
+          {/* <directionalLight position={[10, 10, 10]} intensity={0.5} /> */}
           <Suspense fallback={<></>}>
             <MapModel begin={begin} />
           </Suspense>
@@ -123,6 +123,4 @@ function Index() {
       {render()}
     </div>
   );
-}
-
-export default Index;
+};

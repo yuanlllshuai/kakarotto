@@ -39,6 +39,9 @@ export class Base {
 
   // 解决模糊问题
   private resizeRendererToDisplaySize(renderer: any) {
+    if (!renderer?.domElement) {
+      return;
+    }
     const canvas = renderer.domElement;
     // 屏幕分辨率倍数
     const pixelRatio = window.devicePixelRatio;
@@ -54,7 +57,9 @@ export class Base {
 
   init(id: string) {
     const canvas = document.getElementById(id) as HTMLElement;
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
+    if (canvas) {
+      this.renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
+    }
   }
 
   createScene() {
@@ -82,6 +87,9 @@ export class Base {
   }
 
   setController() {
+    if (!this.renderer?.domElement) {
+      return
+    }
     const that = this;
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     if (!this.animateHandle) {
@@ -113,6 +121,9 @@ export class Base {
   }
   
   render(that: any, time: number = 0) {
+    if (!that.renderer) {
+      return;
+    }
     this.renderRequested = false;
     this.controls.update();
     if (this.resizeRendererToDisplaySize(that.renderer)) {
