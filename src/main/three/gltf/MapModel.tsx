@@ -14,7 +14,7 @@ import LightCylinder from "./LightCylinder";
 import mapHeightPng from "../res/border.png";
 
 const MapModel = ({ begin }: any) => {
-  const { raycaster, camera, mouse } = useThree();
+  const { gl, raycaster, camera, mouse } = useThree();
   const { scene } = useGLTF("/gltf_models/map/map.gltf");
   // const { scene } = useGLTF('http://111.229.183.248/gltf_models/girl/scene.gltf');
   const [labelPosition, setLabelPosition] = useState<any>({ x: 0, y: 0, z: 0 });
@@ -56,6 +56,9 @@ const MapModel = ({ begin }: any) => {
   // 是否开始动画
   const beginRef = useRef(false);
   const flylineRef = useRef<any>(null);
+  const isScrollingRef = useRef(false);
+  const scrollTimeout = useRef<any>(null);
+  const intersectRef = useRef<any>(null);
 
   // 地图边缘纹理
   const [mapTexture] = useTexture([mapHeightPng]);
@@ -106,16 +109,31 @@ const MapModel = ({ begin }: any) => {
     }
   }, [scene]);
 
-  // useEffect(() => {
-  //   window.addEventListener("mousedown", handleMouseDown);
-  //   window.addEventListener("mousemove", handleMouseMove);
-  //   window.addEventListener("mouseup", handleMouseUp);
-  //   return () => {
-  //     window.removeEventListener("mousedown", handleMouseDown);
-  //     window.removeEventListener("mousemove", handleMouseMove);
-  //     window.removeEventListener("mouseup", handleMouseUp);
-  //   };
-  // }, []);
+  // 检测鼠标滚轮事件
+  useEffect(() => {
+    const handleWheel = () => {
+      isScrollingRef.current = true;
+      clearTimeout(scrollTimeout.current);
+      scrollTimeout.current = setTimeout(
+        () => (isScrollingRef.current = false),
+        100
+      );
+    };
+
+    gl.domElement.addEventListener("wheel", handleWheel);
+    return () => gl.domElement.removeEventListener("wheel", handleWheel);
+  }, [gl]);
+
+  useEffect(() => {
+    window.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, []);
 
   useEffect(() => {
     if (begin) {
@@ -254,75 +272,79 @@ const MapModel = ({ begin }: any) => {
     borderMeshRef.current = mesh;
   };
 
-  // const handleMouseDown = (event: any) => {
-  //   event.preventDefault();
-  //   isDraggingRef.current = false;
-  //   isClickDownRef.current = true;
-  // };
+  const handleMouseDown = (event: any) => {
+    event.preventDefault();
+    isDraggingRef.current = false;
+    isClickDownRef.current = true;
+  };
 
-  // const handleMouseMove = (event: any) => {
-  //   event.preventDefault();
-  //   if (isClickDownRef.current) {
-  //     isDraggingRef.current = true;
-  //   } else {
-  //     isDraggingRef.current = false;
-  //   }
-  // };
+  const handleMouseMove = (event: any) => {
+    event.preventDefault();
+    if (isClickDownRef.current) {
+      isDraggingRef.current = true;
+    } else {
+      isDraggingRef.current = false;
+    }
+  };
 
-  // const handleMouseUp = (event: any) => {
-  //   event.preventDefault();
-  //   if (event.target.tagName !== "CANVAS") {
-  //     return;
-  //   }
-  //   if (!isDraggingRef.current || clickNumRef.current === 0) {
-  //     handleClick(event);
-  //     clickNumRef.current += 1;
-  //   }
-  //   isDraggingRef.current = false;
-  //   isClickDownRef.current = false;
-  // };
+  const handleMouseUp = (event: any) => {
+    event.preventDefault();
+    if (event.target.tagName !== "CANVAS") {
+      return;
+    }
+    if (!isDraggingRef.current || clickNumRef.current === 0) {
+      handleClick(event);
+      clickNumRef.current += 1;
+    }
+    isDraggingRef.current = false;
+    isClickDownRef.current = false;
+  };
 
-  // // 处理点击事件
-  // const handleClick = (event: any) => {
-  //   event.preventDefault();
-  //   raycaster.setFromCamera(mouse, camera);
-  //   if (!partRef.current) {
-  //     return;
-  //   }
-  //   const intersects = raycaster.intersectObjects(
-  //     scene.children[2].children[0].children.filter((i) =>
-  //       i.name.includes("市")
-  //     )
-  //   );
-  //   if (intersects.length > 0) {
-  //     const intersect: any = intersects[0];
-  //     if (intersect.object.name.includes("市")) {
-  //       setShowTag(false);
-  //       showTagRef.current = false;
-  //       setTimeout(() => {
-  //         setShowTag(true);
-  //         showTagRef.current = true;
-  //         setLabelPosition(intersect.point);
-  //       }, 300);
-  //       setMeshColor(intersect.object.uuid);
-  //       setLabelText(intersect.object.name);
-  //     }
-  //   }
-  // };
+  // 处理点击事件
+  const handleClick = (event: any) => {
+    event.preventDefault();
+    setShowTag(false);
+    showTagRef.current = false;
+    setTimeout(() => {
+      setShowTag(true);
+      showTagRef.current = true;
+      setLabelPosition(intersectRef.current.point);
+    }, 300);
+    setMeshColor(intersectRef.current.object.uuid);
+    setLabelText(intersectRef.current.object.name);
+    // raycaster.setFromCamera(mouse, camera);
+    // if (!partRef.current) {
+    //   return;
+    // }
+    // const intersects = raycaster.intersectObjects(
+    //   scene.children[2].children[0].children.filter((i) =>
+    //     i.name.includes("市")
+    //   )
+    // );
+    // if (intersects.length > 0) {
+    //   const intersect: any = intersects[0];
+    //   if (intersect.object.name.includes("市")) {
+    //     setShowTag(false);
+    //     showTagRef.current = false;
+    //     setTimeout(() => {
+    //       setShowTag(true);
+    //       showTagRef.current = true;
+    //       setLabelPosition(intersect.point);
+    //     }, 300);
+    //     setMeshColor(intersect.object.uuid);
+    //     setLabelText(intersect.object.name);
+    //   }
+    // }
+  };
 
   const onRaycastChanged = (hits: THREE.Intersection[]) => {
+    if (isScrollingRef.current) {
+      return null;
+    }
     if (hits.length > 0) {
       const intersect: any = hits[0];
       if (intersect.object.name.includes("市")) {
-        setShowTag(false);
-        showTagRef.current = false;
-        setTimeout(() => {
-          setShowTag(true);
-          showTagRef.current = true;
-          setLabelPosition(intersect.point);
-        }, 300);
-        setMeshColor(intersect.object.uuid);
-        setLabelText(intersect.object.name);
+        intersectRef.current = intersect;
       }
     }
     return null;
