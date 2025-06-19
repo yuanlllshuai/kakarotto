@@ -14,7 +14,7 @@ import LightCylinder from "./LightCylinder";
 import mapHeightPng from "../res/border.png";
 
 const MapModel = ({ begin }: any) => {
-  const { gl, raycaster, camera, mouse } = useThree();
+  const { gl, camera } = useThree();
   const { scene } = useGLTF("/gltf_models/map/map.gltf");
   // const { scene } = useGLTF('http://111.229.183.248/gltf_models/girl/scene.gltf');
   const [labelPosition, setLabelPosition] = useState<any>({ x: 0, y: 0, z: 0 });
@@ -32,7 +32,7 @@ const MapModel = ({ begin }: any) => {
   // const [borderLine, setBorderLine] = useState<any>();
   // 地图动画是否结束
   const [mapAnimationEnd, setMapAnimationEnd] = useState(false);
-
+  // 是否开始地图动画
   const [composerBegin, setComposerBegin] = useState(false);
 
   // 地图ref
@@ -55,10 +55,13 @@ const MapModel = ({ begin }: any) => {
   const borderMeshRef = useRef<any>();
   // 是否开始动画
   const beginRef = useRef(false);
-  const flylineRef = useRef<any>(null);
+  // 鼠标是否正在滚动
   const isScrollingRef = useRef(false);
+  // 滚动延时
   const scrollTimeout = useRef<any>(null);
+  // 鼠标射线检测引用
   const intersectRef = useRef<any>(null);
+  const lastIntersectRef = useRef<any>(null);
 
   // 地图边缘纹理
   const [mapTexture] = useTexture([mapHeightPng]);
@@ -303,12 +306,21 @@ const MapModel = ({ begin }: any) => {
   // 处理点击事件
   const handleClick = (event: any) => {
     event.preventDefault();
+    if (
+      !intersectRef.current ||
+      (intersectRef.current.object.name ===
+        lastIntersectRef.current?.object?.name &&
+        intersectRef.current.point.x === lastIntersectRef.current?.point.x)
+    ) {
+      return;
+    }
     setShowTag(false);
     showTagRef.current = false;
     setTimeout(() => {
       setShowTag(true);
       showTagRef.current = true;
       setLabelPosition(intersectRef.current.point);
+      lastIntersectRef.current = intersectRef.current;
     }, 300);
     setMeshColor(intersectRef.current.object.uuid);
     setLabelText(intersectRef.current.object.name);
@@ -438,7 +450,7 @@ const MapModel = ({ begin }: any) => {
       <InstancedGridOfSquares />
       <Wave />
       {/* {borderLine && <primitive object={borderLine} />} */}
-      {flowLight && <primitive object={flowLight} ref={flylineRef} />}
+      {flowLight && <primitive object={flowLight} />}
       <Name begin={begin} />
       <LightCylinder
         mapAnimationEnd={mapAnimationEnd}
