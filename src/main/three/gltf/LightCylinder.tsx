@@ -16,7 +16,7 @@ const Index = ({
   const animationProgress = useRef(0); // Track animation progress
 
   useFrame((_state, delta) => {
-    const pending = 0.6; // 动画持续时间
+    const pending = 0.8; // 动画持续时间
     if (
       mapAnimationEnd &&
       cylinderRef.current?.[0] &&

@@ -10,19 +10,19 @@ import InstancedGridOfSquares from "./InstancedGridOfSquares";
 import Wave from "./Wave";
 import Name from "./Name";
 import LightCylinder from "./LightCylinder";
-
 import mapHeightPng from "../res/border.png";
+import { lablePoints } from "./const";
 
 const MapModel = ({ begin }: any) => {
   const { gl, camera } = useThree();
   const { scene } = useGLTF("/gltf_models/map/map.gltf");
   // const { scene } = useGLTF('http://111.229.183.248/gltf_models/girl/scene.gltf');
-  const [labelPosition, setLabelPosition] = useState<any>({ x: 0, y: 0, z: 0 });
-  const [labelText, setLabelText] = useState("");
+  // const [labelPosition, setLabelPosition] = useState<any>({ x: 0, y: 0, z: 0 });
+  // const [labelText, setLabelText] = useState("");
   // 标签缩放比例
   const [labelScale, setLabelScale] = useState(1);
   // 是否展示标签
-  const [showTag, setShowTag] = useState(false);
+  // const [showTag, setShowTag] = useState(false);
   // const [borderLine, setBorderLine] = useState<any>({});
   // 流光轨迹
   const [flowLight, setFlowLight] = useState<any>();
@@ -46,7 +46,7 @@ const MapModel = ({ begin }: any) => {
   // 点击次数
   const clickNumRef = useRef(0);
   // 延迟显示label
-  const showTagRef = useRef(false);
+  // const showTagRef = useRef(false);
   // 地图高度动画step
   const mapHeightCountRef = useRef(0);
   // 地图边沿动画step
@@ -314,16 +314,17 @@ const MapModel = ({ begin }: any) => {
     ) {
       return;
     }
-    setShowTag(false);
-    showTagRef.current = false;
-    setTimeout(() => {
-      setShowTag(true);
-      showTagRef.current = true;
-      setLabelPosition(intersectRef.current.point);
-      lastIntersectRef.current = intersectRef.current;
-    }, 300);
+    // setShowTag(false);
+    // showTagRef.current = false;
+    // setTimeout(() => {
+    //   setShowTag(true);
+    //   showTagRef.current = true;
+    //   setLabelPosition(intersectRef.current.point);
+    //   lastIntersectRef.current = intersectRef.current;
+    // }, 300);
     setMeshColor(intersectRef.current.object.uuid);
-    setLabelText(intersectRef.current.object.name);
+    // setLabelText(intersectRef.current.object.name);
+    // console.log(intersectRef.current.point, intersectRef.current.object.name);
     // raycaster.setFromCamera(mouse, camera);
     // if (!partRef.current) {
     //   return;
@@ -382,18 +383,15 @@ const MapModel = ({ begin }: any) => {
   };
 
   useFrame((_state, delta) => {
-    if (labelPosition) {
-      // 缩放
-      const vector = new THREE.Vector3()
-        .copy(labelPosition)
-        .sub(camera.position);
-      const distance = vector.length();
-      const newScale = 1 / (distance / 10);
-      setLabelScale(Math.max(0.7, Math.min(0.8, newScale)));
-    }
+    const vector = new THREE.Vector3()
+      .copy({ x: 0, y: 0, z: 0 })
+      .sub(camera.position);
+    const distance = vector.length();
+    const newScale = 1 / (distance / 10);
+    setLabelScale(Math.max(0.7, Math.min(0.8, newScale)));
 
     // 地图边缘纹理动画
-    mapHeightCountRef.current += 0.01;
+    mapHeightCountRef.current += 0.005;
     mapTexture.offset.y = 1 - (mapHeightCountRef.current % 1);
 
     // 流光动画
@@ -404,7 +402,7 @@ const MapModel = ({ begin }: any) => {
 
     // 地图厚度动画
     if (beginRef.current) {
-      const pending = 0.5; // 动画持续时间
+      const pending = 0.3; // 动画持续时间
       const times = pending / delta; // 执行完动画的总帧数
 
       if (borderMeshRef.current && borderMeshRef.current.scale.y < 1) {
@@ -439,14 +437,29 @@ const MapModel = ({ begin }: any) => {
         position={[0, -22, 0]}
         onClick={(e: any) => e.stopPropagation()}
       ></primitive>
-      <PointLabel
-        position={labelPosition}
-        scale={labelScale}
-        label={labelText}
-        visible={showTag}
-      />
-      {labelPosition.x !== 0 && <FlyLine position={labelPosition} />}
-      <OriginPoint />
+      {lablePoints.map(
+        (
+          { position, label }: { position: any; label: string },
+          index: number
+        ) => (
+          <PointLabel
+            key={label}
+            position={position}
+            scale={labelScale}
+            label={label}
+            visible={mapAnimationEnd}
+            index={index + 1}
+          />
+        )
+      )}
+      {mapAnimationEnd &&
+        lablePoints.map(
+          ({ position, label }: { position: any; label: string }) => (
+            <FlyLine key={label} position={position} />
+          )
+        )}
+      {/* {labelPosition.x !== 0 && <FlyLine position={labelPosition} />} */}
+      {mapAnimationEnd && <OriginPoint position={{ x: 0, z: 0, y: 0 }} />}
       <InstancedGridOfSquares />
       <Wave />
       {/* {borderLine && <primitive object={borderLine} />} */}

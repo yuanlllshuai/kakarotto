@@ -1,8 +1,8 @@
-import { useState, useRef, memo } from 'react'
-import { useFrame } from '@react-three/fiber'
-import * as THREE from 'three';
+import { useState, useRef, memo } from "react";
+import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
 
-const OriginPoint = memo(() => {
+const OriginPoint = memo(({ position }: any) => {
   const [radius, setRadius] = useState(0);
   const [opacity, setOpacity] = useState(1);
 
@@ -12,16 +12,16 @@ const OriginPoint = memo(() => {
   useFrame(() => {
     if (circleRef.current) {
       countRef.current += 0.02;
-      const r = 0 + countRef.current % 2;
-      const o = 1 - (countRef.current / 2) % 1;
+      const r = 0 + (countRef.current % 2);
+      const o = 1 - ((countRef.current / 2) % 1);
       setRadius(r);
       setOpacity(o);
     }
-  })
+  });
   return (
     <mesh
       ref={circleRef}
-      position={[0, 0.6, 0]}
+      position={[position.x, 0.6, position.z]}
       rotation-x={Math.PI / 2}
     >
       <circleGeometry args={[radius, 32]} />
@@ -34,7 +34,7 @@ const OriginPoint = memo(() => {
         depthTest={false}
       />
     </mesh>
-  )
+  );
 });
 
 export default OriginPoint;
