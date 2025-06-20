@@ -7,35 +7,39 @@ import { EffectComposer, Bloom } from "@react-three/postprocessing";
 const Index = ({
   mapAnimationEnd,
   composerBegin,
+  setEnd,
+  isEnd,
 }: {
   mapAnimationEnd: boolean;
   composerBegin: boolean;
+  isEnd: boolean;
+  setEnd: (end: boolean) => void;
 }) => {
   const cylinderRef = useRef<any[]>([]);
   const meshRef = useRef<any[]>([]);
   const animationProgress = useRef(0); // Track animation progress
 
   useFrame((_state, delta) => {
-    const pending = 0.8; // 动画持续时间
-    if (
-      mapAnimationEnd &&
-      cylinderRef.current?.[0] &&
-      animationProgress.current < 1
-    ) {
-      // Update progress with easing delta / pending 每帧完成的进度
-      animationProgress.current = Math.min(
-        1,
-        animationProgress.current + delta / pending
-      );
-      // Ease-out function (quadratic)  三次缓动函数
-      const easedProgress = 1 - Math.pow(1 - animationProgress.current, 3);
+    const pending = 1; // 动画持续时间
+    if (mapAnimationEnd && cylinderRef.current?.[0]) {
+      if (animationProgress.current < 1) {
+        // Update progress with easing delta / pending 每帧完成的进度
+        animationProgress.current = Math.min(
+          1,
+          animationProgress.current + delta / pending
+        );
+        // Ease-out function (quadratic)  三次缓动函数
+        const easedProgress = 1 - Math.pow(1 - animationProgress.current, 3);
 
-      // Calculate final values with easing
-      const targetHeight = 50;
-      cylinderRef.current.forEach((i) => {
-        i.scale.y = easedProgress * targetHeight;
-        i.position.y = 0.6 + easedProgress * 2.5;
-      });
+        // Calculate final values with easing
+        const targetHeight = 40;
+        cylinderRef.current.forEach((i) => {
+          i.scale.y = easedProgress * targetHeight;
+          i.position.y = 0.6 + easedProgress * 2.5;
+        });
+      } else if (!isEnd) {
+        setEnd(true);
+      }
     }
   });
 

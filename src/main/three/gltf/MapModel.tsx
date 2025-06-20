@@ -1,6 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
-import { useGLTF, useTexture, CycleRaycast } from "@react-three/drei";
+import {
+  useGLTF,
+  useTexture,
+  CycleRaycast,
+  Clouds,
+  Cloud,
+} from "@react-three/drei";
 import * as THREE from "three";
 
 import PointLabel from "./PointLabel";
@@ -11,6 +17,7 @@ import Wave from "./Wave";
 import Name from "./Name";
 import LightCylinder from "./LightCylinder";
 import mapHeightPng from "../res/border.png";
+import cloudPng from "../res/cloud.png";
 import { lablePoints } from "./const";
 
 const MapModel = ({ begin }: any) => {
@@ -34,6 +41,8 @@ const MapModel = ({ begin }: any) => {
   const [mapAnimationEnd, setMapAnimationEnd] = useState(false);
   // 是否开始地图动画
   const [composerBegin, setComposerBegin] = useState(false);
+  // 光柱结束状态
+  const [LightCylinderEnd, setLightCylinderEnd] = useState(false);
 
   // 地图ref
   const partRef = useRef();
@@ -358,6 +367,7 @@ const MapModel = ({ begin }: any) => {
       const intersect: any = hits[0];
       if (intersect.object.name.includes("市")) {
         intersectRef.current = intersect;
+        setMeshColor(intersect.object.uuid);
       }
     }
     return null;
@@ -383,12 +393,12 @@ const MapModel = ({ begin }: any) => {
   };
 
   useFrame((_state, delta) => {
-    const vector = new THREE.Vector3()
-      .copy({ x: 0, y: 0, z: 0 })
-      .sub(camera.position);
-    const distance = vector.length();
-    const newScale = 1 / (distance / 10);
-    setLabelScale(Math.max(0.7, Math.min(0.8, newScale)));
+    // const vector = new THREE.Vector3()
+    //   .copy({ x: 0, y: 0, z: 0 })
+    //   .sub(camera.position);
+    // const distance = vector.length();
+    // const newScale = 1 / (distance / 10);
+    // setLabelScale(Math.max(0.7, Math.min(0.8, newScale)));
 
     // 地图边缘纹理动画
     mapHeightCountRef.current += 0.005;
@@ -402,7 +412,7 @@ const MapModel = ({ begin }: any) => {
 
     // 地图厚度动画
     if (beginRef.current) {
-      const pending = 0.3; // 动画持续时间
+      const pending = 0.5; // 动画持续时间
       const times = pending / delta; // 执行完动画的总帧数
 
       if (borderMeshRef.current && borderMeshRef.current.scale.y < 1) {
@@ -468,7 +478,27 @@ const MapModel = ({ begin }: any) => {
       <LightCylinder
         mapAnimationEnd={mapAnimationEnd}
         composerBegin={composerBegin}
+        isEnd={LightCylinderEnd}
+        setEnd={setLightCylinderEnd}
       />
+      {LightCylinderEnd && (
+        <Clouds
+          material={THREE.MeshBasicMaterial}
+          texture={cloudPng}
+          position={[0, 7, 0]}
+          scale={0.2}
+        >
+          <Cloud
+            segments={40}
+            bounds={[10, 2, 2]}
+            volume={10}
+            color="white"
+            speed={1}
+            opacity={LightCylinderEnd ? 1 : 0}
+          />
+        </Clouds>
+      )}
+
       <CycleRaycast
         preventDefault={true} // Call event.preventDefault() (default: true)
         scroll={false} // Wheel events (default: true)
