@@ -16,7 +16,7 @@ const InstancedGridOfSquares = memo(() => {
       color: 0x1e90ff,
       // vertexColors:true,
       transparent: true,
-      opacity: 0.5,
+      opacity: 0.2,
       side: THREE.DoubleSide,
 
       // depthWrite:false,

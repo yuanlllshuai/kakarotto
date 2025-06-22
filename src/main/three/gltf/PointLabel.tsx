@@ -1,7 +1,26 @@
 import { Html, Billboard } from "@react-three/drei";
 import icon from "@/assets/local.jpg";
+import Cloudy from "./weather/Cloudy";
+import Sun from "./weather/Sun";
+import Overcast from "./weather/Overcast";
+import * as THREE from "three";
+import { weatherMap } from "./const";
 
-const PointLabel = ({ position, label, scale, visible, index }: any) => {
+const PointLabel = ({
+  position,
+  label,
+  scale,
+  visible,
+  weather,
+  weatherBegin,
+}: {
+  position: THREE.Vector3;
+  label: string;
+  scale: number;
+  visible: boolean;
+  weather: number | null;
+  weatherBegin: boolean;
+}) => {
   return (
     <>
       <Billboard position={[position.x, 0.8, position.z]}>
@@ -33,13 +52,20 @@ const PointLabel = ({ position, label, scale, visible, index }: any) => {
           }}
         >
           <span>{label}</span>
-          <span
-            style={{ color: "yellow", fontWeight: "bold", fontFamily: "DIN" }}
-          >
-            {index}
-          </span>
+          {weather !== null && (
+            <span
+              style={{ color: "yellow", fontWeight: "bold", fontFamily: "DIN" }}
+            >
+              {weatherMap[weather]}
+            </span>
+          )}
         </Html>
       </Billboard>
+      {weatherBegin && weather === 0 && (
+        <Sun position={new THREE.Vector3(position.x, 5, position.z)} />
+      )}
+      {weatherBegin && weather === 1 && <Cloudy position={position} />}
+      {weatherBegin && weather === 2 && <Overcast position={position} />}
     </>
   );
 };

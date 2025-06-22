@@ -4,8 +4,7 @@ import {
   useGLTF,
   useTexture,
   CycleRaycast,
-  Clouds,
-  Cloud,
+  RoundedBox,
 } from "@react-three/drei";
 import * as THREE from "three";
 
@@ -17,7 +16,6 @@ import Wave from "./Wave";
 import Name from "./Name";
 import LightCylinder from "./LightCylinder";
 import mapHeightPng from "../res/border.png";
-import cloudPng from "../res/cloud.png";
 import { lablePoints } from "./const";
 
 const MapModel = ({ begin }: any) => {
@@ -448,17 +446,23 @@ const MapModel = ({ begin }: any) => {
         onClick={(e: any) => e.stopPropagation()}
       ></primitive>
       {lablePoints.map(
-        (
-          { position, label }: { position: any; label: string },
-          index: number
-        ) => (
+        ({
+          position,
+          label,
+          weather,
+        }: {
+          position: any;
+          label: string;
+          weather: number | null;
+        }) => (
           <PointLabel
             key={label}
             position={position}
             scale={labelScale}
             label={label}
             visible={mapAnimationEnd}
-            index={index + 1}
+            weather={weather}
+            weatherBegin={LightCylinderEnd}
           />
         )
       )}
@@ -481,23 +485,7 @@ const MapModel = ({ begin }: any) => {
         isEnd={LightCylinderEnd}
         setEnd={setLightCylinderEnd}
       />
-      {LightCylinderEnd && (
-        <Clouds
-          material={THREE.MeshBasicMaterial}
-          texture={cloudPng}
-          position={[0, 7, 0]}
-          scale={0.2}
-        >
-          <Cloud
-            segments={40}
-            bounds={[10, 2, 2]}
-            volume={10}
-            color="white"
-            speed={1}
-            opacity={LightCylinderEnd ? 1 : 0}
-          />
-        </Clouds>
-      )}
+      {/* {LightCylinderEnd && <Cloud />} */}
 
       <CycleRaycast
         preventDefault={true} // Call event.preventDefault() (default: true)
