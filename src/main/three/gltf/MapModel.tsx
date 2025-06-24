@@ -1,11 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
-import {
-  useGLTF,
-  useTexture,
-  CycleRaycast,
-  RoundedBox,
-} from "@react-three/drei";
+import { useGLTF, useTexture, CycleRaycast } from "@react-three/drei";
 import * as THREE from "three";
 
 import PointLabel from "./PointLabel";
@@ -17,6 +12,7 @@ import Name from "./Name";
 import LightCylinder from "./LightCylinder";
 import mapHeightPng from "../res/border.png";
 import { lablePoints } from "./const";
+// import { Rain } from "./weather/rain.js";
 
 const MapModel = ({ begin }: any) => {
   const { gl, camera } = useThree();

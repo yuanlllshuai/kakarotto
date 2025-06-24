@@ -1,10 +1,12 @@
 import { Html, Billboard } from "@react-three/drei";
 import icon from "@/assets/local.jpg";
+import * as THREE from "three";
+import { weatherMap } from "./const";
+
 import Cloudy from "./weather/Cloudy";
 import Sun from "./weather/Sun";
 import Overcast from "./weather/Overcast";
-import * as THREE from "three";
-import { weatherMap } from "./const";
+import Rain from "./weather/Rain";
 
 const PointLabel = ({
   position,
@@ -49,6 +51,7 @@ const PointLabel = ({
             backgroundColor: "rgba(0, 0, 0, 0.5)",
             borderRadius: 4,
             color: "#FFF",
+            fontSize: "13px",
           }}
         >
           <span>{label}</span>
@@ -66,6 +69,13 @@ const PointLabel = ({
       )}
       {weatherBegin && weather === 1 && <Cloudy position={position} />}
       {weatherBegin && weather === 2 && <Overcast position={position} />}
+      {weatherBegin && weather === 3 && <Rain position={position} />}
+      {weatherBegin && weather === 4 && (
+        <Rain position={position} size="middle" />
+      )}
+      {weatherBegin && weather === 5 && (
+        <Rain position={position} size="large" />
+      )}
     </>
   );
 };
