@@ -1,10 +1,11 @@
-import React, { memo, useEffect, useMemo } from "react";
+import { memo, useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { useRef, useState } from "react";
 import { Points } from "@react-three/drei";
 import Overcast from "./Overcast";
-// import Lightning from "./Lighting"; // Add this import
+// import LightningShaderMaterial from "./LightningShaderMaterial";
+import Lightning from "./Lightning";
 
 const COUNTMAP = {
   small: { count: 60, speed: 0.6 },
@@ -17,9 +18,11 @@ const Index = memo(
   ({
     position,
     size = "small",
+    type,
   }: {
     position: THREE.Vector3;
     size?: "small" | "middle" | "large";
+    type?: "lightning";
   }) => {
     const rainRef = useRef<THREE.Points>(null!);
     const [count, setCount] = useState(0);
@@ -78,7 +81,12 @@ const Index = memo(
 
     return (
       <>
-        {/* <Lightning position={[position.x, 5, position.z]} /> */}
+        {/* <mesh position={[position.x + 0.3, 2.8, position.z]}>
+          <cylinderGeometry args={[0.5, 0.5, 4, 32]} />
+          <LightningShaderMaterial />
+        </mesh> */}
+        {type === "lightning" && <Lightning position={position} />}
+        {type === "lightning" && <Lightning position={position} />}
         <Overcast position={position} color="#D0D0D0" />
         <Points
           ref={rainRef}

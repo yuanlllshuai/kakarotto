@@ -76,6 +76,9 @@ const PointLabel = ({
       {weatherBegin && weather === 5 && (
         <Rain position={position} size="large" />
       )}
+      {weatherBegin && weather === 6 && (
+        <Rain position={position} size="large" type="lightning" />
+      )}
     </>
   );
 };
