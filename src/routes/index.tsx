@@ -1,5 +1,6 @@
 import {
-  createBrowserRouter,
+  // createBrowserRouter,
+  createHashRouter,
   createRoutesFromElements,
   Route,
 } from "react-router-dom";
@@ -15,7 +16,7 @@ import {
 } from "@/main/three";
 import Settings from "@/main/settings";
 
-const router = createBrowserRouter(
+const router = createHashRouter(
   createRoutesFromElements(
     <Route path="/" element={<Main />} errorElement={<ErrorPage />}>
       <Route errorElement={<ErrorPage />}>

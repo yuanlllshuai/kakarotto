@@ -1,14 +1,14 @@
 import * as THREE from 'three';
 
-interface Base{
-  renderer: any;
-  camera: any;
-  scene: any;
-  cube: any;
-  geometry: any;
-  material: any;
-  axesHelper?: boolean
-}
+// interface Base{
+//   renderer: any;
+//   camera: any;
+//   scene: any;
+//   cube: any;
+//   geometry: any;
+//   material: any;
+//   axesHelper?: boolean
+// }
 
 export class ColorGUIHelper {
   object: any;

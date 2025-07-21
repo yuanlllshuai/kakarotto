@@ -1,11 +1,9 @@
-import { Suspense, useEffect, useState, useRef } from 'react'
-import { Canvas, useLoader  } from '@react-three/fiber'
-import {
-  OrbitControls,
-} from '@react-three/drei';
-import styles from './index.module.scss';
-import * as THREE from 'three';
-import mapPng from '@/assets/map6.png';
+import { Suspense, useRef } from "react";
+import { Canvas, useLoader } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
+import styles from "./index.module.scss";
+import * as THREE from "three";
+import mapPng from "@/assets/map6.png";
 
 const vertexShaderStr = `
 varying vec2 vUv;
@@ -41,18 +39,15 @@ function TexturedCube() {
   );
 }
 
-
-
 function Index() {
-
   const render = () => {
     return (
       <div className={styles.model}>
         <Canvas
           shadows
-          camera={{ position: [10, 10, 10],near:0.1,far:1000 }}
+          camera={{ position: [10, 10, 10], near: 0.1, far: 1000 }}
           scene={{
-            background: new THREE.Color('rgb(2, 3, 34)'),
+            background: new THREE.Color("rgb(2, 3, 34)"),
           }}
         >
           <axesHelper scale={10} />
@@ -61,18 +56,14 @@ function Index() {
           <pointLight position={[10, 10, 10]} decay={0} intensity={3} />
           {/* <directionalLight position={[100, 100, 100]} intensity={0.5} /> */}
           <Suspense fallback={<></>}>
-            <TexturedCube/>
+            <TexturedCube />
           </Suspense>
         </Canvas>
       </div>
-    )
-  }
+    );
+  };
 
-  return (
-    <div className={styles.container}>
-      {render()}
-    </div>
-  )
+  return <div className={styles.container}>{render()}</div>;
 }
 
 export default Index;

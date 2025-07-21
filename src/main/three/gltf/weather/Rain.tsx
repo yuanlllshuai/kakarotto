@@ -87,6 +87,7 @@ const Index = memo(
         </mesh> */}
         {type === "lightning" && <Lightning position={position} />}
         {type === "lightning" && <Lightning position={position} />}
+        {/* {type === "lightning" && <Lightning position={position} />} */}
         <Overcast position={position} color="#D0D0D0" />
         <Points
           ref={rainRef}

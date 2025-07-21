@@ -15,13 +15,13 @@ import { lablePoints } from "./const";
 // import { Rain } from "./weather/rain.js";
 
 const MapModel = ({ begin }: any) => {
-  const { gl, camera } = useThree();
+  const { gl } = useThree();
   const { scene } = useGLTF("/gltf_models/map/map.gltf");
   // const { scene } = useGLTF('http://111.229.183.248/gltf_models/girl/scene.gltf');
   // const [labelPosition, setLabelPosition] = useState<any>({ x: 0, y: 0, z: 0 });
   // const [labelText, setLabelText] = useState("");
   // 标签缩放比例
-  const [labelScale, setLabelScale] = useState(1);
+  // const [labelScale, setLabelScale] = useState(1);
   // 是否展示标签
   // const [showTag, setShowTag] = useState(false);
   // const [borderLine, setBorderLine] = useState<any>({});
@@ -454,7 +454,7 @@ const MapModel = ({ begin }: any) => {
           <PointLabel
             key={label}
             position={position}
-            scale={labelScale}
+            scale={1}
             label={label}
             visible={mapAnimationEnd}
             weather={weather}

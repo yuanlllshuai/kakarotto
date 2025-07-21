@@ -1,11 +1,9 @@
-import { Suspense, useEffect, useState, useRef } from 'react'
-import { Canvas } from '@react-three/fiber'
-import {
-  OrbitControls,
-} from '@react-three/drei';
-import styles from './index.module.scss';
-import * as THREE from 'three';
-import mapPng from '@/assets/map6.png';
+import { Suspense, useEffect, useRef } from "react";
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
+import styles from "./index.module.scss";
+import * as THREE from "three";
+import mapPng from "@/assets/map6.png";
 
 const mapSize = 1000;
 const segments = mapSize - 1;
@@ -27,9 +25,9 @@ const MapModel = () => {
   const load = () => {
     const vertices = geometryRef.current.attributes.position.array;
     const loader = new THREE.TextureLoader();
-    loader.load(mapPng, function(texture) {
-      const canvas = document.createElement('canvas');
-      const context: any = canvas.getContext('2d');
+    loader.load(mapPng, function (texture) {
+      const canvas = document.createElement("canvas");
+      const context: any = canvas.getContext("2d");
       canvas.width = mapSize;
       canvas.height = mapSize;
       context.drawImage(texture.image, 0, 0, mapSize, mapSize);
@@ -44,8 +42,8 @@ const MapModel = () => {
       }
       geometryRef.current.attributes.position.needsUpdate = true;
       geometryRef.current.computeVertexNormals();
-    })
-  }
+    });
+  };
 
   return (
     <mesh scale={1} position={[0, 0, 0]}>
@@ -54,43 +52,52 @@ const MapModel = () => {
         flatShading={false}
         side={THREE.DoubleSide}
       />
-      <planeGeometry ref={geometryRef} args={[mapSize,mapSize,segments,segments]}/>
+      <planeGeometry
+        ref={geometryRef}
+        args={[mapSize, mapSize, segments, segments]}
+      />
     </mesh>
-  )
-}
-
+  );
+};
 
 function Index() {
-
   const render = () => {
     return (
       <div className={styles.model}>
         <Canvas
           shadows
-          camera={{ position: [mapSize, mapSize, mapSize],near:0.1,far:mapSize*10 }}
+          camera={{
+            position: [mapSize, mapSize, mapSize],
+            near: 0.1,
+            far: mapSize * 10,
+          }}
           scene={{
-            background: new THREE.Color('rgb(2, 3, 34)'),
+            background: new THREE.Color("rgb(2, 3, 34)"),
           }}
         >
           <axesHelper scale={mapSize} />
           <OrbitControls makeDefault />
           <ambientLight intensity={1} />
-          <pointLight position={[mapSize, mapSize, mapSize]} decay={0} intensity={3} />
-          <pointLight position={[-mapSize, mapSize, -mapSize]} decay={0} intensity={3} />
+          <pointLight
+            position={[mapSize, mapSize, mapSize]}
+            decay={0}
+            intensity={3}
+          />
+          <pointLight
+            position={[-mapSize, mapSize, -mapSize]}
+            decay={0}
+            intensity={3}
+          />
           {/* <directionalLight position={[100, 100, 100]} intensity={0.5} /> */}
           <Suspense fallback={<></>}>
-            <MapModel/>
+            <MapModel />
           </Suspense>
         </Canvas>
       </div>
-    )
-  }
+    );
+  };
 
-  return (
-    <div className={styles.container}>
-      {render()}
-    </div>
-  )
+  return <div className={styles.container}>{render()}</div>;
 }
 
 export default Index;

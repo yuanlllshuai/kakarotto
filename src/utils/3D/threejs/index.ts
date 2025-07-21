@@ -90,12 +90,8 @@ export class Base {
     if (!this.renderer?.domElement) {
       return
     }
-    const that = this;
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-    if (!this.animateHandle) {
       this.controls.enableDamping = true;
-      this.controls.addEventListener('change', () => that.requestRenderIfNotRequested());
-    }
   }
 
   setAxesHelper() {
@@ -136,19 +132,12 @@ export class Base {
       this.animateHandle(time, that);
     }
     that.renderer.render(that.scene, that.camera);
-    if (this.animateHandle) {
-      requestAnimationFrame((time: number) => that.render(that, time));
-    }
+    requestAnimationFrame((time: number) => that.render(that, time));
   }
 
   start() {
     const that = this;
-    if (this.animateHandle) {
-      // 自动旋转、拖拽、缩放均需循环渲染
-      requestAnimationFrame((time: number) => that.render(that, time));
-    } else {
-      that.render(that)
-    }
+    requestAnimationFrame((time: number) => that.render(that, time));
   }
 }
 
