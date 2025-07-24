@@ -7,6 +7,7 @@ import Cloudy from "./weather/Cloudy";
 import Sun from "./weather/Sun";
 import Overcast from "./weather/Overcast";
 import Rain from "./weather/Rain";
+import Snow from "./weather/Snow";
 
 const PointLabel = ({
   position,
@@ -78,6 +79,9 @@ const PointLabel = ({
       )}
       {weatherBegin && weather === 6 && (
         <Rain position={position} size="large" type="lightning" />
+      )}
+      {weatherBegin && weather === 7 && (
+        <Snow position={position} size="small" />
       )}
     </>
   );

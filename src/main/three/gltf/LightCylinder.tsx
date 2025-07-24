@@ -35,7 +35,7 @@ const Index = ({
         const targetHeight = 40;
         cylinderRef.current.forEach((i) => {
           i.scale.y = easedProgress * targetHeight;
-          i.position.y = 0.6 + easedProgress * 2.5;
+          i.position.y = 0 + easedProgress * 2.5;
         });
       } else if (!isEnd) {
         setEnd(true);
@@ -46,7 +46,7 @@ const Index = ({
   return (
     <>
       <Cylinder
-        position={[0, 0.6, 0]}
+        position={[0, 0, 0]}
         args={[0.1, 0.1, 0.1, 32]}
         scale={[1, 0, 1]}
         ref={(el) => (cylinderRef.current[0] = el)}
@@ -60,7 +60,7 @@ const Index = ({
         />
       </Cylinder>
       <Cylinder
-        position={[3, 0.6, 3]}
+        position={[3, 0, 3]}
         args={[0.1, 0.1, 0.1, 32]}
         scale={[1, 0, 1]}
         ref={(el) => (cylinderRef.current[1] = el)}

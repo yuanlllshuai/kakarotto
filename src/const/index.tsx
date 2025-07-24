@@ -17,6 +17,7 @@ export const navConfig = [
     key: "three",
     label: "Three.js",
     paths: ["/three/index", "/three/gltf", "/three/solar"],
+    icon: "cube-three",
     children: [
       { key: "learn", label: "学习", path: "/three/index" },
       { key: "gltf", label: "Gltf", path: "/three/gltf" },

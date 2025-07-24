@@ -8,9 +8,9 @@ import Overcast from "./Overcast";
 import Lightning from "./Lightning";
 
 const COUNTMAP = {
-  small: { count: 60, speed: 0.6 },
-  middle: { count: 200, speed: 0.7 },
-  large: { count: 600, speed: 0.8 },
+  small: { count: 60, speed: 0.1 },
+  middle: { count: 200, speed: 0.1 },
+  large: { count: 600, speed: 0.1 },
 };
 const LENGTH = 5;
 
@@ -33,18 +33,18 @@ const Index = memo(
     const createGradientTexture = useMemo(() => {
       const canvas = document.createElement("canvas");
       const context = canvas.getContext("2d") as any;
-      canvas.width = 12;
-      canvas.height = 3;
-      const gradient = context.createLinearGradient(0, 0, 0, 12);
-      gradient.addColorStop(0, "rgba(0,0,0,0)");
-      gradient.addColorStop(0.2, "rgba(255,255,255,0.2)");
-      gradient.addColorStop(0.3, "rgba(255,255,255,0.3)");
-      gradient.addColorStop(0.5, "rgba(255,255,255,0.5)");
-      gradient.addColorStop(0.7, "rgba(255,255,255,0.7)");
-      gradient.addColorStop(0.8, "rgba(255,255,255,0.8)");
-      gradient.addColorStop(1, "rgba(255,255,255,1)");
+      canvas.width = 18;
+      canvas.height = 18;
+      const gradient = context.createRadialGradient(9, 9, 0, 9, 9, 9);
+      gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
+      // gradient.addColorStop(0.2, "rgba(255,255,255,0.2)");
+      // gradient.addColorStop(0.3, "rgba(255,255,255,0.3)");
+      // gradient.addColorStop(0.5, "rgba(255,255,255,0.5)");
+      // gradient.addColorStop(0.7, "rgba(255,255,255,0.7)");
+      // gradient.addColorStop(0.8, "rgba(0,0,0,0)");
+      gradient.addColorStop(1, "rgba(0,0,0,0)");
       context.fillStyle = gradient;
-      context.fillRect(0, 0, 2, 12);
+      context.fillRect(0, 0, 18, 18);
       const texture = new THREE.CanvasTexture(canvas);
       return texture;
     }, []);
@@ -54,9 +54,9 @@ const Index = memo(
       const count = COUNTMAP[size].count;
       const positions = new Float32Array(count * 3);
       for (let i = 0; i < count; i++) {
-        positions[i * 3] = (Math.random() * 2 - 1) * 0.7 + position.x;
+        positions[i * 3] = (Math.random() * 2 - 1) * 0.6 + position.x;
         positions[i * 3 + 1] = Math.random() * LENGTH;
-        positions[i * 3 + 2] = (Math.random() * 2 - 1) * 0.7 + position.z;
+        positions[i * 3 + 2] = (Math.random() * 2 - 1) * 0.6 + position.z;
       }
       setPositions(positions);
     }, [size]);
