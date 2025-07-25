@@ -83,6 +83,12 @@ const PointLabel = ({
       {weatherBegin && weather === 7 && (
         <Snow position={position} size="small" />
       )}
+      {weatherBegin && weather === 8 && (
+        <Snow position={position} size="middle" />
+      )}
+      {weatherBegin && weather === 9 && (
+        <Snow position={position} size="large" />
+      )}
     </>
   );
 };
