@@ -11,6 +11,7 @@ import * as THREE from "three";
 
 import MapModel from "./MapModel";
 import screenfull from "screenfull";
+import AnimateCard from "@/components/AnimateCard";
 
 const Camera = ({ setBegin, begin }: any) => {
   // const [curve, setCurve] = useState<any>();
@@ -82,6 +83,7 @@ export const Component = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [begin, setBegin] = useState<boolean>(false);
   const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
+  const [cardBegin, setCardBegin] = useState<boolean>(false);
 
   useEffect(() => {
     if (progress === 100) {
@@ -134,7 +136,7 @@ export const Component = () => {
           {/* <pointLight position={[100, 100, 100]} decay={0} intensity={2} /> */}
           {/* <directionalLight position={[10, 10, 10]} intensity={0.5} /> */}
           <Suspense fallback={<></>}>
-            <MapModel begin={begin} />
+            <MapModel begin={begin} setCardBegin={setCardBegin} />
           </Suspense>
         </Canvas>
       </div>
@@ -152,6 +154,7 @@ export const Component = () => {
       <div className={styles.screenfull} onClick={screenFull}>
         {isFullScreen ? "退出" : "全屏"}
       </div>
+      <AnimateCard begin={cardBegin} />
     </div>
   );
 };

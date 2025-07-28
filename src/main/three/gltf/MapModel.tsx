@@ -14,7 +14,7 @@ import mapHeightPng from "../res/border.png";
 import { lablePoints } from "./const";
 // import { Rain } from "./weather/rain.js";
 
-const MapModel = ({ begin }: any) => {
+const MapModel = ({ begin, setCardBegin }: any) => {
   const { gl } = useThree();
   const { scene } = useGLTF("/gltf_models/map/map.gltf");
   // const { scene } = useGLTF('http://111.229.183.248/gltf_models/girl/scene.gltf');
@@ -146,6 +146,12 @@ const MapModel = ({ begin }: any) => {
       beginRef.current = true;
     }
   }, [begin]);
+
+  useEffect(() => {
+    if (LightCylinderEnd) {
+      setCardBegin(true);
+    }
+  }, [LightCylinderEnd]);
 
   // 处理市区
   const dealCity = (mesh: any) => {
