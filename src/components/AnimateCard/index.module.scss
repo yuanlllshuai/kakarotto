@@ -21,38 +21,55 @@
     align-items: center;
     // transform: translate();
   }
+  
 
   @for $i from 1 through 4 {
     & > div:nth-child(#{1 + 4 - $i}) {
-      left: -300px;
+      left: 16px;
+      display: none;
       bottom: ($i - 1) * 200px+30px;
       -webkit-transform: rotateY(20deg);
       transform: rotateY(20deg);
-      transition: left 2.4s - $i * 0.2 ease-in-out;
+      animation-duration: 2.4s - $i * 0.2;
+      // animation-timing-function: ease-in-out;
     }
   }
 
   @for $i from 5 through 8 {
     & > div:nth-child(#{5 + 8 - $i}) {
-      right: -300px;
+      right: 16px;
+      display: none;
       bottom: ($i - 5) * 200px+30px;
       -webkit-transform: rotateY(-20deg);
       transform: rotateY(-20deg);
-      transition: right 2.4s - ($i - 4) * 0.2 ease-in-out;
+      animation-duration: 2.4s - ($i - 4) * 0.2;
+      // animation-timing-function: ease-in-out;
     }
   }
+}
+
+@keyframes slidenLeft {
+  from { transform: rotateY(20deg) translateX(-300px); }
+  to { transform: rotateY(20deg) translateX(0px); }
+}
+@keyframes slidenRight {
+  from { transform: rotateY(-20deg) translateX(300px); }
+  to { transform: rotateY(-20deg) translateX(0px); }
 }
 
 .begin {
   @for $i from 1 through 4 {
     & > div:nth-child(#{$i}) {
-      left: 16px;
+      display: block;
+      animation-name: slidenLeft;
     }
   }
 
   @for $i from 5 through 8 {
     & > div:nth-child(#{$i}) {
-      right: 16px;
+      // right: 16px;
+      display: block;
+      animation-name: slidenRight;
     }
   }
 }
