@@ -25,6 +25,7 @@ const MapModel = ({ begin, setCardBegin }: any) => {
   // 是否展示标签
   // const [showTag, setShowTag] = useState(false);
   // const [borderLine, setBorderLine] = useState<any>({});
+  const [borderLines, setBorderLines] = useState<any[]>([]);
   // 流光轨迹
   const [flowLight, setFlowLight] = useState<any>();
   // 流光纹理
@@ -84,13 +85,17 @@ const MapModel = ({ begin, setCardBegin }: any) => {
   useEffect(() => {
     if (scene) {
       const blockColors: any = {};
+      const borders: any = [];
+      // console.log(111, scene);
       scene.traverse((child: any) => {
         if (child.isMesh) {
-          if (child.name.includes("市")) {
+          if (child.name.includes("市") || child.name === "三门峡") {
+            // child.material.color = new THREE.Color("#567");
             const hsl = { h: 0, s: 0, l: 0 };
             child.material.color.getHSL(hsl);
             blockColors[child.uuid] = { ...hsl };
-            dealCity(child);
+            const border = dealCity(child);
+            borders.push(border);
           }
           if (child.name.includes("河南边界")) {
             dealBorder(child);
@@ -112,6 +117,7 @@ const MapModel = ({ begin, setCardBegin }: any) => {
         }
       });
       blockColorMapRef.current = blockColors;
+      setBorderLines(borders);
     }
   }, [scene]);
 
@@ -160,6 +166,10 @@ const MapModel = ({ begin, setCardBegin }: any) => {
     mesh.material.opacity = 0.7;
     // 0.165
     mesh.position.y = -0.8;
+    const edgesGeometry = new THREE.EdgesGeometry(mesh.geometry);
+    const positions = edgesGeometry.attributes.position.array;
+    const borderLine = getBorderLine(mesh, positions);
+    return borderLine;
   };
 
   // 过滤不正确的坐标点
@@ -257,20 +267,35 @@ const MapModel = ({ begin, setCardBegin }: any) => {
     setFlowLight(tubeMesh);
 
     // 边缘线
-    // const lineGeometry = new THREE.BufferGeometry();
-    // lineGeometry.setAttribute(
-    //   "position",
-    //   new THREE.BufferAttribute(positions, 3)
-    // );
-    // const lineMaterial = new THREE.LineBasicMaterial({
-    //   color: 0xffffff,
-    //   linewidth: 1,
-    // });
-    // const line = new THREE.LineSegments(lineGeometry, lineMaterial);
-    // line.position.copy(mesh.position);
-    // line.rotation.copy(mesh.rotation);
-    // line.scale.copy(mesh.scale);
-    // line.position.y = 0.56;
+    // getBorderLine(mesh, positions);
+  };
+
+  const getBorderLine = (mesh: any, positions: any) => {
+    const lineGeometry = new THREE.BufferGeometry();
+    lineGeometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(positions, 3)
+    );
+    lineGeometry.applyMatrix4(
+      new THREE.Matrix4().makeTranslation(
+        mesh.position.x + 47.8,
+        mesh.position.y,
+        mesh.position.z - 0.47
+      )
+    );
+    const lineMaterial = new THREE.LineBasicMaterial({
+      color: 0xffffff,
+      linewidth: 1,
+      opacity: 0.7,
+      transparent: true,
+    });
+    const line = new THREE.LineSegments(lineGeometry, lineMaterial);
+    line.position.set(0, 0, 0);
+    line.rotation.copy(mesh.rotation);
+    line.scale.copy(mesh.scale);
+    // line.position.y += 0.359;
+    line.position.y = 1.35;
+    return line;
     // setBorderLine(line);
   };
 
@@ -365,7 +390,10 @@ const MapModel = ({ begin, setCardBegin }: any) => {
     }
     if (hits.length > 0) {
       const intersect: any = hits[0];
-      if (intersect.object.name.includes("市")) {
+      if (
+        intersect.object.name.includes("市") ||
+        intersect.object.name === "三门峡"
+      ) {
         intersectRef.current = intersect;
         setMeshColor(intersect.object.uuid);
       }
@@ -377,7 +405,10 @@ const MapModel = ({ begin, setCardBegin }: any) => {
     if (partRef.current) {
       (partRef.current as any).children[2].children[0].children.forEach(
         (child: any) => {
-          if (child.isMesh && child.name.includes("市")) {
+          if (
+            child.isMesh &&
+            (child.name.includes("市") || child.name === "三门峡")
+          ) {
             if (child.uuid === uuid) {
               const hsl = { ...blockColorMapRef.current[child.uuid] };
               hsl.l += 0.2;
@@ -425,11 +456,20 @@ const MapModel = ({ begin, setCardBegin }: any) => {
         // 地面高度增加
         (partRef.current as any).children[2].children[0].children.forEach(
           (child: any) => {
-            if (child.isMesh && child.name.includes("市")) {
+            if (
+              child.isMesh &&
+              (child.name.includes("市") || child.name === "三门峡")
+            ) {
               child.position.y += speed2;
             }
           }
         );
+        // const speed4 = 0.981 / times;
+        // if (borderLines.length > 0 && borderLines?.[0].position?.y < 1.327) {
+        //   borderLines.forEach((i) => {
+        //     i.position.y += speed4;
+        //   });
+        // }
         // 流光高度增加
         flowLight.position.y += speed2;
       } else {
@@ -479,6 +519,7 @@ const MapModel = ({ begin, setCardBegin }: any) => {
       <InstancedGridOfSquares />
       <Wave />
       {/* {borderLine && <primitive object={borderLine} />} */}
+      {mapAnimationEnd && borderLines.map((i) => <primitive object={i} />)}
       {flowLight && <primitive object={flowLight} />}
       <Name begin={begin} />
       <LightCylinder

@@ -16,7 +16,6 @@
     // border: 1px solid red;
     background-color: rgba(255, 255, 255, 0.2);
     border-radius: 4px;
-    display: flex;
     justify-content: center;
     align-items: center;
     // transform: translate();
@@ -26,7 +25,8 @@
   @for $i from 1 through 4 {
     & > div:nth-child(#{1 + 4 - $i}) {
       left: 16px;
-      display: none;
+      // display: none;
+      opacity: 0;
       bottom: ($i - 1) * 200px+30px;
       -webkit-transform: rotateY(20deg);
       transform: rotateY(20deg);
@@ -38,7 +38,7 @@
   @for $i from 5 through 8 {
     & > div:nth-child(#{5 + 8 - $i}) {
       right: 16px;
-      display: none;
+      opacity: 0;
       bottom: ($i - 5) * 200px+30px;
       -webkit-transform: rotateY(-20deg);
       transform: rotateY(-20deg);
@@ -49,26 +49,28 @@
 }
 
 @keyframes slidenLeft {
-  from { transform: rotateY(20deg) translateX(-300px); }
-  to { transform: rotateY(20deg) translateX(0px); }
+  from { transform: rotateY(20deg) translateX(-300px); opacity: 0 }
+  to { transform: rotateY(20deg) translateX(0px); opacity: 1}
 }
 @keyframes slidenRight {
-  from { transform: rotateY(-20deg) translateX(300px); }
-  to { transform: rotateY(-20deg) translateX(0px); }
+  from { transform: rotateY(-20deg) translateX(300px); opacity: 0;}
+  to { transform: rotateY(-20deg) translateX(0px); opacity: 1}
 }
 
 .begin {
   @for $i from 1 through 4 {
     & > div:nth-child(#{$i}) {
-      display: block;
+      display: flex;
       animation-name: slidenLeft;
+      opacity: 1;
     }
   }
 
   @for $i from 5 through 8 {
     & > div:nth-child(#{$i}) {
       // right: 16px;
-      display: block;
+      display: flex;
+      opacity: 1;
       animation-name: slidenRight;
     }
   }
