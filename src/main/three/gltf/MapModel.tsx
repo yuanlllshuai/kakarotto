@@ -18,13 +18,7 @@ const MapModel = ({ begin, setCardBegin }: any) => {
   const { gl } = useThree();
   const { scene } = useGLTF("/gltf_models/map/map.gltf");
   // const { scene } = useGLTF('http://111.229.183.248/gltf_models/girl/scene.gltf');
-  // const [labelPosition, setLabelPosition] = useState<any>({ x: 0, y: 0, z: 0 });
-  // const [labelText, setLabelText] = useState("");
-  // 标签缩放比例
-  // const [labelScale, setLabelScale] = useState(1);
-  // 是否展示标签
-  // const [showTag, setShowTag] = useState(false);
-  // const [borderLine, setBorderLine] = useState<any>({});
+
   const [borderLines, setBorderLines] = useState<any[]>([]);
   // 流光轨迹
   const [flowLight, setFlowLight] = useState<any>();
@@ -95,7 +89,7 @@ const MapModel = ({ begin, setCardBegin }: any) => {
             child.material.color.getHSL(hsl);
             blockColors[child.uuid] = { ...hsl };
             const border = dealCity(child);
-            borders.push(border);
+            borders.push({ border, name: child.name });
           }
           if (child.name.includes("河南边界")) {
             dealBorder(child);
@@ -111,8 +105,7 @@ const MapModel = ({ begin, setCardBegin }: any) => {
             child.material.opacity = 0;
           }
           if (child.name === "底边界") {
-            child.material.transparent = true;
-            child.material.opacity = 0.3;
+            child.visible = false;
           }
         }
       });
@@ -166,6 +159,7 @@ const MapModel = ({ begin, setCardBegin }: any) => {
     mesh.material.opacity = 0.7;
     // 0.165
     mesh.position.y = -0.8;
+    // mesh.position.y = -2;
     const edgesGeometry = new THREE.EdgesGeometry(mesh.geometry);
     const positions = edgesGeometry.attributes.position.array;
     const borderLine = getBorderLine(mesh, positions);
@@ -221,7 +215,7 @@ const MapModel = ({ begin, setCardBegin }: any) => {
     const tubeGeometry = new THREE.TubeGeometry(
       smoothCurve,
       len,
-      0.08,
+      0.05,
       8,
       false
     );
@@ -284,10 +278,10 @@ const MapModel = ({ begin, setCardBegin }: any) => {
       )
     );
     const lineMaterial = new THREE.LineBasicMaterial({
-      color: 0xffffff,
+      color: 0xb1d2ff,
       linewidth: 1,
-      opacity: 0.7,
-      transparent: true,
+      // opacity: 0.3,
+      // transparent: true,
     });
     const line = new THREE.LineSegments(lineGeometry, lineMaterial);
     line.position.set(0, 0, 0);
@@ -519,7 +513,8 @@ const MapModel = ({ begin, setCardBegin }: any) => {
       <InstancedGridOfSquares />
       <Wave />
       {/* {borderLine && <primitive object={borderLine} />} */}
-      {mapAnimationEnd && borderLines.map((i) => <primitive object={i} />)}
+      {mapAnimationEnd &&
+        borderLines.map((i) => <primitive object={i.border} key={i.name} />)}
       {flowLight && <primitive object={flowLight} />}
       <Name begin={begin} />
       <LightCylinder

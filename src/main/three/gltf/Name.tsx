@@ -1,7 +1,8 @@
 import { Html } from "@react-three/drei";
 import style from "./style.module.scss";
+import { memo } from "react";
 
-const PointLabel = ({ begin }: { begin: boolean }) => {
+const PointLabel = memo(({ begin }: { begin: boolean }) => {
   return (
     <>
       <Html
@@ -15,6 +16,6 @@ const PointLabel = ({ begin }: { begin: boolean }) => {
       </Html>
     </>
   );
-};
+});
 
 export default PointLabel;
