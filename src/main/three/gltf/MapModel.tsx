@@ -12,7 +12,6 @@ import Name from "./Name";
 import LightCylinder from "./LightCylinder";
 import mapHeightPng from "../res/border.png";
 import { lablePoints } from "./const";
-// import { Rain } from "./weather/rain.js";
 
 const MapModel = ({ begin, setCardBegin }: any) => {
   const { gl } = useThree();
@@ -21,9 +20,9 @@ const MapModel = ({ begin, setCardBegin }: any) => {
 
   const [borderLines, setBorderLines] = useState<any[]>([]);
   // 流光轨迹
-  const [flowLight, setFlowLight] = useState<any>();
+  const [flowLight, setFlowLight] = useState<any[]>([]);
   // 流光纹理
-  const [flowLightTexture, setFlowLightTexture] = useState<any>();
+  const [flowLightTexture, setFlowLightTexture] = useState<any[]>([]);
 
   // const [borderLine, setBorderLine] = useState<any>();
   // 地图动画是否结束
@@ -95,7 +94,11 @@ const MapModel = ({ begin, setCardBegin }: any) => {
             dealBorder(child);
           }
           if (child.name.includes("挤压")) {
-            dealFlowLight(child);
+            const [texture1, tubeMesh1] = dealFlowLight(child);
+            const [texture2, tubeMesh2] = dealFlowLight(child);
+            texture2.offset.y = 0.25;
+            setFlowLight([tubeMesh1, tubeMesh2]);
+            setFlowLightTexture([texture1, texture2]);
           }
           if (child.name.includes("光柱")) {
             child.visible = false;
@@ -215,7 +218,7 @@ const MapModel = ({ begin, setCardBegin }: any) => {
     const tubeGeometry = new THREE.TubeGeometry(
       smoothCurve,
       len,
-      0.05,
+      0.06,
       8,
       false
     );
@@ -234,12 +237,14 @@ const MapModel = ({ begin, setCardBegin }: any) => {
       gradient.addColorStop(0.5, "rgba(255,255,255,0)");
       gradient.addColorStop(0.6, "rgba(255,255,255,0)");
       gradient.addColorStop(0.7, "rgba(255,255,255,0)");
+      gradient.addColorStop(0.8, "rgba(255,255,255,0)");
+      gradient.addColorStop(0.9, "rgba(255,255,255,0)");
       gradient.addColorStop(1, "rgba(255,255,255,0)");
     };
     createGradient(gradient, "#A020F0");
     context.fillStyle = gradient;
     context.fillRect(0, 0, 1, 100);
-    const texture = new THREE.CanvasTexture(canvas);
+    const texture: any = new THREE.CanvasTexture(canvas);
     texture.repeat.set(0, 1);
     texture.wrapS = THREE.RepeatWrapping; // 防止拉伸
     texture.wrapT = THREE.RepeatWrapping; // 防止拉伸
@@ -251,14 +256,15 @@ const MapModel = ({ begin, setCardBegin }: any) => {
       depthWrite: false,
       depthTest: false,
     });
-    setFlowLightTexture(texture);
+    // setFlowLightTexture(texture);
     const tubeMesh = new THREE.Mesh(tubeGeometry, material);
     tubeMesh.position.copy(mesh.position);
     tubeMesh.rotation.copy(mesh.rotation);
     tubeMesh.scale.copy(mesh.scale);
     tubeMesh.position.y = -0.46;
     // tubeMesh.position.y -= 0.46;
-    setFlowLight(tubeMesh);
+    return [texture, tubeMesh];
+    // setFlowLight(tubeMesh);
 
     // 边缘线
     // getBorderLine(mesh, positions);
@@ -432,7 +438,9 @@ const MapModel = ({ begin, setCardBegin }: any) => {
     // 流光动画
     if (flowLightTexture) {
       mapBorderCountRef.current += 0.001;
-      flowLightTexture.offset.y = 1 - (mapBorderCountRef.current % 1);
+      flowLightTexture.forEach((texture: any) => {
+        texture.offset.y -= 0.001;
+      });
     }
 
     // 地图厚度动画
@@ -465,7 +473,10 @@ const MapModel = ({ begin, setCardBegin }: any) => {
         //   });
         // }
         // 流光高度增加
-        flowLight.position.y += speed2;
+        // flowLight.position.y += speed2;
+        flowLight.forEach((i: any) => {
+          i.position.y += speed2;
+        });
       } else {
         setMapAnimationEnd(true);
       }
@@ -515,7 +526,10 @@ const MapModel = ({ begin, setCardBegin }: any) => {
       {/* {borderLine && <primitive object={borderLine} />} */}
       {mapAnimationEnd &&
         borderLines.map((i) => <primitive object={i.border} key={i.name} />)}
-      {flowLight && <primitive object={flowLight} />}
+      {/* {flowLight && <primitive object={flowLight} />} */}
+      {flowLight.map((i, index) => (
+        <primitive object={i} key={index} />
+      ))}
       <Name begin={begin} />
       <LightCylinder
         mapAnimationEnd={mapAnimationEnd}
