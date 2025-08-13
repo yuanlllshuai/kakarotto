@@ -1,21 +1,32 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Box } from "@/utils/3D/threejs";
 import { useResize } from "@/utils/hooks";
 import styles from "./index.module.scss";
+import { Segmented } from "antd";
 
 const Index = () => {
   const domRef = useRef<any>(null);
-  const lineRef = useRef<any>(null);
+  const boxRef = useRef<any>(null);
+  const [lightType, setLightType] = useState<number>(0);
+
+  useEffect(() => {
+    return () => {
+      if (boxRef.current) {
+        boxRef.current.destroyGUI();
+      }
+    };
+  }, []);
 
   const load = (size: any) => {
-    lineRef.current = new Box({
+    boxRef.current = new Box({
       id: "threeBox",
       size,
       axesHelper: true,
-      light: false,
+      light: false, // 关闭默认光源
+      lightType,
       animateHandle,
     });
-    lineRef.current.start();
+    boxRef.current.start();
   };
 
   const animateHandle = (time: number, ins: any) => {
@@ -30,10 +41,26 @@ const Index = () => {
     cb: load,
   });
 
+  const lightChange = (value: number) => {
+    setLightType(value);
+    boxRef.current.setLightType(value);
+  };
+
   return (
-    <>
+    <div className={styles.container}>
+      <div className={styles.control}>
+        <Segmented
+          value={lightType}
+          onChange={lightChange}
+          options={[
+            { value: 0, label: "聚光灯" },
+            { value: 1, label: "点光源" },
+            { value: 2, label: "平行光" },
+          ]}
+        />
+      </div>
       <canvas id="threeBox" className={styles.container} ref={domRef} />
-    </>
+    </div>
   );
 };
 

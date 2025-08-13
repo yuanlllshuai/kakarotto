@@ -143,19 +143,53 @@ export class Base {
 
 export class Box extends Base {
 
+  currentLight: any = null;
+  lightHelper: any = null;
+  lightGUI: any = null;
+
   constructor(props: any) {
     super(props);
     this.createShape();
     this.addGround();
     // 背景光
     this.setHemisphereLight();
-    // // 点光源
-    // this.setPointLight();
-    // // 平行光
-    // this.setDirectionalLight();
-    // 聚光灯
-    this.setSpotLight();
+    this.setLightType(props.lightType);
   } 
+
+  setLightType(lightType: 0 | 1 | 2) {
+    // 移除旧光源、辅助对象和 GUI
+    if (this.currentLight) {
+      this.scene.remove(this.currentLight);
+      if (this.lightHelper) {
+        this.scene.remove(this.lightHelper);
+      }
+      if (this.lightGUI) {
+        this.lightGUI.destroy();
+      }
+      this.currentLight = null;
+      this.lightHelper = null;
+      this.lightGUI = null;
+    }
+    if (lightType === 1) {
+      // 点光源
+      this.setPointLight();
+    }
+    if (lightType === 2) { 
+      // 平行光
+      this.setDirectionalLight();
+    }
+    if (lightType === 0) { 
+      // 聚光灯
+      this.setSpotLight();
+    }
+  }
+
+  destroyGUI() {
+    if (this.lightGUI) {
+      this.lightGUI.destroy();
+      this.lightGUI = null;
+    }
+  }
 
   createShape() {
     // 盒子几何体
@@ -204,9 +238,9 @@ export class Box extends Base {
     const light = new THREE.HemisphereLight(skyColor, groundColor, intensity)
     this.scene.add(light);
     // gui
-    const gui = new GUI();
-    gui.addColor(new ColorGUIHelper(light, 'color'), 'value').name('skyColor');
-    gui.addColor(new ColorGUIHelper(light, 'groundColor'), 'value').name('groundColor');
+    // const gui = new GUI();
+    // gui.addColor(new ColorGUIHelper(light, 'color'), 'value').name('skyColor');
+    // gui.addColor(new ColorGUIHelper(light, 'groundColor'), 'value').name('groundColor');
     // gui.add(light, 'intensity', 0, 5, 0.01);
   }
 
@@ -223,14 +257,18 @@ export class Box extends Base {
     // gui
     const gui = new GUI();
     gui.addColor(new ColorGUIHelper(light, 'color'), 'value').name('color');
-    gui.add(light, 'intensity', 0, 5, 0.01);
-    gui.add(light.target.position, 'x', -10, 10);
-    gui.add(light.target.position, 'z', -10, 10);
-    gui.add(light.target.position, 'y', 0, 10);
+    gui.add(light, 'intensity', 0, 10, 0.01);
+    // gui.add(light.target.position, 'x', -10, 10);
+    // gui.add(light.target.position, 'z', -10, 10);
+    // gui.add(light.target.position, 'y', 0, 10);
 
     // helper
     const helper = new THREE.DirectionalLightHelper(light);
     this.scene.add(helper);
+
+    this.currentLight = light;
+    this.lightHelper = helper;
+    this.lightGUI = gui;
 
     function updateLight() {
       light.target.updateMatrixWorld();
@@ -259,6 +297,11 @@ export class Box extends Base {
     gui.addColor(new ColorGUIHelper(light, 'color'), 'value').name('color');
     gui.add(light, 'intensity', 0, 250, 1);
     gui.add(light, 'distance', 0, 40).onChange(updateLight);
+
+    this.currentLight = light;
+    this.lightHelper = helper;
+    this.lightGUI = gui;
+
     makeXYZGUI(gui, light.position, 'position', updateLight);
   }
 
@@ -280,12 +323,17 @@ export class Box extends Base {
     }
     const gui = new GUI();
     gui.addColor(new ColorGUIHelper(light, 'color'), 'value').name('color');
-    gui.add(light, 'intensity', 0, 5, 0.01);
-    gui.add(light.target.position, 'x', -10, 10);
-    gui.add(light.target.position, 'z', -10, 10);
-    gui.add(light.target.position, 'y', 0, 10);
-    gui.add(new DegRadHelper(light, 'angle'), 'value', 0, 45).name('angle').onChange(updateLight);
+    gui.add(light, 'intensity', 0, 300, 0.01);
+    // gui.add(light.target.position, 'x', -10, 10);
+    // gui.add(light.target.position, 'z', -10, 10);
+    // gui.add(light.target.position, 'y', 0, 10);
+    gui.add(new DegRadHelper(light, 'angle'), 'value', 0, 100).name('angle').onChange(updateLight);
     gui.add(light, 'penumbra', 0, 1, 0.01);
+
+    this.currentLight = light;
+    this.lightHelper = helper;
+    this.lightGUI = gui;
+
     makeXYZGUI(gui, light.position, 'position', updateLight);
     makeXYZGUI(gui, light.target.position, 'target', updateLight);
   }

@@ -2,4 +2,12 @@
     height: 100%;
     width: 100%;
     display: block;
+    position: relative;
+}
+
+.control{
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 1;
 }

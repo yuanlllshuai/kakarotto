@@ -64,6 +64,7 @@ function Index() {
   const render = () => {
     return (
       <div className={styles.model}>
+        <img src={mapPng} alt="" className={styles.img} />
         <Canvas
           shadows
           camera={{

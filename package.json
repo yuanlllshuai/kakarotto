@@ -15,7 +15,7 @@
     "@react-three/postprocessing": "^2.16.5",
     "@types/lodash": "^4.17.20",
     "@types/three": "^0.164.0",
-    "antd": "^5.17.4",
+    "antd": "^5.27.0",
     "axios": "^1.6.8",
     "classnames": "^2.5.1",
     "lil-gui": "^0.20.0",
