@@ -1,11 +1,10 @@
 // $card-height: 190px;
 // $card-width: 320px;
 // $card-gap: 30px;
-// $card-botomm: 30px;
+
 $card-height: 19vh;
 $card-width: $card-height * 1.6;
-$card-gap: 3vh;
-$card-botomm: 3vh;
+$card-gap: 2vh;
 
 .layout{
   position: absolute;
@@ -41,10 +40,10 @@ $card-botomm: 3vh;
 
   @for $i from 1 through 4 {
     & > div:nth-child(#{1 + 4 - $i}) {
-      left: 16px;
+      left: $card-gap;
       // display: none;
       opacity: 0;
-      bottom: ($i - 1) *  ($card-height + $card-gap) + $card-botomm;
+      bottom: ($i - 1) *  ($card-height + $card-gap) + $card-gap;
       -webkit-transform: rotateY(20deg);
       transform: rotateY(20deg);
       animation-duration: 2.4s - $i * 0.2;
@@ -54,9 +53,9 @@ $card-botomm: 3vh;
 
   @for $i from 5 through 8 {
     & > div:nth-child(#{5 + 8 - $i}) {
-      right: 16px;
+      right: $card-gap;
       opacity: 0;
-      bottom: ($i - 5) * ($card-height + $card-gap) + $card-botomm;
+      bottom: ($i - 5) * ($card-height + $card-gap) + $card-gap;
       -webkit-transform: rotateY(-20deg);
       transform: rotateY(-20deg);
       animation-duration: 2.4s - ($i - 4) * 0.2;
