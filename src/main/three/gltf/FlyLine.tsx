@@ -5,6 +5,8 @@ import * as THREE from "three";
 const createGradient = (gradient: any, color: string) => {
   gradient.addColorStop(0, "rgba(255,255,255,0)");
   gradient.addColorStop(0.01, color);
+  gradient.addColorStop(0.05, "rgba(148, 0, 211,0.1)");
+  gradient.addColorStop(0.1, "rgba(148, 0, 211,0.05)");
   gradient.addColorStop(0.3, "rgba(255,255,255,0)");
   gradient.addColorStop(0.4, "rgba(255,255,255,0)");
   gradient.addColorStop(0.5, "rgba(255,255,255,0)");

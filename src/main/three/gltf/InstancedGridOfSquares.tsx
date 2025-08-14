@@ -2,6 +2,23 @@ import { useEffect, useState, useRef, memo } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
+const vertexShader = `
+  varying float vDistance;
+  void main() {
+    vec4 worldPosition = modelMatrix * instanceMatrix * vec4(position, 1.0);
+    vDistance = length(worldPosition.xyz);
+    gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0);
+  }
+`;
+
+const fragmentShader = `
+  varying float vDistance;
+  void main() {
+    float opacity = 1.0 - smoothstep(0.0, 80.0, vDistance);
+    gl_FragColor = vec4(0.118, 0.565, 1.0, opacity*0.3);
+  }
+`;
+
 const InstancedGridOfSquares = memo(() => {
   const instancedMeshRef = useRef<any>(null);
   const [instancedMesh, setInstancedMesh] = useState<any>(null);
@@ -12,15 +29,11 @@ const InstancedGridOfSquares = memo(() => {
     const numSquaresPerColumn = 400;
     const totalSquares = numSquaresPerRow * numSquaresPerColumn;
     const geometry = new THREE.PlaneGeometry(0.06, 0.06);
-    const material = new THREE.MeshBasicMaterial({
-      color: 0x1e90ff,
-      // vertexColors:true,
+    const material = new THREE.ShaderMaterial({
+      vertexShader,
+      fragmentShader,
       transparent: true,
-      opacity: 0.2,
       side: THREE.DoubleSide,
-
-      // depthWrite:false,
-      // depthTest:false
     });
 
     const instancedMesh = new THREE.InstancedMesh(
@@ -28,13 +41,7 @@ const InstancedGridOfSquares = memo(() => {
       material,
       totalSquares
     );
-    // const colors = new Float32Array(totalSquares * 3);
-    // for (let i = 0; i < totalSquares; i++) {
-    //   colors[i * 3] = 0; // Red component
-    //   colors[i * 3 + 1] = 0.1; // Green component
-    //   colors[i * 3 + 2] = 0; // Blue component
-    // }
-    // geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
     for (let i = 0; i < numSquaresPerRow; i++) {
       for (let j = 0; j < numSquaresPerColumn; j++) {
         const x = (i - (numSquaresPerRow - 1) / 2) * 0.4;
