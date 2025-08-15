@@ -1,5 +1,3 @@
-import { color } from "echarts";
-
 export const chartOptions = [
   // line chart
   {
@@ -354,14 +352,8 @@ export const chartOptions = [
       ],
     },
   },
+  // funnel chart
   {
-    toolbox: {
-      feature: {
-        dataView: { readOnly: false },
-        restore: {},
-        saveAsImage: {},
-      },
-    },
     series: [
       {
         name: "Funnel",

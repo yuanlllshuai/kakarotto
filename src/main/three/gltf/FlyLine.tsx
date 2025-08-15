@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { memo } from "react";
 
 const createGradient = (gradient: any, color: string) => {
   gradient.addColorStop(0, "rgba(255,255,255,0)");
@@ -15,7 +16,7 @@ const createGradient = (gradient: any, color: string) => {
   gradient.addColorStop(1, "rgba(255,255,255,0)");
 };
 
-const FlyLine = ({ position }: any) => {
+const FlyLine = memo(({ position }: any) => {
   const linrOffset = 1;
 
   const [curve, setCurve] = useState<any>();
@@ -78,6 +79,6 @@ const FlyLine = ({ position }: any) => {
       </mesh>
     </>
   );
-};
+});
 
 export default FlyLine;

@@ -10,8 +10,8 @@ import styles from "./index.module.scss";
 import * as THREE from "three";
 
 import MapModel from "./MapModel";
-import screenfull from "screenfull";
 import AnimateCard from "@/components/AnimateCard";
+import ScreenFull from "@/components/ScreenFull";
 
 const Camera = ({ setBegin, begin }: any) => {
   // const [curve, setCurve] = useState<any>();
@@ -82,7 +82,6 @@ export const Component = () => {
   const { progress } = useProgress();
   const [loading, setLoading] = useState<boolean>(true);
   const [begin, setBegin] = useState<boolean>(false);
-  const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
   const [cardBegin, setCardBegin] = useState<boolean>(false);
 
   useEffect(() => {
@@ -92,32 +91,6 @@ export const Component = () => {
       }, 500);
     }
   }, [progress]);
-
-  useEffect(() => {
-    if (screenfull.isEnabled) {
-      screenfull.on("change", fullChange);
-    }
-    return () => {
-      if (screenfull.isEnabled) {
-        screenfull.off("change", fullChange);
-      }
-    };
-  });
-
-  const fullChange = () => {
-    setIsFullScreen(screenfull.isFullscreen);
-  };
-
-  const screenFull = () => {
-    const fullDom = document.getElementById("screen-map-model");
-    if (screenfull.isEnabled) {
-      if (!isFullScreen) {
-        screenfull.request(fullDom as Element);
-      } else {
-        screenfull.exit();
-      }
-    }
-  };
 
   const render = () => {
     return (
@@ -150,10 +123,7 @@ export const Component = () => {
           <Progress percent={progress} showInfo={false} />
         </div>
       )}
-      {render()}
-      <div className={styles.screenfull} onClick={screenFull}>
-        {isFullScreen ? "退出" : "全屏"}
-      </div>
+      <ScreenFull containerId="screen-map-model">{render()}</ScreenFull>
       <AnimateCard begin={cardBegin} />
     </div>
   );

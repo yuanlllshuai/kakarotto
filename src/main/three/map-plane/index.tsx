@@ -4,6 +4,7 @@ import { OrbitControls } from "@react-three/drei";
 import styles from "./index.module.scss";
 import * as THREE from "three";
 import mapPng from "@/assets/map6.png";
+import ScreenFull from "@/components/ScreenFull";
 
 const mapSize = 1000;
 const segments = mapSize - 1;
@@ -98,7 +99,11 @@ function Index() {
     );
   };
 
-  return <div className={styles.container}>{render()}</div>;
+  return (
+    <div className={styles.container} id="map-plane-container">
+      <ScreenFull containerId="map-plane-container">{render()}</ScreenFull>
+    </div>
+  );
 }
 
 export default Index;

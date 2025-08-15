@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, memo } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
 import { useGLTF, useTexture, CycleRaycast } from "@react-three/drei";
 import * as THREE from "three";
@@ -13,7 +13,7 @@ import LightCylinder from "./LightCylinder";
 import mapHeightPng from "../res/border.png";
 import { lablePoints } from "./const";
 
-const MapModel = ({ begin, setCardBegin }: any) => {
+const MapModel = memo(({ begin, setCardBegin }: any) => {
   const { gl } = useThree();
   const { scene } = useGLTF("/gltf_models/map/map.gltf");
   // const { scene } = useGLTF('http://111.229.183.248/gltf_models/girl/scene.gltf');
@@ -548,6 +548,6 @@ const MapModel = ({ begin, setCardBegin }: any) => {
       />
     </>
   );
-};
+});
 
 export default MapModel;

@@ -3,6 +3,7 @@ import { Box } from "@/utils/3D/threejs";
 import { useResize } from "@/utils/hooks";
 import styles from "./index.module.scss";
 import { Segmented } from "antd";
+import ScreenFull from "@/components/ScreenFull";
 
 const Index = () => {
   const domRef = useRef<any>(null);
@@ -36,7 +37,7 @@ const Index = () => {
   };
 
   useResize({
-    // once: true,
+    once: true,
     container: domRef,
     cb: load,
   });
@@ -47,7 +48,7 @@ const Index = () => {
   };
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} id="learn-three-container">
       <div className={styles.control}>
         <Segmented
           value={lightType}
@@ -59,7 +60,9 @@ const Index = () => {
           ]}
         />
       </div>
-      <canvas id="threeBox" className={styles.container} ref={domRef} />
+      <ScreenFull containerId="learn-three-container" position="top-center">
+        <canvas id="threeBox" className={styles.container} ref={domRef} />
+      </ScreenFull>
     </div>
   );
 };

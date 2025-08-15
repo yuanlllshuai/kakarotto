@@ -4,6 +4,7 @@ import { OrbitControls } from "@react-three/drei";
 import styles from "./index.module.scss";
 import * as THREE from "three";
 import mapPng from "@/assets/map6.png";
+import ScreenFull from "@/components/ScreenFull";
 
 const vertexShaderStr = `
 varying vec2 vUv;
@@ -63,7 +64,11 @@ function Index() {
     );
   };
 
-  return <div className={styles.container}>{render()}</div>;
+  return (
+    <div className={styles.container} id="shader-learn-container">
+      <ScreenFull containerId="shader-learn-container">{render()}</ScreenFull>
+    </div>
+  );
 }
 
 export default Index;

@@ -1,8 +1,8 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, memo } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 
-const Index = ({ position }: { position: THREE.Vector3 }) => {
+const Index = memo(({ position }: { position: THREE.Vector3 }) => {
   const [lightning, setLightning] = useState<any>(null);
 
   const pointRef = useRef<any>(null);
@@ -118,6 +118,6 @@ const Index = ({ position }: { position: THREE.Vector3 }) => {
   }
 
   return <primitive object={lightning} />;
-};
+});
 
 export default Index;
