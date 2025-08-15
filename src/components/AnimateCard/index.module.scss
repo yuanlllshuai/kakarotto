@@ -4,7 +4,8 @@
 
 $card-height: 19vh;
 $card-width: $card-height * 1.6;
-$card-gap: 2vh;
+$card-gap: 3vh;
+$card-margin: 2vh;
 
 .layout{
   position: absolute;
@@ -30,7 +31,8 @@ $card-gap: 2vh;
     width: $card-width;
     height: $card-height;
     // border: 1px solid red;
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(2, 3, 34,0.5);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 4px;
     justify-content: center;
     align-items: center;
@@ -40,7 +42,7 @@ $card-gap: 2vh;
 
   @for $i from 1 through 4 {
     & > div:nth-child(#{1 + 4 - $i}) {
-      left: $card-gap;
+      left: $card-margin;
       // display: none;
       opacity: 0;
       bottom: ($i - 1) *  ($card-height + $card-gap) + $card-gap;
@@ -53,7 +55,7 @@ $card-gap: 2vh;
 
   @for $i from 5 through 8 {
     & > div:nth-child(#{5 + 8 - $i}) {
-      right: $card-gap;
+      right: $card-margin;
       opacity: 0;
       bottom: ($i - 5) * ($card-height + $card-gap) + $card-gap;
       -webkit-transform: rotateY(-20deg);

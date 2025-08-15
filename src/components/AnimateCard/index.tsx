@@ -1,7 +1,8 @@
 import styles from "./index.module.scss";
 import classNames from "classnames";
 import { memo, useEffect, useState } from "react";
-import { div } from "three/examples/jsm/nodes/Nodes.js";
+import ReactECharts from "echarts-for-react";
+import { chartOptions } from "./const";
 
 const Index = memo(({ begin }: { begin: boolean }) => {
   let resizeObserver: ResizeObserver | null = null;
@@ -38,7 +39,6 @@ const Index = memo(({ begin }: { begin: boolean }) => {
 
   const computedScale = () => {
     const container: any = document.getElementById("animate-card-container");
-    // console.log(container.clientWidth);
     const zoomValue = container.clientWidth / window.innerWidth;
     setScale(zoomValue);
   };
@@ -49,21 +49,25 @@ const Index = memo(({ begin }: { begin: boolean }) => {
         className={classNames(styles.container, { [styles.begin]: begin })}
         style={{
           width: window.innerWidth,
-          // height: `${1080}px`,
-          // height: 20,
-          // border: "1px solid red",
           transform: `scale(${scale})`,
           transformOrigin: "0 0",
         }}
       >
-        {data.map((item) => (
-          <div
-            key={item}
-            // style={{ transform: `scale(${scale})`, transformOrigin: "0 0" }}
-          >
-            {item}
-          </div>
-        ))}
+        {data.map((item, index) =>
+          chartOptions?.[index] ? (
+            <div key={item}>
+              <ReactECharts
+                option={chartOptions[index]}
+                style={{ height: "100%", width: "100%" }}
+                notMerge={true}
+                lazyUpdate={true}
+                theme={"theme_name"}
+              />
+            </div>
+          ) : (
+            <div key={item}></div>
+          )
+        )}
       </div>
     </div>
   );
