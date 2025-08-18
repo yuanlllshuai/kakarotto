@@ -1,21 +1,28 @@
-import { useState, useRef, memo, useMemo } from "react";
+import { useRef, memo, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 const Wave = memo(() => {
-  const [radius, setRadius] = useState(0);
-  const [opacity, setOpacity] = useState(1);
-
   const circleRef = useRef<any>();
+  const materialRef = useRef<any>();
   const countRef = useRef(0);
+  const isConsole = useRef(false);
 
   useFrame(() => {
     if (circleRef.current) {
       countRef.current += 0.2;
       const r = 0 + (countRef.current % 40);
       const o = 1 - ((countRef.current / 40) % 1);
-      setRadius(r);
-      setOpacity(o);
+      // setRadius(r);
+      circleRef.current.scale.set(r, r, r);
+      // circleRef.current.scale.needsUpdate = true;
+      // setOpacity(o);
+      materialRef.current.opacity = o;
+
+      if (!isConsole.current) {
+        // console.log(circleRef.current);
+        isConsole.current = true; // 只打印一次
+      }
     }
   });
 
@@ -51,13 +58,19 @@ const Wave = memo(() => {
   }, []);
 
   return (
-    <mesh ref={circleRef} position={[0, -0.4, 0]} rotation-x={Math.PI / 2}>
-      <circleGeometry args={[radius, 40]} />
+    <mesh
+      ref={circleRef}
+      position={[0, -0.4, 0]}
+      rotation-x={Math.PI / 2}
+      scale={5}
+    >
+      <circleGeometry args={[1, 40]} />
       <meshBasicMaterial
         // color="#FFF"
+        ref={materialRef}
         map={createGradientTexture}
         transparent
-        opacity={opacity}
+        opacity={0}
         side={THREE.DoubleSide}
         depthWrite={false}
         depthTest={false}

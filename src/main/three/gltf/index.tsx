@@ -96,7 +96,6 @@ export const Component = () => {
     return (
       <div className={styles.model} style={{ opacity: loading ? 0 : 1 }}>
         <Canvas
-          frameloop={"demand"}
           // camera={{ position: [20, 6, 20] }}
           scene={{
             background: new THREE.Color("rgb(2, 3, 34)"),

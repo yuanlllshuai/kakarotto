@@ -348,40 +348,7 @@ const MapModel = memo(({ begin, setCardBegin }: any) => {
     ) {
       return;
     }
-    // setShowTag(false);
-    // showTagRef.current = false;
-    // setTimeout(() => {
-    //   setShowTag(true);
-    //   showTagRef.current = true;
-    //   setLabelPosition(intersectRef.current.point);
-    //   lastIntersectRef.current = intersectRef.current;
-    // }, 300);
     setMeshColor(intersectRef.current.object.uuid);
-    // setLabelText(intersectRef.current.object.name);
-    // console.log(intersectRef.current.point, intersectRef.current.object.name);
-    // raycaster.setFromCamera(mouse, camera);
-    // if (!partRef.current) {
-    //   return;
-    // }
-    // const intersects = raycaster.intersectObjects(
-    //   scene.children[2].children[0].children.filter((i) =>
-    //     i.name.includes("市")
-    //   )
-    // );
-    // if (intersects.length > 0) {
-    //   const intersect: any = intersects[0];
-    //   if (intersect.object.name.includes("市")) {
-    //     setShowTag(false);
-    //     showTagRef.current = false;
-    //     setTimeout(() => {
-    //       setShowTag(true);
-    //       showTagRef.current = true;
-    //       setLabelPosition(intersect.point);
-    //     }, 300);
-    //     setMeshColor(intersect.object.uuid);
-    //     setLabelText(intersect.object.name);
-    //   }
-    // }
   };
 
   const onRaycastChanged = (hits: THREE.Intersection[]) => {
@@ -423,14 +390,7 @@ const MapModel = memo(({ begin, setCardBegin }: any) => {
     }
   };
 
-  useFrame((_state, delta) => {
-    // const vector = new THREE.Vector3()
-    //   .copy({ x: 0, y: 0, z: 0 })
-    //   .sub(camera.position);
-    // const distance = vector.length();
-    // const newScale = 1 / (distance / 10);
-    // setLabelScale(Math.max(0.7, Math.min(0.8, newScale)));
-
+  useFrame(() => {
     // 地图边缘纹理动画
     mapHeightCountRef.current += 0.005;
     mapTexture.offset.y = 1 - (mapHeightCountRef.current % 1);
@@ -446,7 +406,7 @@ const MapModel = memo(({ begin, setCardBegin }: any) => {
     // 地图厚度动画
     if (beginRef.current) {
       const pending = 0.5; // 动画持续时间
-      const times = pending / delta; // 执行完动画的总帧数
+      const times = pending / 0.04; // 执行完动画的总帧数
 
       if (borderMeshRef.current && borderMeshRef.current.scale.y < 1) {
         const speed = 1 / times; // 每帧增加的厚度
@@ -466,18 +426,12 @@ const MapModel = memo(({ begin, setCardBegin }: any) => {
             }
           }
         );
-        // const speed4 = 0.981 / times;
-        // if (borderLines.length > 0 && borderLines?.[0].position?.y < 1.327) {
-        //   borderLines.forEach((i) => {
-        //     i.position.y += speed4;
-        //   });
-        // }
+
         // 流光高度增加
-        // flowLight.position.y += speed2;
         flowLight.forEach((i: any) => {
           i.position.y += speed2;
         });
-      } else {
+      } else if (!mapAnimationEnd) {
         setMapAnimationEnd(true);
       }
     }
@@ -522,7 +476,7 @@ const MapModel = memo(({ begin, setCardBegin }: any) => {
       {/* {labelPosition.x !== 0 && <FlyLine position={labelPosition} />} */}
       {mapAnimationEnd && <OriginPoint position={{ x: 0, z: 0, y: 0 }} />}
       <InstancedGridOfSquares />
-      <Wave />
+      {begin && <Wave />}
       {/* {borderLine && <primitive object={borderLine} />} */}
       {mapAnimationEnd &&
         borderLines.map((i) => <primitive object={i.border} key={i.name} />)}
@@ -530,7 +484,7 @@ const MapModel = memo(({ begin, setCardBegin }: any) => {
       {flowLight.map((i, index) => (
         <primitive object={i} key={index} />
       ))}
-      <Name begin={begin} />
+      {<Name begin={begin} />}
       <LightCylinder
         mapAnimationEnd={mapAnimationEnd}
         composerBegin={composerBegin}
