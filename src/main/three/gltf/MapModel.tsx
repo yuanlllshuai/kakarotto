@@ -13,6 +13,10 @@ import LightCylinder from "./LightCylinder";
 import mapHeightPng from "../res/border.png";
 import { lablePoints } from "./const";
 
+const INITFLOWLIGHTPOSITIONY = -0.46; // 流光初始位置Y
+const INITBORDERPOSITIONY = -0.8; // 边界初始位置Y
+const TARGETINCREASEHEIGHT = 1; // 动画增加高度
+
 const MapModel = memo(({ begin, setCardBegin }: any) => {
   const { gl } = useThree();
   const { scene } = useGLTF("/gltf_models/map/map.gltf");
@@ -59,6 +63,8 @@ const MapModel = memo(({ begin, setCardBegin }: any) => {
   // 鼠标射线检测引用
   const intersectRef = useRef<any>(null);
   const lastIntersectRef = useRef<any>(null);
+  // 缓动函数参数
+  const animationProgress = useRef(0);
 
   // 地图边缘纹理
   const [mapTexture] = useTexture([mapHeightPng]);
@@ -161,7 +167,7 @@ const MapModel = memo(({ begin, setCardBegin }: any) => {
     mesh.material.transparent = true;
     mesh.material.opacity = 0.7;
     // 0.165
-    mesh.position.y = -0.8;
+    mesh.position.y = INITBORDERPOSITIONY;
     // mesh.position.y = -2;
     const edgesGeometry = new THREE.EdgesGeometry(mesh.geometry);
     const positions = edgesGeometry.attributes.position.array;
@@ -261,8 +267,7 @@ const MapModel = memo(({ begin, setCardBegin }: any) => {
     tubeMesh.position.copy(mesh.position);
     tubeMesh.rotation.copy(mesh.rotation);
     tubeMesh.scale.copy(mesh.scale);
-    tubeMesh.position.y = -0.46;
-    // tubeMesh.position.y -= 0.46;
+    tubeMesh.position.y = INITFLOWLIGHTPOSITIONY;
     return [texture, tubeMesh];
     // setFlowLight(tubeMesh);
 
@@ -294,7 +299,7 @@ const MapModel = memo(({ begin, setCardBegin }: any) => {
     line.rotation.copy(mesh.rotation);
     line.scale.copy(mesh.scale);
     // line.position.y += 0.359;
-    line.position.y = 1.35;
+    line.position.y = 1.36;
     return line;
     // setBorderLine(line);
   };
@@ -303,7 +308,7 @@ const MapModel = memo(({ begin, setCardBegin }: any) => {
     mesh.material.map = mapTexture;
     mesh.material.metalness = 0;
     mesh.scale.y = 0.01;
-    mesh.position.y = -0.8;
+    mesh.position.y = INITBORDERPOSITIONY;
     // mesh.position.y = -0.26;
     // mesh.geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0.52, 0));
     borderMeshRef.current = mesh;
@@ -405,16 +410,24 @@ const MapModel = memo(({ begin, setCardBegin }: any) => {
 
     // 地图厚度动画
     if (beginRef.current) {
-      const pending = 0.25; // 动画持续时间
-      const times = pending / delta; // 执行完动画的总帧数
+      if (animationProgress.current < 1) {
+        const pending = 0.3; // 动画持续时间
+        animationProgress.current = Math.min(
+          1,
+          animationProgress.current + delta / pending
+        );
+        // Ease-out function (quadratic)  三次缓动函数
+        const easedProgress = 1 - Math.pow(1 - animationProgress.current, 3);
 
-      if (borderMeshRef.current && borderMeshRef.current.scale.y < 1) {
-        const speed = 1 / times; // 每帧增加的厚度
-        const speed3 = 0.54 / times;
-        // 地图厚度增加
-        borderMeshRef.current.scale.y += speed;
-        borderMeshRef.current.position.y += speed3;
-        const speed2 = (0.165 + 0.8) / times; // 每帧增加的高度
+        //   const speed = 1 / times; // 每帧增加的厚度
+        //   const speed3 = 0.54 / times;
+        //   // 地图厚度增加
+        borderMeshRef.current.scale.y = TARGETINCREASEHEIGHT * easedProgress;
+        borderMeshRef.current.position.y =
+          INITBORDERPOSITIONY +
+          easedProgress * (TARGETINCREASEHEIGHT / 2) +
+          0.06;
+        // const speed2 = (0.165 + 0.8) / times; // 每帧增加的高度
         // 地面高度增加
         (partRef.current as any).children[2].children[0].children.forEach(
           (child: any) => {
@@ -422,16 +435,44 @@ const MapModel = memo(({ begin, setCardBegin }: any) => {
               child.isMesh &&
               (child.name.includes("市") || child.name === "三门峡")
             ) {
-              child.position.y += speed2;
+              child.position.y =
+                INITBORDERPOSITIONY + TARGETINCREASEHEIGHT * easedProgress;
             }
           }
         );
 
         // 流光高度增加
         flowLight.forEach((i: any) => {
-          i.position.y += speed2;
+          i.position.y =
+            INITFLOWLIGHTPOSITIONY + TARGETINCREASEHEIGHT * easedProgress;
         });
-      } else if (!mapAnimationEnd) {
+      }
+      // const times = pending / delta; // 执行完动画的总帧数
+
+      // if (borderMeshRef.current && borderMeshRef.current.scale.y < 1) {
+      //   const speed = 1 / times; // 每帧增加的厚度
+      //   const speed3 = 0.54 / times;
+      //   // 地图厚度增加
+      //   borderMeshRef.current.scale.y += speed;
+      //   borderMeshRef.current.position.y += speed3;
+      //   const speed2 = (0.165 + 0.8) / times; // 每帧增加的高度
+      //   // 地面高度增加
+      //   (partRef.current as any).children[2].children[0].children.forEach(
+      //     (child: any) => {
+      //       if (
+      //         child.isMesh &&
+      //         (child.name.includes("市") || child.name === "三门峡")
+      //       ) {
+      //         child.position.y += speed2;
+      //       }
+      //     }
+      //   );
+
+      //   // 流光高度增加
+      //   flowLight.forEach((i: any) => {
+      //     i.position.y += speed2;
+      //   });
+      else if (!mapAnimationEnd) {
         setMapAnimationEnd(true);
       }
     }

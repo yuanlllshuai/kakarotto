@@ -5,6 +5,10 @@ import { memo } from "react";
 
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 
+const INITHEIGHT = 0.1; // 初始高度
+const INITPOSITIONY = INITHEIGHT / 2; // 初始位置Y
+const TARGETHEIGHT = 40; // 目标高度
+
 const Index = memo(
   ({
     mapAnimationEnd,
@@ -32,12 +36,10 @@ const Index = memo(
           );
           // Ease-out function (quadratic)  三次缓动函数
           const easedProgress = 1 - Math.pow(1 - animationProgress.current, 3);
-
           // Calculate final values with easing
-          const targetHeight = 40;
           cylinderRef.current.forEach((i) => {
-            i.scale.y = easedProgress * targetHeight;
-            i.position.y = 0 + easedProgress * 2.5;
+            i.scale.y = easedProgress * TARGETHEIGHT;
+            i.position.y = INITPOSITIONY + easedProgress * 2.5;
           });
         } else if (!isEnd) {
           setEnd(true);
@@ -49,7 +51,7 @@ const Index = memo(
       <>
         <Cylinder
           position={[0, 0, 0]}
-          args={[0.1, 0.1, 0.1, 32]}
+          args={[0.1, 0.1, INITHEIGHT, 32]}
           scale={[1, 0, 1]}
           ref={(el) => (cylinderRef.current[0] = el)}
           visible={mapAnimationEnd} // 仅在动画结束后显示圆柱体
@@ -63,7 +65,7 @@ const Index = memo(
         </Cylinder>
         <Cylinder
           position={[3, 0, 3]}
-          args={[0.1, 0.1, 0.1, 32]}
+          args={[0.1, 0.1, INITHEIGHT, 32]}
           scale={[1, 0, 1]}
           ref={(el) => (cylinderRef.current[1] = el)}
           visible={mapAnimationEnd} // 仅在动画结束后显示圆柱体
