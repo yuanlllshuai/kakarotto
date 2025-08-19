@@ -411,7 +411,7 @@ const MapModel = memo(({ begin, setCardBegin }: any) => {
     // 地图厚度动画
     if (beginRef.current) {
       if (animationProgress.current < 1) {
-        const pending = 0.3; // 动画持续时间
+        const pending = 0.4; // 动画持续时间
         animationProgress.current = Math.min(
           1,
           animationProgress.current + delta / pending
@@ -419,15 +419,12 @@ const MapModel = memo(({ begin, setCardBegin }: any) => {
         // Ease-out function (quadratic)  三次缓动函数
         const easedProgress = 1 - Math.pow(1 - animationProgress.current, 3);
 
-        //   const speed = 1 / times; // 每帧增加的厚度
-        //   const speed3 = 0.54 / times;
-        //   // 地图厚度增加
+        // 地图厚度增加
         borderMeshRef.current.scale.y = TARGETINCREASEHEIGHT * easedProgress;
         borderMeshRef.current.position.y =
           INITBORDERPOSITIONY +
           easedProgress * (TARGETINCREASEHEIGHT / 2) +
           0.06;
-        // const speed2 = (0.165 + 0.8) / times; // 每帧增加的高度
         // 地面高度增加
         (partRef.current as any).children[2].children[0].children.forEach(
           (child: any) => {
@@ -448,7 +445,6 @@ const MapModel = memo(({ begin, setCardBegin }: any) => {
         });
       }
       // const times = pending / delta; // 执行完动画的总帧数
-
       // if (borderMeshRef.current && borderMeshRef.current.scale.y < 1) {
       //   const speed = 1 / times; // 每帧增加的厚度
       //   const speed3 = 0.54 / times;
