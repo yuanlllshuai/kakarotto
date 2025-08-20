@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState, useRef } from "react";
+import { Suspense, useEffect, useState, useRef, memo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import {
   OrbitControls,
@@ -15,12 +15,12 @@ import ScreenFull from "@/components/ScreenFull";
 
 import * as TWEEN from "@tweenjs/tween.js";
 
-const Camera = ({ setBegin, begin, loading }: any) => {
+const Camera = memo(({ setBegin, begin, loading }: any) => {
   const cameraRef = useRef<any>(null);
   const tweenRef = useRef<any>(null);
 
   useEffect(() => {
-    if (loading) return;
+    if (loading || begin) return;
     const beginPos = [-18, 12, 12];
     const endPos = [-10, 10, 20];
     const startPoint = new THREE.Vector3(...beginPos);
@@ -40,7 +40,7 @@ const Camera = ({ setBegin, begin, loading }: any) => {
         }
       })
       .start();
-  }, [loading]);
+  }, [loading, begin]);
 
   useFrame(() => {
     tweenRef.current.update(); // Update tween animations
@@ -56,7 +56,7 @@ const Camera = ({ setBegin, begin, loading }: any) => {
       />
     </>
   );
-};
+});
 
 // const Camera = ({ setBegin, begin }: any) => {
 //   const [curve, setCurve] = useState<any>();
