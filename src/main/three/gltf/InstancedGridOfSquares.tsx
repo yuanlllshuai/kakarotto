@@ -22,6 +22,11 @@ const fragmentShader = `
 const numSquaresPerRow = 400;
 const numSquaresPerColumn = 400;
 
+// 将重复使用的变量提取到组件外部
+const upVector = new THREE.Vector3(0, 1, 0);
+const tempMatrix = new THREE.Matrix4();
+const tempPosition = new THREE.Vector3();
+
 const InstancedGridOfSquares = memo(({ begin }: { begin: boolean }) => {
   const instancedMeshRef = useRef<any>(null);
   const [instancedMesh, setInstancedMesh] = useState<any>(null);
@@ -61,14 +66,14 @@ const InstancedGridOfSquares = memo(({ begin }: { begin: boolean }) => {
     if (instancedMeshRef.current && begin) {
       const totalSquares = numSquaresPerRow * numSquaresPerColumn;
       const cameraPosition = camera.position;
-      const upVector = new THREE.Vector3(0, 1, 0);
+
       for (let i = 0; i < totalSquares; i++) {
-        const matrix = new THREE.Matrix4();
-        const position = new THREE.Vector3();
-        instancedMeshRef.current.getMatrixAt(i, matrix);
-        position.setFromMatrixPosition(matrix);
-        matrix.lookAt(position, cameraPosition, upVector);
-        instancedMeshRef.current.setMatrixAt(i, matrix);
+        instancedMeshRef.current.getMatrixAt(i, tempMatrix);
+        tempPosition.setFromMatrixPosition(tempMatrix);
+
+        // 使用quaternion直接设置旋转
+        tempMatrix.lookAt(tempPosition, cameraPosition, upVector);
+        instancedMeshRef.current.setMatrixAt(i, tempMatrix);
       }
       instancedMeshRef.current.instanceMatrix.needsUpdate = true;
     }

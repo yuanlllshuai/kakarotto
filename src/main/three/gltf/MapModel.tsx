@@ -105,6 +105,7 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
             texture2.offset.y = 0.25;
             setFlowLight([tubeMesh1, tubeMesh2]);
             setFlowLightTexture([texture1, texture2]);
+            child.visible = false;
           }
           if (child.name.includes("光柱")) {
             child.visible = false;
