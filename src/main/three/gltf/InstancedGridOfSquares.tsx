@@ -19,14 +19,15 @@ const fragmentShader = `
   }
 `;
 
-const InstancedGridOfSquares = memo(() => {
+const numSquaresPerRow = 400;
+const numSquaresPerColumn = 400;
+
+const InstancedGridOfSquares = memo(({ begin }: { begin: boolean }) => {
   const instancedMeshRef = useRef<any>(null);
   const [instancedMesh, setInstancedMesh] = useState<any>(null);
   const { camera } = useThree();
 
   useEffect(() => {
-    const numSquaresPerRow = 400;
-    const numSquaresPerColumn = 400;
     const totalSquares = numSquaresPerRow * numSquaresPerColumn;
     const geometry = new THREE.PlaneGeometry(0.06, 0.06);
     const material = new THREE.ShaderMaterial({
@@ -57,9 +58,7 @@ const InstancedGridOfSquares = memo(() => {
   }, []);
 
   useFrame(() => {
-    if (instancedMeshRef.current) {
-      const numSquaresPerRow = 400;
-      const numSquaresPerColumn = 400;
+    if (instancedMeshRef.current && begin) {
       const totalSquares = numSquaresPerRow * numSquaresPerColumn;
       const cameraPosition = camera.position;
       const upVector = new THREE.Vector3(0, 1, 0);

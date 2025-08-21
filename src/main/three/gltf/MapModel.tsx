@@ -17,7 +17,7 @@ const INITFLOWLIGHTPOSITIONY = -0.46; // 流光初始位置Y
 const INITBORDERPOSITIONY = -0.8; // 边界初始位置Y
 const TARGETINCREASEHEIGHT = 1; // 动画增加高度
 
-const MapModel = memo(({ begin, setCardBegin }: any) => {
+const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
   const { gl } = useThree();
   const { scene } = useGLTF("/gltf_models/map/map.gltf");
   // const { scene } = useGLTF('http://111.229.183.248/gltf_models/girl/scene.gltf');
@@ -120,6 +120,7 @@ const MapModel = memo(({ begin, setCardBegin }: any) => {
       });
       blockColorMapRef.current = blockColors;
       setBorderLines(borders);
+      setMapInit(true);
     }
   }, [scene]);
 
@@ -510,14 +511,11 @@ const MapModel = memo(({ begin, setCardBegin }: any) => {
             <FlyLine key={label} position={position} />
           )
         )}
-      {/* {labelPosition.x !== 0 && <FlyLine position={labelPosition} />} */}
       {mapAnimationEnd && <OriginPoint position={{ x: 0, z: 0, y: 0 }} />}
-      <InstancedGridOfSquares />
+      <InstancedGridOfSquares begin={begin} />
       {begin && <Wave />}
-      {/* {borderLine && <primitive object={borderLine} />} */}
       {mapAnimationEnd &&
         borderLines.map((i) => <primitive object={i.border} key={i.name} />)}
-      {/* {flowLight && <primitive object={flowLight} />} */}
       {flowLight.map((i, index) => (
         <primitive object={i} key={index} />
       ))}
@@ -528,7 +526,6 @@ const MapModel = memo(({ begin, setCardBegin }: any) => {
         isEnd={LightCylinderEnd}
         setEnd={setLightCylinderEnd}
       />
-      {/* {LightCylinderEnd && <Cloud />} */}
 
       <CycleRaycast
         preventDefault={true} // Call event.preventDefault() (default: true)

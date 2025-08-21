@@ -15,12 +15,12 @@ import ScreenFull from "@/components/ScreenFull";
 
 import * as TWEEN from "@tweenjs/tween.js";
 
-const Camera = memo(({ setBegin, begin, loading }: any) => {
+const Camera = memo(({ setBegin, loading }: any) => {
   const cameraRef = useRef<any>(null);
   const tweenRef = useRef<any>(null);
 
   useEffect(() => {
-    if (loading || begin) return;
+    if (loading) return;
     const beginPos = [-18, 12, 12];
     const endPos = [-10, 10, 20];
     const startPoint = new THREE.Vector3(...beginPos);
@@ -35,15 +35,15 @@ const Camera = memo(({ setBegin, begin, loading }: any) => {
         }
       })
       .onComplete(() => {
-        if (!begin) {
-          setBegin(true);
-        }
+        setBegin(true);
       })
       .start();
-  }, [loading, begin]);
+  }, [loading]);
 
   useFrame(() => {
-    tweenRef.current.update(); // Update tween animations
+    if (tweenRef.current) {
+      tweenRef.current.update(); // Update tween animations
+    }
   });
 
   return (
@@ -58,14 +58,21 @@ const Camera = memo(({ setBegin, begin, loading }: any) => {
   );
 });
 
-// const Camera = ({ setBegin, begin }: any) => {
+// const Camera = memo(({ setBegin, begin, loading }: any) => {
 //   const [curve, setCurve] = useState<any>();
 
 //   const cameraRef = useRef<any>(null);
 //   const count = useRef(0);
-//   const points = useRef<any>([]);
+//   const points = useRef<any>(null);
+
+//   const cubicInOut = (t: number): number => {
+//     return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+//   };
 
 //   useEffect(() => {
+//     if (loading) {
+//       return;
+//     }
 //     const beginPos = [-18, 12, 12];
 //     const endPos = [-10, 10, 20];
 //     const center = [
@@ -78,10 +85,16 @@ const Camera = memo(({ setBegin, begin, loading }: any) => {
 //       new THREE.Vector3(...center),
 //       new THREE.Vector3(...endPos)
 //     );
-//     const pArr = curve.getPoints(100);
+//     const numPoints = 200;
+//     const pArr = [];
+//     for (let i = 0; i <= numPoints; i++) {
+//       const t = i / numPoints;
+//       const easedT = cubicInOut(t);
+//       pArr.push(curve.getPointAt(easedT));
+//     }
 //     points.current = pArr;
 //     setCurve(curve);
-//   }, []);
+//   }, [loading]);
 
 //   useFrame(() => {
 //     // 相机按照运动轨迹移动
@@ -121,19 +134,18 @@ const Camera = memo(({ setBegin, begin, loading }: any) => {
 //       )}
 //     </>
 //   );
-// };
+// });
 
 export const Component = () => {
   const { progress } = useProgress();
   const [loading, setLoading] = useState<boolean>(true);
   const [begin, setBegin] = useState<boolean>(false);
   const [cardBegin, setCardBegin] = useState<boolean>(false);
+  const [mapInit, setMapInit] = useState<boolean>(false);
 
   useEffect(() => {
     if (progress === 100) {
-      setTimeout(() => {
-        setLoading(false);
-      }, 500);
+      setLoading(false);
     }
   }, [progress]);
 
@@ -147,13 +159,21 @@ export const Component = () => {
           }}
         >
           {/* <axesHelper scale={100} /> */}
-          <Camera begin={begin} setBegin={setBegin} loading={loading} />
+          <Camera
+            begin={begin}
+            setBegin={setBegin}
+            loading={loading || !mapInit}
+          />
           <OrbitControls makeDefault />
           <ambientLight intensity={3} />
           {/* <pointLight position={[100, 100, 100]} decay={0} intensity={2} /> */}
           {/* <directionalLight position={[10, 10, 10]} intensity={0.5} /> */}
           <Suspense fallback={<></>}>
-            <MapModel begin={begin} setCardBegin={setCardBegin} />
+            <MapModel
+              begin={begin}
+              setCardBegin={setCardBegin}
+              setMapInit={setMapInit}
+            />
           </Suspense>
         </Canvas>
       </div>
@@ -162,12 +182,14 @@ export const Component = () => {
 
   return (
     <div className={styles.container} id="screen-map-model">
-      {loading && (
+      {<ScreenFull containerId="screen-map-model">{render()}</ScreenFull>}
+      {(loading || !mapInit) && (
         <div className={styles.loading}>
-          <Progress percent={progress} showInfo={false} />
+          <div style={{ width: "80%" }}>
+            <Progress percent={progress} showInfo={false} />
+          </div>
         </div>
       )}
-      {<ScreenFull containerId="screen-map-model">{render()}</ScreenFull>}
       <AnimateCard begin={cardBegin} />
     </div>
   );
