@@ -90,6 +90,7 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
         if (child.isMesh) {
           if (child.name.includes("市") || child.name === "三门峡") {
             // child.material.color = new THREE.Color("#567");
+            child.material.color = new THREE.Color("#204e8f");
             const hsl = { h: 0, s: 0, l: 0 };
             child.material.color.getHSL(hsl);
             blockColors[child.uuid] = { ...hsl };
@@ -154,6 +155,7 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
   useEffect(() => {
     if (begin) {
       beginRef.current = true;
+      setMeshColor("");
     }
   }, [begin]);
 
@@ -167,7 +169,7 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
   const dealCity = (mesh: any) => {
     mesh.material.side = THREE.DoubleSide;
     mesh.material.transparent = true;
-    mesh.material.opacity = 0.7;
+    mesh.material.opacity = 0.3;
     // 0.165
     mesh.position.y = INITBORDERPOSITIONY;
     // mesh.position.y = -2;
@@ -383,6 +385,7 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
             child.isMesh &&
             (child.name.includes("市") || child.name === "三门峡")
           ) {
+            child.material.opacity = 0.7;
             if (child.uuid === uuid) {
               const hsl = { ...blockColorMapRef.current[child.uuid] };
               hsl.l += 0.2;
