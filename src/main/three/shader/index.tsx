@@ -3,7 +3,7 @@ import { Canvas, useLoader } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import styles from "./index.module.scss";
 import * as THREE from "three";
-import mapPng from "@/assets/map6.png";
+import mapPng from "@/assets/local.jpg";
 import ScreenFull from "@/components/ScreenFull";
 
 const vertexShaderStr = `
