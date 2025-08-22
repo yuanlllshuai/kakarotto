@@ -12,6 +12,7 @@ import Name from "./Name";
 import LightCylinder from "./LightCylinder";
 import mapHeightPng from "../res/border.png";
 import { lablePoints } from "./const";
+import AnimationRing from "./AnimationRing";
 
 const INITFLOWLIGHTPOSITIONY = -0.46; // 流光初始位置Y
 const INITBORDERPOSITIONY = -0.8; // 边界初始位置Y
@@ -530,6 +531,8 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
         isEnd={LightCylinderEnd}
         setEnd={setLightCylinderEnd}
       />
+
+      {begin && <AnimationRing />}
 
       <CycleRaycast
         preventDefault={true} // Call event.preventDefault() (default: true)
