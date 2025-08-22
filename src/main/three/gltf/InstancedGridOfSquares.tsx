@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, memo } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { Grid } from "@react-three/drei";
 
 const vertexShader = `
   varying float vDistance;
@@ -27,10 +28,24 @@ const upVector = new THREE.Vector3(0, 1, 0);
 const tempMatrix = new THREE.Matrix4();
 const tempPosition = new THREE.Vector3();
 
+const gridConfig = {
+  cellSize: 0,
+  cellThickness: 1,
+  cellColor: "#6f6f6f",
+  sectionSize: 5,
+  sectionThickness: 1,
+  sectionColor: "rgba(3, 141, 187, 1)",
+  fadeDistance: 80,
+  fadeStrength: 2,
+  followCamera: true,
+  infiniteGrid: true,
+};
+
 const InstancedGridOfSquares = memo(({ begin }: { begin: boolean }) => {
   const instancedMeshRef = useRef<any>(null);
   const [instancedMesh, setInstancedMesh] = useState<any>(null);
   const { camera } = useThree();
+  const gridRef = useRef<any>(null);
 
   useEffect(() => {
     const totalSquares = numSquaresPerRow * numSquaresPerColumn;
@@ -76,6 +91,8 @@ const InstancedGridOfSquares = memo(({ begin }: { begin: boolean }) => {
         instancedMeshRef.current.setMatrixAt(i, tempMatrix);
       }
       instancedMeshRef.current.instanceMatrix.needsUpdate = true;
+      // gridRef.current.material.alphaHash = true;
+      // gridRef.current.material.opacity = 0;
     }
   });
 
@@ -83,7 +100,21 @@ const InstancedGridOfSquares = memo(({ begin }: { begin: boolean }) => {
     return <></>;
   }
 
-  return <primitive object={instancedMesh} ref={instancedMeshRef} />;
+  if (gridRef.current) {
+    console.log(gridRef.current);
+  }
+
+  return (
+    <>
+      <primitive object={instancedMesh} ref={instancedMeshRef} />
+      <Grid
+        position={[0, -0.5, 0]}
+        args={[10.5, 10.5]}
+        {...gridConfig}
+        ref={gridRef}
+      />
+    </>
+  );
 });
 
 export default InstancedGridOfSquares;

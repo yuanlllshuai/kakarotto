@@ -16,6 +16,9 @@ const Index = memo(() => {
   useFrame(() => {
     if (ringRef.current) {
       ringRef.current.rotation.z += 0.01;
+      if (ringRef.current.rotation.z > Math.PI * 2) {
+        ringRef.current.rotation.z = 0;
+      }
     }
     if (tweenRef.current) {
       tweenRef.current.update();
@@ -26,8 +29,8 @@ const Index = memo(() => {
     const startPoint = new THREE.Vector3(0, 0, 0);
     const endPoint = new THREE.Vector3(1, 1, 1);
     tweenRef.current = new TWEEN.Tween(startPoint)
-      .to(endPoint, 3000) // 3 seconds duration
-      .easing(TWEEN.Easing.Cubic.InOut) // Cubic easing function
+      .to(endPoint, 3000)
+      .easing(TWEEN.Easing.Cubic.InOut)
       .onUpdate((scale) => {
         if (ringRef.current) {
           ringRef.current.scale.copy(scale);
