@@ -32,9 +32,9 @@ const gridConfig = {
   cellSize: 0,
   cellThickness: 1,
   cellColor: "#6f6f6f",
-  sectionSize: 5,
+  sectionSize: 6,
   sectionThickness: 1,
-  sectionColor: "rgba(3, 141, 187, 1)",
+  sectionColor: "rgb(2, 124, 165)",
   fadeDistance: 80,
   fadeStrength: 2,
   followCamera: true,
@@ -100,18 +100,16 @@ const InstancedGridOfSquares = memo(({ begin }: { begin: boolean }) => {
     return <></>;
   }
 
-  if (gridRef.current) {
-    console.log(gridRef.current);
-  }
-
   return (
     <>
       <primitive object={instancedMesh} ref={instancedMeshRef} />
       <Grid
         position={[0, -0.5, 0]}
+        rotation-y={-2}
         args={[10.5, 10.5]}
         {...gridConfig}
         ref={gridRef}
+        side={THREE.DoubleSide}
       />
     </>
   );
