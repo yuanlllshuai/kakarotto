@@ -1,6 +1,26 @@
-import { useEffect, useState, useRef, memo } from "react";
+import { useState, useRef, memo } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
+
+const vertexShader = `
+  uniform float size;
+  void main() {
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    gl_Position = projectionMatrix * mvPosition;
+    gl_PointSize = size * (1.0 / -mvPosition.z);
+  }
+`;
+
+const fragmentShader = `
+  uniform float glowIntensity;
+  uniform vec3 glowColor;
+  void main() {
+    float distanceToCenter = length(gl_PointCoord - vec2(0.5));
+    float alpha = 1.0 - smoothstep(0.0, 0.5, distanceToCenter);
+    vec3 color = glowColor * glowIntensity;
+    gl_FragColor = vec4(color, alpha);
+  }
+`;
 
 const Index = memo(({ position }: { position: THREE.Vector3 }) => {
   const [lightning, setLightning] = useState<any>(null);
@@ -9,12 +29,6 @@ const Index = memo(({ position }: { position: THREE.Vector3 }) => {
   const timerRef = useRef<any>(0);
   const begin = useRef<boolean>(false);
   const count = useRef<number>(0);
-
-  useEffect(() => {
-    // createPoint();
-    // const harfPoint = pointRef.current;
-    // createLight(getPositions(harfPoint.slice(0, 2000)));
-  }, []);
 
   const getPositions = (points: any[]) => {
     const positions = new Float32Array(points.length * 3);
@@ -53,26 +67,6 @@ const Index = memo(({ position }: { position: THREE.Vector3 }) => {
       "position",
       new THREE.BufferAttribute(points, 3)
     );
-
-    const vertexShader = `
-      uniform float size;
-      void main() {
-        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_Position = projectionMatrix * mvPosition;
-        gl_PointSize = size * (1.0 / -mvPosition.z);
-      }
-    `;
-
-    const fragmentShader = `
-      uniform float glowIntensity;
-      uniform vec3 glowColor;
-      void main() {
-        float distanceToCenter = length(gl_PointCoord - vec2(0.5));
-        float alpha = 1.0 - smoothstep(0.0, 0.5, distanceToCenter);
-        vec3 color = glowColor * glowIntensity;
-        gl_FragColor = vec4(color, alpha);
-      }
-    `;
 
     const particlesMaterial = new THREE.ShaderMaterial({
       vertexShader,

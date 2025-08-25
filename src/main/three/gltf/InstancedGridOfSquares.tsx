@@ -38,8 +38,8 @@ const tempMatrix = new THREE.Matrix4();
 const tempPosition = new THREE.Vector3();
 
 const gridConfig = {
-  // cellSize: 0,
-  // cellThickness: 1,
+  cellSize: 0,
+  cellThickness: 0,
   // cellColor: "#6f6f6f",
   sectionSize: 5,
   sectionThickness: 0.8,

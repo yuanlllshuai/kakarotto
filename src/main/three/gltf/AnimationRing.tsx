@@ -4,13 +4,19 @@ import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import * as TWEEN from "@tweenjs/tween.js";
 
-const Index = memo(() => {
-  const gap = Math.PI / 16; // 定义间隙大小（角度）
-  const segmentAngle = (Math.PI * 2 - gap * 4) / 4; // 每段的角度
-  const innerRadius = 0.94 * 9;
-  const outRadius = 1 * 9;
+const gap = Math.PI / 16; // 定义间隙大小（角度）
+const segmentAngle = (Math.PI * 2 - gap * 4) / 4; // 每段的角度
+const innerRadius = 0.94 * 9;
+const outRadius = 1 * 9;
 
+const gap2 = Math.PI / 30; // 定义间隙大小（角度）
+const segmentAngle2 = (Math.PI * 2 - gap2 * 5) / 5; // 每段的角度
+const innerRadius2 = 0.99 * 11;
+const outRadius2 = 1 * 11;
+
+const Index = memo(() => {
   const ringRef = useRef<any>();
+  const ringRef2 = useRef<any>();
   const tweenRef = useRef<any>(null);
 
   useFrame(() => {
@@ -18,6 +24,12 @@ const Index = memo(() => {
       ringRef.current.rotation.z += 0.01;
       if (ringRef.current.rotation.z > Math.PI * 2) {
         ringRef.current.rotation.z = 0;
+      }
+    }
+    if (ringRef2.current) {
+      ringRef2.current.rotation.z -= 0.002;
+      if (ringRef2.current.rotation.z < -Math.PI * 2) {
+        ringRef2.current.rotation.z = 0;
       }
     }
     if (tweenRef.current) {
@@ -34,6 +46,7 @@ const Index = memo(() => {
       .onUpdate((scale) => {
         if (ringRef.current) {
           ringRef.current.scale.copy(scale);
+          ringRef2.current.scale.copy(scale);
         }
       })
       .start();
@@ -66,6 +79,36 @@ const Index = memo(() => {
                 color="rgba(0 ,191 ,255,1)"
                 side={THREE.DoubleSide}
                 opacity={0.1}
+                transparent={true}
+              />
+            </Ring>
+          ))}
+      </group>
+      <group
+        position={[0, -0.4, 0]}
+        rotation-x={Math.PI / 2}
+        ref={ringRef2}
+        scale={0}
+      >
+        {new Array(5)
+          .fill(1)
+          .map((_i, index) => index)
+          .map((i, index) => (
+            <Ring
+              key={i}
+              args={[
+                innerRadius2,
+                outRadius2,
+                32,
+                1,
+                segmentAngle2 * index + gap2 * index,
+                segmentAngle2,
+              ]}
+            >
+              <meshStandardMaterial
+                color="rgba(0 ,191 ,255,1)"
+                side={THREE.DoubleSide}
+                opacity={0.05}
                 transparent={true}
               />
             </Ring>
