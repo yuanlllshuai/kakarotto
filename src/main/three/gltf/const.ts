@@ -31,3 +31,29 @@ export const weatherMap:any = {
   8:'中雪',
   9:'大雪',
 }
+
+const crossWidth = 0.12;
+const crossheight = 0.8;
+
+export const crossVertices = new Float32Array([
+  -crossWidth / 2,0,-crossheight / 2,
+  crossWidth / 2, 0, -crossheight / 2,
+  crossWidth / 2, 0, crossheight / 2,
+  crossWidth / 2, 0, crossheight / 2,
+  -crossWidth / 2, 0, crossheight / 2,
+  -crossWidth / 2, 0, -crossheight / 2,
+  
+  crossWidth / 2, 0, -crossWidth / 2,
+  crossheight / 2, 0, -crossWidth / 2,
+  crossheight / 2, 0, crossWidth / 2,
+  crossheight / 2, 0, crossWidth / 2,
+  crossWidth / 2, 0, crossWidth / 2,
+  crossWidth / 2, 0, -crossWidth / 2,
+
+  -crossheight / 2, 0, -crossWidth / 2,
+  -crossWidth / 2, 0, -crossWidth / 2,
+  -crossWidth / 2, 0, crossWidth / 2,
+  -crossWidth / 2, 0, crossWidth / 2,
+  -crossheight / 2, 0, crossWidth / 2,
+  -crossheight / 2, 0, -crossWidth / 2,
+]);
