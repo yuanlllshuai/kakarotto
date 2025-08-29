@@ -13,13 +13,14 @@ import LightCylinder from "./LightCylinder";
 import mapHeightPng from "../res/border.png";
 import { lablePoints } from "./const";
 import AnimationRing from "./AnimationRing";
+// import { debounce } from "lodash";
 
 const INITFLOWLIGHTPOSITIONY = -0.46; // 流光初始位置Y
 const INITBORDERPOSITIONY = -0.8; // 边界初始位置Y
 const TARGETINCREASEHEIGHT = 1; // 动画增加高度
 
 const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
-  const { gl } = useThree();
+  const { gl, raycaster, camera, mouse } = useThree();
   const { scene } = useGLTF("/gltf_models/map/map.gltf");
   // const { scene } = useGLTF('http://111.229.183.248/gltf_models/girl/scene.gltf');
 
@@ -42,11 +43,11 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
   // 地图原始颜色
   const blockColorMapRef = useRef<any>({});
   // 鼠标是否移动中
-  const isDraggingRef = useRef(false);
+  // const isDraggingRef = useRef(false);
   // 鼠标是否按下
-  const isClickDownRef = useRef(false);
+  // const isClickDownRef = useRef(false);
   // 点击次数
-  const clickNumRef = useRef(0);
+  // const clickNumRef = useRef(0);
   // 延迟显示label
   // const showTagRef = useRef(false);
   // 地图高度动画step
@@ -62,10 +63,12 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
   // 滚动延时
   const scrollTimeout = useRef<any>(null);
   // 鼠标射线检测引用
-  const intersectRef = useRef<any>(null);
-  const lastIntersectRef = useRef<any>(null);
+  // const intersectRef = useRef<any>(null);
+  // const lastIntersectRef = useRef<any>(null);
   // 缓动函数参数
   const animationProgress = useRef(0);
+  const moveUuid = useRef(null);
+  const currUuid = useRef(null);
 
   // 地图边缘纹理
   const [mapTexture] = useTexture([mapHeightPng]);
@@ -143,20 +146,20 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
   }, [gl]);
 
   useEffect(() => {
-    window.addEventListener("mousedown", handleMouseDown);
+    // window.addEventListener("mousedown", handleMouseDown);
     window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
+    // window.addEventListener("mouseup", handleMouseUp);
     return () => {
-      window.removeEventListener("mousedown", handleMouseDown);
+      // window.removeEventListener("mousedown", handleMouseDown);
       window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
+      // window.removeEventListener("mouseup", handleMouseUp);
     };
   }, []);
 
   useEffect(() => {
     if (begin) {
       beginRef.current = true;
-      setMeshColor("");
+      setMeshColor();
     }
   }, [begin]);
 
@@ -319,50 +322,68 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
     borderMeshRef.current = mesh;
   };
 
-  const handleMouseDown = (event: any) => {
-    event.preventDefault();
-    isDraggingRef.current = false;
-    isClickDownRef.current = true;
-  };
+  // const handleMouseDown = (event: any) => {
+  //   event.preventDefault();
+  //   isDraggingRef.current = false;
+  //   isClickDownRef.current = true;
+  // };
 
   const handleMouseMove = (event: any) => {
-    event.preventDefault();
-    if (isClickDownRef.current) {
-      isDraggingRef.current = true;
-    } else {
-      isDraggingRef.current = false;
-    }
-  };
-
-  const handleMouseUp = (event: any) => {
-    event.preventDefault();
-    if (event.target.tagName !== "CANVAS") {
+    if (event.target.tagName !== "CANVAS" || !beginRef.current) {
       return;
     }
-    if (!isDraggingRef.current || clickNumRef.current === 0) {
-      handleClick(event);
-      clickNumRef.current += 1;
-    }
-    isDraggingRef.current = false;
-    isClickDownRef.current = false;
+    event.preventDefault();
+    handleMove();
+    // if (isClickDownRef.current) {
+    //   isDraggingRef.current = true;
+    // } else {
+    //   isDraggingRef.current = false;
+    // }
   };
 
   // 处理点击事件
-  const handleClick = (event: any) => {
-    event.preventDefault();
-    if (
-      !intersectRef.current ||
-      (intersectRef.current.object.name ===
-        lastIntersectRef.current?.object?.name &&
-        intersectRef.current.point.x === lastIntersectRef.current?.point.x)
-    ) {
+  const handleMove = () => {
+    raycaster.setFromCamera(mouse, camera);
+    if (!partRef.current) {
       return;
     }
-    setMeshColor(intersectRef.current.object.uuid);
+    const intersects = raycaster.intersectObjects(
+      scene.children[2].children[0].children.filter(
+        (i) => i.name.includes("市") || i.name === "三门峡"
+      )
+    );
+    if (intersects.length > 0) {
+      const intersect: any = intersects[0];
+      if (
+        intersect.object.name.includes("市") ||
+        intersect.object.name === "三门峡"
+      ) {
+        if (moveUuid.current !== intersect.object.uuid) {
+          moveUuid.current = intersect.object.uuid;
+          setMeshColor();
+        }
+      }
+    } else if (moveUuid.current !== null) {
+      moveUuid.current = null;
+      setMeshColor();
+    }
   };
 
+  // const handleMouseUp = (event: any) => {
+  //   event.preventDefault();
+  //   if (event.target.tagName !== "CANVAS") {
+  //     return;
+  //   }
+  //   // if (!isDraggingRef.current || clickNumRef.current === 0) {
+  //   //   handleClick(event);
+  //   //   clickNumRef.current += 1;
+  //   // }
+  //   // isDraggingRef.current = false;
+  //   // isClickDownRef.current = false;
+  // };
+
   const onRaycastChanged = (hits: THREE.Intersection[]) => {
-    if (isScrollingRef.current) {
+    if (isScrollingRef.current || !beginRef.current) {
       return null;
     }
     if (hits.length > 0) {
@@ -371,14 +392,24 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
         intersect.object.name.includes("市") ||
         intersect.object.name === "三门峡"
       ) {
-        intersectRef.current = intersect;
-        setMeshColor(intersect.object.uuid);
+        // intersectRef.current = intersect;
+        if (currUuid.current !== intersect.object.uuid) {
+          currUuid.current = intersect.object.uuid;
+        } else {
+          if (currUuid.current) {
+            moveUuid.current = null;
+          }
+          currUuid.current = null;
+        }
+
+        setMeshColor();
       }
     }
     return null;
   };
 
-  const setMeshColor = (uuid: string) => {
+  const setMeshColor = () => {
+    // console.log(111, currUuid.current, moveUuid.current);
     if (partRef.current) {
       (partRef.current as any).children[2].children[0].children.forEach(
         (child: any) => {
@@ -387,7 +418,10 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
             (child.name.includes("市") || child.name === "三门峡")
           ) {
             child.material.opacity = 0.7;
-            if (child.uuid === uuid) {
+            if (
+              child.uuid === moveUuid.current ||
+              child.uuid === currUuid.current
+            ) {
               const hsl = { ...blockColorMapRef.current[child.uuid] };
               hsl.l += 0.2;
               child.material.color.setHSL(hsl.h, hsl.s, hsl.l);
@@ -480,6 +514,11 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
     }
   });
 
+  // const onClick = (e: any) => {
+  //   e.stopPropagation();
+  //   console.log(11111);
+  // };
+
   return (
     <>
       <primitive
@@ -488,6 +527,10 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
         scale={1}
         position={[0, -22, 0]}
         onClick={(e: any) => e.stopPropagation()}
+        // onPointerEnter={onPointer}
+        // onPointerLeave={onPointer}
+        // onPointerOver={(e: any) => e.stopPropagation()}
+        // onPointerOut={(e) => setHovered(false)}
       ></primitive>
       {lablePoints.map(
         ({
