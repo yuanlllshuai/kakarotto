@@ -10,7 +10,7 @@ const innerRadius = 0.94 * 9;
 const outRadius = 1 * 9;
 
 const gap2 = Math.PI / 30; // 定义间隙大小（角度）
-const segmentAngle2 = (Math.PI * 2 - gap2 * 5) / 5; // 每段的角度
+const segmentAngle2 = (Math.PI * 2 - gap2 * 10) / 10; // 每段的角度
 const innerRadius2 = 0.99 * 11;
 const outRadius2 = 1 * 11;
 
@@ -90,7 +90,7 @@ const Index = memo(() => {
         ref={ringRef2}
         scale={0}
       >
-        {new Array(5)
+        {new Array(10)
           .fill(1)
           .map((_i, index) => index)
           .map((i, index) => (
