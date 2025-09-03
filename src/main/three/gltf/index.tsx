@@ -164,7 +164,7 @@ export const Component = () => {
             setBegin={setBegin}
             loading={loading || !mapInit}
           />
-          <OrbitControls makeDefault />
+          <OrbitControls makeDefault enableRotate={begin} enableZoom={begin} />
           <ambientLight intensity={3} />
           {/* <pointLight position={[100, 100, 100]} decay={0} intensity={2} /> */}
           {/* <directionalLight position={[10, 10, 10]} intensity={0.5} /> */}
