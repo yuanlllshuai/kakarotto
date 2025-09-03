@@ -14,10 +14,8 @@ const LENGTH = 4.8;
 
 const Index = memo(
   ({
-    position,
     size = "small",
   }: {
-    position: THREE.Vector3;
     size?: "small" | "middle" | "large";
     type?: "lightning";
   }) => {
@@ -60,9 +58,9 @@ const Index = memo(
       const randoms = [];
       const sizes = new Float32Array(count);
       for (let i = 0; i < count; i++) {
-        positions[i * 3] = (Math.random() * 2 - 1) * 0.7 + position.x;
+        positions[i * 3] = (Math.random() * 2 - 1) * 0.7;
         positions[i * 3 + 1] = Math.random() * LENGTH;
-        positions[i * 3 + 2] = (Math.random() * 2 - 1) * 0.7 + position.z;
+        positions[i * 3 + 2] = (Math.random() * 2 - 1) * 0.7;
         randoms.push(Math.random() * 2 - 1);
         sizes[i] = Math.random() * 0.1 + 0.03;
       }
@@ -99,13 +97,14 @@ const Index = memo(
 
     return (
       <>
-        <Overcast position={position} color="#D0D0D0" />
+        <Overcast color="#D0D0D0" />
         <Points
           ref={rainRef}
           limit={1000} // Optional: max amount of items (for calculating buffer size)
           range={10} // Optional: draw-range
           positions={positions}
           sizes={sizes}
+          position={[0, -5, 0]}
         >
           <bufferGeometry>
             <bufferAttribute

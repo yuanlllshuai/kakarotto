@@ -22,7 +22,7 @@ const fragmentShader = `
   }
 `;
 
-const Index = memo(({ position }: { position: THREE.Vector3 }) => {
+const Index = memo(() => {
   const [lightning, setLightning] = useState<any>(null);
 
   const pointRef = useRef<any>(null);
@@ -43,9 +43,9 @@ const Index = memo(({ position }: { position: THREE.Vector3 }) => {
   const createPoint = () => {
     const count = 5000;
     const positions = [];
-    let beginX = position.x;
+    let beginX = 0;
     let beginY = 2;
-    let beginZ = position.z;
+    let beginZ = 0;
     const segmentsY = 3 / count;
     const segments = 20 / count;
     for (let i = 0; i < count; i += 1) {
@@ -111,7 +111,7 @@ const Index = memo(({ position }: { position: THREE.Vector3 }) => {
     return <></>;
   }
 
-  return <primitive object={lightning} />;
+  return <primitive object={lightning} position={[0, -5, 0]} />;
 });
 
 export default Index;

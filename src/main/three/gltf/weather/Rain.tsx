@@ -16,11 +16,9 @@ const LENGTH = 5;
 
 const Index = memo(
   ({
-    position,
     size = "small",
     type,
   }: {
-    position: THREE.Vector3;
     size?: "small" | "middle" | "large";
     type?: "lightning";
   }) => {
@@ -54,9 +52,9 @@ const Index = memo(
       const count = COUNTMAP[size].count;
       const positions = new Float32Array(count * 3);
       for (let i = 0; i < count; i++) {
-        positions[i * 3] = (Math.random() * 2 - 1) * 0.7 + position.x;
+        positions[i * 3] = (Math.random() * 2 - 1) * 0.7 + 0;
         positions[i * 3 + 1] = Math.random() * LENGTH;
-        positions[i * 3 + 2] = (Math.random() * 2 - 1) * 0.7 + position.z;
+        positions[i * 3 + 2] = (Math.random() * 2 - 1) * 0.7 + 0;
       }
       setPositions(positions);
     }, [size]);
@@ -85,15 +83,16 @@ const Index = memo(
           <cylinderGeometry args={[0.5, 0.5, 4, 32]} />
           <LightningShaderMaterial />
         </mesh> */}
-        {type === "lightning" && <Lightning position={position} />}
-        {type === "lightning" && <Lightning position={position} />}
+        {type === "lightning" && <Lightning />}
+        {type === "lightning" && <Lightning />}
         {/* {type === "lightning" && <Lightning position={position} />} */}
-        <Overcast position={position} color="#D0D0D0" />
+        <Overcast color="#D0D0D0" />
         <Points
           ref={rainRef}
           limit={1000} // Optional: max amount of items (for calculating buffer size)
           range={10} // Optional: draw-range
           positions={positions}
+          position={[0, -5, 0]}
         >
           <pointsMaterial
             size={0.1}

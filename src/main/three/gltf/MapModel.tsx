@@ -369,19 +369,6 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
     }
   };
 
-  // const handleMouseUp = (event: any) => {
-  //   event.preventDefault();
-  //   if (event.target.tagName !== "CANVAS") {
-  //     return;
-  //   }
-  //   // if (!isDraggingRef.current || clickNumRef.current === 0) {
-  //   //   handleClick(event);
-  //   //   clickNumRef.current += 1;
-  //   // }
-  //   // isDraggingRef.current = false;
-  //   // isClickDownRef.current = false;
-  // };
-
   const onRaycastChanged = (hits: THREE.Intersection[]) => {
     if (isScrollingRef.current || !beginRef.current) {
       return null;
@@ -483,41 +470,11 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
           i.position.y =
             INITFLOWLIGHTPOSITIONY + TARGETINCREASEHEIGHT * easedProgress;
         });
-      }
-      // const times = pending / delta; // 执行完动画的总帧数
-      // if (borderMeshRef.current && borderMeshRef.current.scale.y < 1) {
-      //   const speed = 1 / times; // 每帧增加的厚度
-      //   const speed3 = 0.54 / times;
-      //   // 地图厚度增加
-      //   borderMeshRef.current.scale.y += speed;
-      //   borderMeshRef.current.position.y += speed3;
-      //   const speed2 = (0.165 + 0.8) / times; // 每帧增加的高度
-      //   // 地面高度增加
-      //   (partRef.current as any).children[2].children[0].children.forEach(
-      //     (child: any) => {
-      //       if (
-      //         child.isMesh &&
-      //         (child.name.includes("市") || child.name === "三门峡")
-      //       ) {
-      //         child.position.y += speed2;
-      //       }
-      //     }
-      //   );
-
-      //   // 流光高度增加
-      //   flowLight.forEach((i: any) => {
-      //     i.position.y += speed2;
-      //   });
-      else if (!mapAnimationEnd) {
+      } else if (!mapAnimationEnd) {
         setMapAnimationEnd(true);
       }
     }
   });
-
-  // const onClick = (e: any) => {
-  //   e.stopPropagation();
-  //   console.log(11111);
-  // };
 
   return (
     <>
@@ -527,10 +484,6 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
         scale={1}
         position={[0, -22, 0]}
         onClick={(e: any) => e.stopPropagation()}
-        // onPointerEnter={onPointer}
-        // onPointerLeave={onPointer}
-        // onPointerOver={(e: any) => e.stopPropagation()}
-        // onPointerOut={(e) => setHovered(false)}
       ></primitive>
       {lablePoints.map(
         ({

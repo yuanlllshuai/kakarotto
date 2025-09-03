@@ -2,12 +2,7 @@ import { Html, Billboard } from "@react-three/drei";
 import icon from "@/assets/local.jpg";
 import * as THREE from "three";
 import { weatherMap } from "./const";
-
-import Cloudy from "./weather/Cloudy";
-import Sun from "./weather/Sun";
-import Overcast from "./weather/Overcast";
-import Rain from "./weather/Rain";
-import Snow from "./weather/Snow";
+import Weather from "./weather/index";
 import { memo } from "react";
 
 const PointLabel = memo(
@@ -34,6 +29,7 @@ const PointLabel = memo(
             style={{
               opacity: visible ? 1 : 0,
               transition: "all 1s",
+              userSelect: "none",
             }}
             // className={visible ? style.point_label : style.point_label_hide}
           >
@@ -55,6 +51,7 @@ const PointLabel = memo(
               borderRadius: 4,
               color: "#FFF",
               fontSize: "13px",
+              userSelect: "none",
             }}
           >
             <span>{label}</span>
@@ -64,6 +61,7 @@ const PointLabel = memo(
                   color: "yellow",
                   fontWeight: "bold",
                   fontFamily: "DIN",
+                  userSelect: "none",
                 }}
               >
                 {weatherMap[weather]}
@@ -71,30 +69,7 @@ const PointLabel = memo(
             )}
           </Html>
         </Billboard>
-        {weatherBegin && weather === 0 && (
-          <Sun position={new THREE.Vector3(position.x, 5, position.z)} />
-        )}
-        {weatherBegin && weather === 1 && <Cloudy position={position} />}
-        {weatherBegin && weather === 2 && <Overcast position={position} />}
-        {weatherBegin && weather === 3 && <Rain position={position} />}
-        {weatherBegin && weather === 4 && (
-          <Rain position={position} size="middle" />
-        )}
-        {weatherBegin && weather === 5 && (
-          <Rain position={position} size="large" />
-        )}
-        {weatherBegin && weather === 6 && (
-          <Rain position={position} size="large" type="lightning" />
-        )}
-        {weatherBegin && weather === 7 && (
-          <Snow position={position} size="small" />
-        )}
-        {weatherBegin && weather === 8 && (
-          <Snow position={position} size="middle" />
-        )}
-        {weatherBegin && weather === 9 && (
-          <Snow position={position} size="large" />
-        )}
+        <Weather begin={weatherBegin} position={position} weather={weather} />
       </>
     );
   }
