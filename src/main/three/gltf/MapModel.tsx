@@ -99,7 +99,9 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
             child.material.color.getHSL(hsl);
             blockColors[child.uuid] = { ...hsl };
             const border = dealCity(child);
-            borders.push({ border, name: child.name });
+            if (border) {
+              borders.push({ border, name: child.name });
+            }
           }
           if (child.name.includes("河南边界")) {
             dealBorder(child);
@@ -176,7 +178,9 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
     mesh.material.opacity = 0.3;
     // 0.165
     mesh.position.y = INITBORDERPOSITIONY;
-    // mesh.position.y = -2;
+    // if (mesh.name === "三门峡") {
+    //   console.log(mesh);
+    // }
     const edgesGeometry = new THREE.EdgesGeometry(mesh.geometry);
     const positions = edgesGeometry.attributes.position.array;
     const borderLine = getBorderLine(mesh, positions);
@@ -289,13 +293,7 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
       "position",
       new THREE.BufferAttribute(positions, 3)
     );
-    lineGeometry.applyMatrix4(
-      new THREE.Matrix4().makeTranslation(
-        mesh.position.x + 47.8,
-        mesh.position.y,
-        mesh.position.z - 0.47
-      )
-    );
+    lineGeometry.applyMatrix4(mesh.parent.matrixWorld);
     const lineMaterial = new THREE.LineBasicMaterial({
       color: 0xb1d2ff,
       linewidth: 1,
@@ -303,13 +301,11 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
       // transparent: true,
     });
     const line = new THREE.LineSegments(lineGeometry, lineMaterial);
-    line.position.set(0, 0, 0);
     line.rotation.copy(mesh.rotation);
     line.scale.copy(mesh.scale);
-    // line.position.y += 0.359;
-    line.position.y = 1.36;
+    line.position.copy(mesh.position);
+    line.position.y = 0.21;
     return line;
-    // setBorderLine(line);
   };
 
   const dealBorder = (mesh: any) => {
@@ -317,8 +313,6 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
     mesh.material.metalness = 0;
     mesh.scale.y = 0.01;
     mesh.position.y = INITBORDERPOSITIONY;
-    // mesh.position.y = -0.26;
-    // mesh.geometry.applyMatrix4(new THREE.Matrix4().makeTranslation(0, 0.52, 0));
     borderMeshRef.current = mesh;
   };
 
