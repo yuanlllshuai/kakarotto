@@ -92,7 +92,7 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
       // console.log(111, scene);
       scene.traverse((child: any) => {
         if (child.isMesh) {
-          if (child.name.includes("市") || child.name === "三门峡") {
+          if (filterName(child.name)) {
             // child.material.color = new THREE.Color("#567");
             child.material.color = new THREE.Color("#204e8f");
             const hsl = { h: 0, s: 0, l: 0 };
@@ -171,6 +171,8 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
     }
   }, [LightCylinderEnd]);
 
+  const filterName = (name: string) => name.includes("市") || name === "三门峡";
+
   // 处理市区
   const dealCity = (mesh: any) => {
     mesh.material.side = THREE.DoubleSide;
@@ -178,9 +180,6 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
     mesh.material.opacity = 0.3;
     // 0.165
     mesh.position.y = INITBORDERPOSITIONY;
-    // if (mesh.name === "三门峡") {
-    //   console.log(mesh);
-    // }
     const edgesGeometry = new THREE.EdgesGeometry(mesh.geometry);
     const positions = edgesGeometry.attributes.position.array;
     const borderLine = getBorderLine(mesh, positions);
@@ -342,16 +341,11 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
       return;
     }
     const intersects = raycaster.intersectObjects(
-      scene.children[2].children[0].children.filter(
-        (i) => i.name.includes("市") || i.name === "三门峡"
-      )
+      scene.children[2].children[0].children.filter((i) => filterName(i.name))
     );
     if (intersects.length > 0) {
       const intersect: any = intersects[0];
-      if (
-        intersect.object.name.includes("市") ||
-        intersect.object.name === "三门峡"
-      ) {
+      if (filterName(intersect.object.name)) {
         if (moveUuid.current !== intersect.object.uuid) {
           moveUuid.current = intersect.object.uuid;
           setMeshColor();
@@ -369,10 +363,7 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
     }
     if (hits.length > 0) {
       const intersect: any = hits[0];
-      if (
-        intersect.object.name.includes("市") ||
-        intersect.object.name === "三门峡"
-      ) {
+      if (filterName(intersect.object.name)) {
         // intersectRef.current = intersect;
         if (currUuid.current !== intersect.object.uuid) {
           currUuid.current = intersect.object.uuid;
@@ -394,10 +385,7 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
     if (partRef.current) {
       (partRef.current as any).children[2].children[0].children.forEach(
         (child: any) => {
-          if (
-            child.isMesh &&
-            (child.name.includes("市") || child.name === "三门峡")
-          ) {
+          if (child.isMesh && filterName(child.name)) {
             child.material.opacity = 0.7;
             if (
               child.uuid === moveUuid.current ||
@@ -449,10 +437,7 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
         // 地面高度增加
         (partRef.current as any).children[2].children[0].children.forEach(
           (child: any) => {
-            if (
-              child.isMesh &&
-              (child.name.includes("市") || child.name === "三门峡")
-            ) {
+            if (child.isMesh && filterName(child.name)) {
               child.position.y =
                 INITBORDERPOSITIONY + TARGETINCREASEHEIGHT * easedProgress;
             }
