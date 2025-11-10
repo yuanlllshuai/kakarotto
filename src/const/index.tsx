@@ -24,6 +24,7 @@ export const navConfig = [
       { key: "solar", label: "太阳系", path: "/three/solar" },
       { key: "map-plane", label: "地图平面", path: "/three/map-plane" },
       { key: "shader", label: "着色器", path: "/three/shader" },
+      { key: "province-map", label: "省份地图", path: "/three/province-map" },
     ],
   },
   { key: "settings", label: "设置", icon: "settings", path: "/settings" },

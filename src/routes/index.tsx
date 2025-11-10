@@ -13,6 +13,7 @@ import {
   ThreeSolar,
   ThreeMapPlane,
   ThreeShader,
+  ThreeProvinceMap,
 } from "@/main/three";
 import Settings from "@/main/settings";
 
@@ -28,6 +29,7 @@ const router = createHashRouter(
         <Route path="solar" element={<ThreeSolar />} />
         <Route path="map-plane" element={<ThreeMapPlane />} />
         <Route path="shader" element={<ThreeShader />} />
+        <Route path="province-map" element={<ThreeProvinceMap />} />
       </Route>
       <Route path="settings" element={<Settings />} />
       <Route path="*" errorElement={<ErrorPage />} element={<ErrorPage />} />
