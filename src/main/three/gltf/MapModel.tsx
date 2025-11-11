@@ -499,7 +499,7 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
       {flowLight.map((i, index) => (
         <primitive object={i} key={index} />
       ))}
-      {<Name begin={begin} />}
+      {<Name begin={begin} name="河南省" />}
       <LightCylinder
         mapAnimationEnd={mapAnimationEnd}
         composerBegin={composerBegin}

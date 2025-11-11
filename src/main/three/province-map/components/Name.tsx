@@ -7,14 +7,13 @@ const PointLabel = memo(
     return (
       <>
         <Html
-          position={[-4, 0.4, 10]}
+          position={[-6, 0.4, 11]}
           rotation-y={-Math.PI / 8}
           transform={true}
           className={begin ? style.reflect : style.reflect_hide}
           style={{ userSelect: "none" }}
         >
           <div>{name}</div>
-          <div style={{ fontSize: 13 }}>HENAN PROVINCE</div>
         </Html>
       </>
     );
