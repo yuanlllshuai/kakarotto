@@ -6,21 +6,27 @@ import * as d3 from "d3";
 import Name from "./components/Name";
 import mapHeightPng from "../res/border.png";
 import InstancedGridOfSquares from "../gltf/InstancedGridOfSquares";
+import Wave from "../gltf/Wave";
+import OriginPoint from "../gltf/OriginPoint";
+import AnimationRing from "../gltf/AnimationRing";
 
 const MapModel = ({
   prvince,
   name,
-  setMapLoading,
+  cameraEnd,
+  mapLoaded,
+  setMapLoaded,
 }: {
   prvince: string;
   name: string;
-  setMapLoading: (loading: boolean) => void;
+  cameraEnd: boolean;
+  mapLoaded: boolean;
+  setMapLoaded: (loading: boolean) => void;
 }) => {
   const [borders, setBorders] = useState<any[]>([]);
   const [shaps, setShapes] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
   const [scale, setScale] = useState<number>(0);
-  // const [composerBegin, setComposerBegin] = useState(false);
+  const [depth, setDepth] = useState(0);
   // 地图高度动画step
   const mapHeightCountRef = useRef(0);
   const parentRef = useRef<any>();
@@ -42,89 +48,18 @@ const MapModel = ({
   useEffect(() => {
     if (prvince) {
       const loader = new THREE.FileLoader();
-      setLoading(true);
+      setMapLoaded(false);
       loader.load(
         `https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=${prvince}${
           prvince === "710000" ? "" : "_full"
         }`,
         function (data) {
           initMap(JSON.parse(data as string));
-          setLoading(false);
-          setMapLoading(false);
+          setMapLoaded(true);
         }
       );
     }
   }, [prvince]);
-
-  const initMap = (map: any) => {
-    const { depth, center } = getComputeData(map);
-
-    const allBorders: any[] = [];
-    const allShaps: any[] = [];
-
-    const projection2 = d3
-      .geoMercator()
-      .center(center) // 地图中心点坐标
-      .scale(80)
-      .translate([0, 0]);
-    map.features.forEach((elem: any, index1: number) => {
-      const coordinates = elem.geometry.coordinates;
-      coordinates.forEach((multiPolygon: any, index2: number) => {
-        multiPolygon.forEach((polygon: any, index3: number) => {
-          const lineMaterial = new THREE.LineBasicMaterial({
-            color: "white",
-          });
-          const shape = new THREE.Shape();
-          const lineGeometry = new THREE.BufferGeometry();
-          const positions = new Float32Array(polygon.length * 3);
-          for (let i = 0; i < polygon.length; i++) {
-            const [x, z] = projection2(polygon[i]) as number[];
-            if (!isNaN(x) && !isNaN(z)) {
-              if (i === 0) {
-                shape.moveTo(x, -z);
-              }
-              shape.lineTo(x, -z);
-              positions[i * 3] = x;
-              positions[i * 3 + 1] = depth;
-              positions[i * 3 + 2] = z;
-            }
-          }
-          const extrudeSettings = {
-            depth,
-            bevelEnabled: false,
-          };
-
-          const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-          const material = new THREE.MeshBasicMaterial({
-            color: "#204e8f",
-            transparent: true,
-            opacity: 0.7,
-          });
-          const material1 = new THREE.MeshBasicMaterial({
-            color: "#1ba0d4ff",
-          });
-          lineGeometry.setAttribute(
-            "position",
-            new THREE.BufferAttribute(positions, 3)
-          );
-          const line = new THREE.Line(lineGeometry, lineMaterial);
-          allBorders.push({
-            line,
-            name: elem.properties.name + index1 + index2 + index3,
-          });
-          const mesh = new THREE.Mesh(geometry, [material, material1]);
-          mesh.material[1].map = mapTexture;
-          mapTexture.offset.y = 1.5;
-          allShaps.push({
-            mesh,
-            name: elem.properties.name + index1 + index2 + index3,
-          });
-        });
-      });
-    });
-    setBorders(allBorders);
-    setShapes(allShaps);
-  };
 
   const getComputeData: (map: any) => {
     depth: number;
@@ -170,10 +105,90 @@ const MapModel = ({
     setScale(compScale);
     const depth = (0.12 * Math.max(crossX, crossZ)) / 2.96;
     mapTexture.repeat.set(1.5 * compScale, 1.5 * compScale);
+    setDepth(depth);
     return {
       center: [totalX / total, totalZ / total],
       depth,
     };
+  };
+
+  const initMap = (map: any) => {
+    const { depth, center } = getComputeData(map);
+
+    const allBorders: any[] = [];
+    const allShaps: any[] = [];
+
+    const projection2 = d3
+      .geoMercator()
+      .center(center) // 地图中心点坐标
+      .scale(80)
+      .translate([0, 0]);
+    map.features.forEach((elem: any, index1: number) => {
+      const coordinates = elem.geometry.coordinates;
+      coordinates.forEach((multiPolygon: any, index2: number) => {
+        multiPolygon.forEach((polygon: any, index3: number) => {
+          const lineMaterial = new THREE.LineBasicMaterial({
+            color: 0xb1d2ff,
+          });
+          const shape = new THREE.Shape();
+          const lineGeometry = new THREE.BufferGeometry();
+          const positions = new Float32Array(polygon.length * 3);
+          for (let i = 0; i < polygon.length; i++) {
+            const [x, z] = projection2(polygon[i]) as number[];
+            if (!isNaN(x) && !isNaN(z)) {
+              if (i === 0) {
+                shape.moveTo(x, -z);
+              }
+              shape.lineTo(x, -z);
+              positions[i * 3] = x;
+              positions[i * 3 + 1] = depth;
+              positions[i * 3 + 2] = z;
+            }
+          }
+          const extrudeSettings = {
+            depth,
+            bevelEnabled: false,
+          };
+
+          const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+          const material = new THREE.MeshBasicMaterial({
+            color: "#204e8f",
+            transparent: true,
+            opacity: 0.7,
+          });
+          const material1 = new THREE.MeshBasicMaterial({
+            // color: "#1ba0d4ff",
+          });
+          lineGeometry.setAttribute(
+            "position",
+            new THREE.BufferAttribute(positions, 3)
+          );
+          const line = new THREE.Line(lineGeometry, lineMaterial);
+          allBorders.push({
+            line,
+            name: elem.properties.name + index1 + index2 + index3,
+          });
+          const mesh = new THREE.Mesh(geometry, [material, material1]);
+          mesh.material[1].map = mapTexture;
+          mapTexture.offset.y = 1.5;
+          allShaps.push({
+            mesh,
+            name: elem.properties.name + index1 + index2 + index3,
+          });
+        });
+      });
+    });
+    setBorders(allBorders);
+    setShapes(allShaps);
+    setTimeout(() => {
+      dealFlowLight();
+    }, 200);
+  };
+
+  const dealFlowLight = () => {
+    console.log(parentRef.current);
+    // const edgesGeometry = new THREE.EdgesGeometry(mesh.geometry);
+    //     const positions = edgesGeometry.attributes.position.array;
   };
 
   useFrame((_state, delta) => {
@@ -182,13 +197,17 @@ const MapModel = ({
     mapTexture.offset.y = 1 - (mapHeightCountRef.current % 1);
   });
 
-  if (loading) {
+  if (!mapLoaded) {
     return <></>;
   }
 
   return (
     <>
-      <object3D ref={parentRef} scale={scale * 1.5}>
+      <object3D
+        ref={parentRef}
+        scale={scale * 1.5}
+        position={[0, -depth / 2 - 0.1, 0]}
+      >
         {borders.map((i) => (
           <primitive object={i.line} key={i.name} />
         ))}
@@ -196,8 +215,11 @@ const MapModel = ({
           <primitive object={i.mesh} key={i.name} rotation-x={-Math.PI / 2} />
         ))}
       </object3D>
-      <Name begin={!loading} name={name} />
-      <InstancedGridOfSquares begin={true} />
+      <Name begin={cameraEnd} name={name} />
+      <InstancedGridOfSquares begin={cameraEnd} />
+      {cameraEnd && <Wave />}
+      {cameraEnd && <OriginPoint position={{ x: 0, z: 0, y: 0 }} />}
+      {cameraEnd && <AnimationRing />}
     </>
   );
 };

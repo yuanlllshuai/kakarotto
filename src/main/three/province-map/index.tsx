@@ -8,15 +8,19 @@ import ScreenFull from "@/components/ScreenFull";
 import { Select } from "antd";
 import * as TWEEN from "@tweenjs/tween.js";
 import MapModel from "./MapModel";
+import { EffectComposer, Bloom } from "@react-three/postprocessing";
 
 const { Option } = Select;
 
-const Camera = memo(({ setBegin, loading }: any) => {
+const Camera = memo(({ setCameraEnd, begin }: any) => {
   const cameraRef = useRef<any>(null);
   const tweenRef = useRef<any>(null);
 
   useEffect(() => {
-    if (loading) return;
+    if (!begin) {
+      setCameraEnd(false);
+      return;
+    }
     const beginPos = [-18, 12, 12];
     const endPos = [-10, 10, 20];
     const startPoint = new THREE.Vector3(...beginPos);
@@ -31,10 +35,10 @@ const Camera = memo(({ setBegin, loading }: any) => {
         }
       })
       .onComplete(() => {
-        setBegin(true);
+        setCameraEnd(true);
       })
       .start();
-  }, [loading]);
+  }, [begin]);
 
   useFrame(() => {
     if (tweenRef.current) {
@@ -58,8 +62,8 @@ function Index() {
   const [prvinces, setPrvinces] = useState<any[]>([]);
   const [prvince, setPrvince] = useState<string>("");
   const [name, setName] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(true);
-  const [begin, setBegin] = useState<boolean>(false);
+  const [mapLoaded, setMapLoaded] = useState<boolean>(false);
+  const [cameraEnd, setCameraEnd] = useState<boolean>(false);
 
   useEffect(() => {
     const loader = new THREE.FileLoader();
@@ -92,16 +96,29 @@ function Index() {
             background: new THREE.Color("rgb(2, 3, 34)"),
           }}
         >
-          <Camera begin={begin} setBegin={setBegin} loading={loading} />
-          <OrbitControls makeDefault enableRotate={begin} enableZoom={begin} />
+          <Camera setCameraEnd={setCameraEnd} begin={mapLoaded} />
+          <OrbitControls
+            makeDefault
+            enableRotate={cameraEnd}
+            enableZoom={cameraEnd}
+          />
           <ambientLight intensity={3} />
           <Suspense fallback={<></>}>
             <MapModel
               prvince={prvince}
               name={name}
-              setMapLoading={setLoading}
+              cameraEnd={cameraEnd}
+              mapLoaded={mapLoaded}
+              setMapLoaded={setMapLoaded}
             />
           </Suspense>
+          <EffectComposer>
+            <Bloom
+              intensity={1.0} // The bloom intensity.
+              mipmapBlur
+              luminanceThreshold={1}
+            />
+          </EffectComposer>
         </Canvas>
       </div>
     );
