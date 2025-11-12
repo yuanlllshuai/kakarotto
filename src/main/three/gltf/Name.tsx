@@ -7,8 +7,8 @@ const PointLabel = memo(
     return (
       <>
         <Html
-          position={[-4, 0.4, 10]}
-          rotation-y={-Math.PI / 8}
+          position={[0, 0, 14]}
+          // rotation-y={-Math.PI / 8}
           transform={true}
           className={begin ? style.reflect : style.reflect_hide}
           style={{ userSelect: "none" }}

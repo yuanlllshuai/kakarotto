@@ -137,13 +137,13 @@ const InstancedGridOfSquares = memo(({ begin }: { begin: boolean }) => {
       {crossInstancedMesh && (
         <primitive
           object={crossInstancedMesh}
-          rotation-y={-2}
+          // rotation-y={-2}
           position={[0, -0.5, 0]}
         />
       )}
       <Grid
         position={[0, -0.5, 0]}
-        rotation-y={-2}
+        // rotation-y={-2}
         args={[5, 5]}
         {...gridConfig}
         ref={gridRef}

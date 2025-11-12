@@ -21,8 +21,8 @@ const Camera = memo(({ setCameraEnd, begin }: any) => {
       setCameraEnd(false);
       return;
     }
-    const beginPos = [-18, 12, 12];
-    const endPos = [-10, 10, 20];
+    const beginPos = [-12, 12, 16];
+    const endPos = [0, 10, 26];
     const startPoint = new THREE.Vector3(...beginPos);
     const endPoint = new THREE.Vector3(...endPos);
 
@@ -97,6 +97,7 @@ function Index() {
           }}
         >
           <Camera setCameraEnd={setCameraEnd} begin={mapLoaded} />
+          {/* <axesHelper scale={20} /> */}
           <OrbitControls
             makeDefault
             enableRotate={cameraEnd}

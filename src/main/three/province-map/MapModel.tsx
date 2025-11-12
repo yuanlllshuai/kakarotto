@@ -9,6 +9,8 @@ import InstancedGridOfSquares from "../gltf/InstancedGridOfSquares";
 import Wave from "../gltf/Wave";
 import OriginPoint from "../gltf/OriginPoint";
 import AnimationRing from "../gltf/AnimationRing";
+import PointLabel from "../gltf/PointLabel";
+import FlyLine from "../gltf/FlyLine";
 
 const MapModel = ({
   prvince,
@@ -27,6 +29,7 @@ const MapModel = ({
   const [shaps, setShapes] = useState<any[]>([]);
   const [scale, setScale] = useState<number>(0);
   const [depth, setDepth] = useState(0);
+  const [labels, setLabels] = useState<any[]>([]);
   // 地图高度动画step
   const mapHeightCountRef = useRef(0);
   const parentRef = useRef<any>();
@@ -39,16 +42,10 @@ const MapModel = ({
   mapTexture.colorSpace = THREE.SRGBColorSpace;
   mapTexture.rotation = Math.PI;
 
-  // useEffect(() => {
-  //   if (mapTexture) {
-  //     setComposerBegin(true);
-  //   }
-  // }, [mapTexture]);
-
   useEffect(() => {
     if (prvince) {
       const loader = new THREE.FileLoader();
-      setMapLoaded(false);
+      // setMapLoaded(false);
       loader.load(
         `https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=${prvince}${
           prvince === "710000" ? "" : "_full"
@@ -64,9 +61,10 @@ const MapModel = ({
   const getComputeData: (map: any) => {
     depth: number;
     center: [number, number];
+    scale: number;
   } = (map) => {
     const center = map.features[0].properties.centroid;
-    const projection1 = d3
+    const projection = d3
       .geoMercator()
       .center([center[0], center[1]])
       .scale(80)
@@ -85,7 +83,7 @@ const MapModel = ({
       coordinates.forEach((multiPolygon: any) => {
         multiPolygon.forEach((polygon: any) => {
           for (let i = 0; i < polygon.length; i++) {
-            const [x, z] = projection1(polygon[i]) as number[];
+            const [x, z] = projection(polygon[i]) as number[];
             if (!isNaN(x) && !isNaN(z)) {
               minX = Math.min(minX, x);
               maxX = Math.max(maxX, x);
@@ -101,7 +99,7 @@ const MapModel = ({
     });
     const crossX = maxX - minX;
     const crossZ = maxZ - minZ;
-    const compScale = 13 / Math.max(crossX, crossZ);
+    const compScale = (13 / Math.max(crossX, crossZ)) * 2;
     setScale(compScale);
     const depth = (0.12 * Math.max(crossX, crossZ)) / 2.96;
     mapTexture.repeat.set(1.5 * compScale, 1.5 * compScale);
@@ -109,21 +107,39 @@ const MapModel = ({
     return {
       center: [totalX / total, totalZ / total],
       depth,
+      scale: compScale,
     };
   };
 
   const initMap = (map: any) => {
-    const { depth, center } = getComputeData(map);
+    const { depth, center, scale } = getComputeData(map);
 
     const allBorders: any[] = [];
     const allShaps: any[] = [];
+    const labelArr: any[] = [];
 
-    const projection2 = d3
+    const projection = d3
       .geoMercator()
       .center(center) // 地图中心点坐标
       .scale(80)
       .translate([0, 0]);
+    const projectionCenter = d3
+      .geoMercator()
+      .center(center) // 地图中心点坐标
+      .scale(80 * scale)
+      .translate([0, 0]);
     map.features.forEach((elem: any, index1: number) => {
+      const [centerX, centerZ] = projectionCenter(
+        elem.properties.centroid || elem.properties.center
+      ) as number[];
+      labelArr.push({
+        position: {
+          x: centerX,
+          y: depth,
+          z: centerZ,
+        },
+        label: elem.properties.name,
+      });
       const coordinates = elem.geometry.coordinates;
       coordinates.forEach((multiPolygon: any, index2: number) => {
         multiPolygon.forEach((polygon: any, index3: number) => {
@@ -134,7 +150,7 @@ const MapModel = ({
           const lineGeometry = new THREE.BufferGeometry();
           const positions = new Float32Array(polygon.length * 3);
           for (let i = 0; i < polygon.length; i++) {
-            const [x, z] = projection2(polygon[i]) as number[];
+            const [x, z] = projection(polygon[i]) as number[];
             if (!isNaN(x) && !isNaN(z)) {
               if (i === 0) {
                 shape.moveTo(x, -z);
@@ -180,6 +196,7 @@ const MapModel = ({
     });
     setBorders(allBorders);
     setShapes(allShaps);
+    setLabels(labelArr);
     setTimeout(() => {
       dealFlowLight();
     }, 200);
@@ -205,7 +222,7 @@ const MapModel = ({
     <>
       <object3D
         ref={parentRef}
-        scale={scale * 1.5}
+        scale={scale}
         position={[0, -depth / 2 - 0.1, 0]}
       >
         {borders.map((i) => (
@@ -220,6 +237,21 @@ const MapModel = ({
       {cameraEnd && <Wave />}
       {cameraEnd && <OriginPoint position={{ x: 0, z: 0, y: 0 }} />}
       {cameraEnd && <AnimationRing />}
+      {labels.map(({ position, label }: { position: any; label: string }) => (
+        <PointLabel
+          key={label}
+          position={position}
+          scale={1}
+          label={label}
+          visible={cameraEnd}
+          weather={null}
+          weatherBegin={cameraEnd}
+        />
+      ))}
+      {cameraEnd &&
+        labels.map(({ position, label }: { position: any; label: string }) => (
+          <FlyLine key={label} position={position} />
+        ))}
     </>
   );
 };

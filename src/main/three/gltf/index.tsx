@@ -21,8 +21,8 @@ const Camera = memo(({ setBegin, loading }: any) => {
 
   useEffect(() => {
     if (loading) return;
-    const beginPos = [-18, 12, 12];
-    const endPos = [-10, 10, 20];
+    const beginPos = [-12, 12, 16];
+    const endPos = [0, 10, 26];
     const startPoint = new THREE.Vector3(...beginPos);
     const endPoint = new THREE.Vector3(...endPos);
 
