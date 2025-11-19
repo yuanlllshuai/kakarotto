@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
-import { useTexture } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
+import { useTexture, CycleRaycast } from "@react-three/drei";
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import * as d3 from "d3";
 import Name from "./components/Name";
@@ -25,14 +25,23 @@ const MapModel = ({
   mapLoaded: boolean;
   setMapLoaded: (loading: boolean) => void;
 }) => {
+  const { gl, raycaster, camera, mouse } = useThree();
+
   const [borders, setBorders] = useState<any[]>([]);
   const [shaps, setShapes] = useState<any[]>([]);
   const [scale, setScale] = useState<number>(0);
   const [depth, setDepth] = useState(0);
   const [labels, setLabels] = useState<any[]>([]);
+  const [mapHsl, setMapHsl] = useState<any>(null);
   // 地图高度动画step
   const mapHeightCountRef = useRef(0);
   const parentRef = useRef<any>();
+  const shapRef = useRef<any>();
+  const isScrollingRef = useRef(false);
+  const scrollTimeout = useRef<any>(null);
+  const currMapName = useRef<string>("");
+  const lastMapName = useRef<string>("");
+  const clickMapName = useRef<string>("");
 
   // 地图边缘纹理
   const [mapTexture] = useTexture([mapHeightPng]);
@@ -41,6 +50,30 @@ const MapModel = ({
   mapTexture.magFilter = THREE.NearestFilter;
   mapTexture.colorSpace = THREE.SRGBColorSpace;
   mapTexture.rotation = Math.PI;
+
+  // 检测鼠标滚轮事件
+  useEffect(() => {
+    const handleWheel = () => {
+      isScrollingRef.current = true;
+      clearTimeout(scrollTimeout.current);
+      scrollTimeout.current = setTimeout(
+        () => (isScrollingRef.current = false),
+        100
+      );
+    };
+
+    gl.domElement.addEventListener("wheel", handleWheel);
+    return () => gl.domElement.removeEventListener("wheel", handleWheel);
+  }, [gl]);
+
+  useEffect(() => {
+    if (cameraEnd) {
+      window.addEventListener("mousemove", handleMouseMove);
+    }
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, [cameraEnd]);
 
   useEffect(() => {
     if (prvince) {
@@ -57,6 +90,66 @@ const MapModel = ({
       );
     }
   }, [prvince]);
+
+  const handleMouseMove = (event: any) => {
+    if (event.target.tagName !== "CANVAS" || !cameraEnd) {
+      return;
+    }
+    event.preventDefault();
+    handleMove();
+  };
+
+  // 处理移动事件
+  const handleMove = () => {
+    raycaster.setFromCamera(mouse, camera);
+    if (!shapRef.current) {
+      return;
+    }
+    const intersects = raycaster.intersectObjects(shapRef.current.children);
+    lastMapName.current = currMapName.current;
+    if (intersects.length > 0) {
+      const intersect: any = intersects[0];
+      currMapName.current = intersect.object.name;
+    } else {
+      currMapName.current = "";
+    }
+    if (lastMapName.current !== currMapName.current) {
+      setMapColor();
+    }
+  };
+
+  const setMapColor = () => {
+    if (shapRef.current) {
+      (shapRef.current as any).children.forEach((child: any) => {
+        if (
+          child.name === currMapName.current ||
+          child.name === clickMapName.current
+        ) {
+          const hsl = { ...mapHsl };
+          hsl.l += 0.2;
+          child.material[0].color.setHSL(hsl.h, hsl.s, hsl.l);
+        } else {
+          const hsl = { ...mapHsl };
+          child.material[0].color.setHSL(hsl.h, hsl.s, hsl.l);
+        }
+      });
+    }
+  };
+
+  const onRaycastChanged = (hits: THREE.Intersection[]) => {
+    if (isScrollingRef.current) {
+      return null;
+    }
+    if (hits.length > 0) {
+      const intersect: any = hits[0];
+      clickMapName.current =
+        clickMapName.current === intersect.object.name
+          ? ""
+          : intersect.object.name;
+    }
+    setMapColor();
+    return null;
+  };
 
   const getComputeData: (map: any) => {
     depth: number;
@@ -172,6 +265,9 @@ const MapModel = ({
             transparent: true,
             opacity: 0.7,
           });
+          const hsl = { h: 0, s: 0, l: 0 };
+          material.color.getHSL(hsl);
+          setMapHsl(hsl);
           const material1 = new THREE.MeshBasicMaterial({
             // color: "#1ba0d4ff",
           });
@@ -180,16 +276,18 @@ const MapModel = ({
             new THREE.BufferAttribute(positions, 3)
           );
           const line = new THREE.Line(lineGeometry, lineMaterial);
+          const name = elem.properties.name + index1 + index2 + index3;
           allBorders.push({
             line,
-            name: elem.properties.name + index1 + index2 + index3,
+            name,
           });
           const mesh = new THREE.Mesh(geometry, [material, material1]);
           mesh.material[1].map = mapTexture;
+          mesh.name = name;
           mapTexture.offset.y = 1.5;
           allShaps.push({
             mesh,
-            name: elem.properties.name + index1 + index2 + index3,
+            name,
           });
         });
       });
@@ -197,15 +295,6 @@ const MapModel = ({
     setBorders(allBorders);
     setShapes(allShaps);
     setLabels(labelArr);
-    setTimeout(() => {
-      dealFlowLight();
-    }, 200);
-  };
-
-  const dealFlowLight = () => {
-    console.log(parentRef.current);
-    // const edgesGeometry = new THREE.EdgesGeometry(mesh.geometry);
-    //     const positions = edgesGeometry.attributes.position.array;
   };
 
   useFrame((_state, delta) => {
@@ -228,9 +317,11 @@ const MapModel = ({
         {borders.map((i) => (
           <primitive object={i.line} key={i.name} />
         ))}
-        {shaps.map((i) => (
-          <primitive object={i.mesh} key={i.name} rotation-x={-Math.PI / 2} />
-        ))}
+        <object3D ref={shapRef} onClick={(e: any) => e.stopPropagation()}>
+          {shaps.map((i) => (
+            <primitive object={i.mesh} key={i.name} rotation-x={-Math.PI / 2} />
+          ))}
+        </object3D>
       </object3D>
       <Name begin={cameraEnd} name={name} />
       <InstancedGridOfSquares begin={cameraEnd} />
@@ -252,6 +343,15 @@ const MapModel = ({
         labels.map(({ position, label }: { position: any; label: string }) => (
           <FlyLine key={label} position={position} />
         ))}
+      {cameraEnd && (
+        <CycleRaycast
+          preventDefault={true} // Call event.preventDefault() (default: true)
+          scroll={false} // Wheel events (default: true)
+          keyCode={0} // Keyboard events (default: 9 [Tab])
+          onChanged={onRaycastChanged}
+          portal={shapRef.current}
+        />
+      )}
     </>
   );
 };

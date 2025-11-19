@@ -142,7 +142,7 @@ const InstancedGridOfSquares = memo(({ begin }: { begin: boolean }) => {
         />
       )}
       <Grid
-        position={[0, -0.5, 0]}
+        position={[0, -0.51, 0]}
         // rotation-y={-2}
         args={[5, 5]}
         {...gridConfig}
