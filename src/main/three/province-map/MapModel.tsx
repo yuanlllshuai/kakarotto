@@ -33,6 +33,10 @@ const MapModel = ({
   const [depth, setDepth] = useState(0);
   const [labels, setLabels] = useState<any[]>([]);
   const [mapHsl, setMapHsl] = useState<any>(null);
+  // 流光轨迹
+  const [flowLight, setFlowLight] = useState<any[]>([]);
+  // 流光纹理
+  const [flowLightTexture, setFlowLightTexture] = useState<any[]>([]);
   // 地图高度动画step
   const mapHeightCountRef = useRef(0);
   const parentRef = useRef<any>();
@@ -65,7 +69,6 @@ const MapModel = ({
     gl.domElement.addEventListener("wheel", handleWheel);
     return () => gl.domElement.removeEventListener("wheel", handleWheel);
   }, [gl]);
-
   useEffect(() => {
     if (cameraEnd) {
       window.addEventListener("mousemove", handleMouseMove);
@@ -83,9 +86,14 @@ const MapModel = ({
         `https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=${prvince}${
           prvince === "710000" ? "" : "_full"
         }`,
-        function (data) {
-          initMap(JSON.parse(data as string));
-          setMapLoaded(true);
+        function (data1) {
+          loader.load(
+            `https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=${prvince}`,
+            function (data2) {
+              initMap(JSON.parse(data1 as string), JSON.parse(data2 as string));
+              setMapLoaded(true);
+            }
+          );
         }
       );
     }
@@ -151,6 +159,57 @@ const MapModel = ({
     return null;
   };
 
+  const getFlowLight = (map: any, { depth, center, scale }: any) => {
+    const projection = d3
+      .geoMercator()
+      .center(center) // 地图中心点坐标
+      .scale(80)
+      .translate([0, 0]);
+    let maxAreaPositions: any[] = [];
+    map.features.forEach((elem: any) => {
+      const coordinates = elem.geometry.coordinates;
+      coordinates.forEach((multiPolygon: any) => {
+        if (Array.isArray(coordinates[0][0][0])) {
+          multiPolygon.forEach((polygon: any) => {
+            const positions = [];
+            for (let i = 0; i < polygon.length; i++) {
+              const [x, z] = projection(polygon[i]) as number[];
+              if (!isNaN(x) && !isNaN(z)) {
+                positions[i * 3] = x;
+                positions[i * 3 + 1] = depth;
+                positions[i * 3 + 2] = z;
+              }
+            }
+            maxAreaPositions =
+              maxAreaPositions.length >= positions.length
+                ? maxAreaPositions
+                : positions;
+          });
+        } else {
+          const positions = [];
+          for (let i = 0; i < multiPolygon.length; i++) {
+            const [x, z] = projection(multiPolygon[i]) as number[];
+            if (!isNaN(x) && !isNaN(z)) {
+              positions[i * 3] = x;
+              positions[i * 3 + 1] = depth;
+              positions[i * 3 + 2] = z;
+            }
+          }
+          maxAreaPositions =
+            maxAreaPositions.length >= positions.length
+              ? maxAreaPositions
+              : positions;
+        }
+      });
+    });
+    const vertices = getVertices(maxAreaPositions);
+    const [texture1, tubeMesh1] = dealFlowLight(vertices, scale);
+    const [texture2, tubeMesh2] = dealFlowLight(vertices, scale);
+    texture2.offset.y = 0.5;
+    setFlowLight([tubeMesh1, tubeMesh2]);
+    setFlowLightTexture([texture1, texture2]);
+  };
+
   const getComputeData: (map: any) => {
     depth: number;
     center: [number, number];
@@ -174,20 +233,35 @@ const MapModel = ({
     map.features.forEach((elem: any) => {
       const coordinates = elem.geometry.coordinates;
       coordinates.forEach((multiPolygon: any) => {
-        multiPolygon.forEach((polygon: any) => {
-          for (let i = 0; i < polygon.length; i++) {
-            const [x, z] = projection(polygon[i]) as number[];
+        if (Array.isArray(coordinates[0][0][0])) {
+          multiPolygon.forEach((polygon: any) => {
+            for (let i = 0; i < polygon.length; i++) {
+              const [x, z] = projection(polygon[i]) as number[];
+              if (!isNaN(x) && !isNaN(z)) {
+                minX = Math.min(minX, x);
+                maxX = Math.max(maxX, x);
+                minZ = Math.min(minZ, z);
+                maxZ = Math.max(maxZ, z);
+                totalX += polygon[i][0];
+                totalZ += polygon[i][1];
+                total += 1;
+              }
+            }
+          });
+        } else {
+          for (let i = 0; i < multiPolygon.length; i++) {
+            const [x, z] = projection(multiPolygon[i]) as number[];
             if (!isNaN(x) && !isNaN(z)) {
               minX = Math.min(minX, x);
               maxX = Math.max(maxX, x);
               minZ = Math.min(minZ, z);
               maxZ = Math.max(maxZ, z);
-              totalX += polygon[i][0];
-              totalZ += polygon[i][1];
+              totalX += multiPolygon[i][0];
+              totalZ += multiPolygon[i][1];
               total += 1;
             }
           }
-        });
+        }
       });
     });
     const crossX = maxX - minX;
@@ -204,9 +278,9 @@ const MapModel = ({
     };
   };
 
-  const initMap = (map: any) => {
-    const { depth, center, scale } = getComputeData(map);
-
+  const initMap = (map1: any, map2: any) => {
+    const { depth, center, scale } = getComputeData(map1);
+    getFlowLight(map2, { depth, center, scale });
     const allBorders: any[] = [];
     const allShaps: any[] = [];
     const labelArr: any[] = [];
@@ -221,7 +295,7 @@ const MapModel = ({
       .center(center) // 地图中心点坐标
       .scale(80 * scale)
       .translate([0, 0]);
-    map.features.forEach((elem: any, index1: number) => {
+    map1.features.forEach((elem: any, index1: number) => {
       const [centerX, centerZ] = projectionCenter(
         elem.properties.centroid || elem.properties.center
       ) as number[];
@@ -235,15 +309,71 @@ const MapModel = ({
       });
       const coordinates = elem.geometry.coordinates;
       coordinates.forEach((multiPolygon: any, index2: number) => {
-        multiPolygon.forEach((polygon: any, index3: number) => {
+        if (Array.isArray(coordinates[0][0][0])) {
+          multiPolygon.forEach((polygon: any, index3: number) => {
+            const lineMaterial = new THREE.LineBasicMaterial({
+              color: 0xb1d2ff,
+            });
+            const shape = new THREE.Shape();
+            const lineGeometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(polygon.length * 3);
+            for (let i = 0; i < polygon.length; i++) {
+              const [x, z] = projection(polygon[i]) as number[];
+              if (!isNaN(x) && !isNaN(z)) {
+                if (i === 0) {
+                  shape.moveTo(x, -z);
+                }
+                shape.lineTo(x, -z);
+                positions[i * 3] = x;
+                positions[i * 3 + 1] = depth;
+                positions[i * 3 + 2] = z;
+              }
+            }
+            const extrudeSettings = {
+              depth,
+              bevelEnabled: false,
+            };
+
+            const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+            const material = new THREE.MeshBasicMaterial({
+              color: "#204e8f",
+              transparent: true,
+              opacity: 0.7,
+            });
+            const hsl = { h: 0, s: 0, l: 0 };
+            material.color.getHSL(hsl);
+            setMapHsl(hsl);
+            const material1 = new THREE.MeshBasicMaterial({
+              // color: "#1ba0d4ff",
+            });
+            lineGeometry.setAttribute(
+              "position",
+              new THREE.BufferAttribute(positions, 3)
+            );
+            const line = new THREE.Line(lineGeometry, lineMaterial);
+            const name = elem.properties.name + index1 + index2 + index3;
+            allBorders.push({
+              line,
+              name,
+            });
+            const mesh = new THREE.Mesh(geometry, [material, material1]);
+            mesh.material[1].map = mapTexture;
+            mesh.name = name;
+            mapTexture.offset.y = 1.5;
+            allShaps.push({
+              mesh,
+              name,
+            });
+          });
+        } else {
           const lineMaterial = new THREE.LineBasicMaterial({
             color: 0xb1d2ff,
           });
           const shape = new THREE.Shape();
           const lineGeometry = new THREE.BufferGeometry();
-          const positions = new Float32Array(polygon.length * 3);
-          for (let i = 0; i < polygon.length; i++) {
-            const [x, z] = projection(polygon[i]) as number[];
+          const positions = new Float32Array(multiPolygon.length * 3);
+          for (let i = 0; i < multiPolygon.length; i++) {
+            const [x, z] = projection(multiPolygon[i]) as number[];
             if (!isNaN(x) && !isNaN(z)) {
               if (i === 0) {
                 shape.moveTo(x, -z);
@@ -276,7 +406,7 @@ const MapModel = ({
             new THREE.BufferAttribute(positions, 3)
           );
           const line = new THREE.Line(lineGeometry, lineMaterial);
-          const name = elem.properties.name + index1 + index2 + index3;
+          const name = elem.properties.name + index1 + index2;
           allBorders.push({
             line,
             name,
@@ -289,7 +419,7 @@ const MapModel = ({
             mesh,
             name,
           });
-        });
+        }
       });
     });
     setBorders(allBorders);
@@ -297,10 +427,84 @@ const MapModel = ({
     setLabels(labelArr);
   };
 
+  const getVertices = (points: any) => {
+    const vertices = [new THREE.Vector3(points[0], points[1], points[2])];
+    let i = 1;
+    const numPoints = points.length / 3;
+    while (i < numPoints) {
+      const currX = points[i * 3];
+      const currY = points[i * 3 + 1];
+      const currZ = points[i * 3 + 2];
+      vertices.push(new THREE.Vector3(currX, currY, currZ));
+      i += 1;
+    }
+    return vertices;
+  };
+
+  // 生成流光
+  const dealFlowLight = (vertices: any, scale: number) => {
+    const tubeWidth = 0.012 * (8.78266872973055 / scale);
+    const len = vertices.length;
+    const curve = new THREE.CatmullRomCurve3(vertices, false);
+    const points = curve.getPoints(len);
+    const smoothCurve = new THREE.CatmullRomCurve3(points, false);
+    const tubeGeometry = new THREE.TubeGeometry(
+      smoothCurve,
+      len,
+      tubeWidth,
+      8,
+      false
+    );
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 1;
+    canvas.height = 100;
+    const context = canvas.getContext("2d")!;
+    const gradient = context.createLinearGradient(0, 0, 0, 100);
+    const createGradient = (gradient: any) => {
+      gradient.addColorStop(0, "rgba(160,32,240,1)");
+      gradient.addColorStop(0.02, "rgba(160,32,240,0.8)");
+      gradient.addColorStop(0.05, "rgba(160,32,240,0.4)");
+      gradient.addColorStop(0.07, "rgba(160,32,240,0.2)");
+      gradient.addColorStop(0.1, "rgba(160,32,240,0.1)");
+      gradient.addColorStop(0.2, "rgba(255,255,255,0.1)");
+      gradient.addColorStop(0.3, "rgba(255,255,255,0)");
+      gradient.addColorStop(0.4, "rgba(255,255,255,0)");
+      gradient.addColorStop(0.5, "rgba(255,255,255,0)");
+      gradient.addColorStop(0.6, "rgba(255,255,255,0)");
+      gradient.addColorStop(0.7, "rgba(255,255,255,0)");
+      gradient.addColorStop(0.8, "rgba(255,255,255,0)");
+      gradient.addColorStop(0.9, "rgba(255,255,255,0)");
+      gradient.addColorStop(1, "rgba(255,255,255,0)");
+    };
+    createGradient(gradient);
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, 1, 100);
+    const texture: any = new THREE.CanvasTexture(canvas);
+    texture.repeat.set(0, 1);
+    texture.wrapS = THREE.RepeatWrapping; // 防止拉伸
+    texture.wrapT = THREE.RepeatWrapping; // 防止拉伸
+    texture.rotation = Math.PI / 2;
+    const material = new THREE.MeshStandardMaterial({
+      map: texture,
+      side: THREE.DoubleSide,
+      transparent: true,
+      depthWrite: false,
+      depthTest: false,
+    });
+    const tubeMesh = new THREE.Mesh(tubeGeometry, material);
+    return [texture, tubeMesh];
+  };
+
   useFrame((_state, delta) => {
-    // console.log(delta);
     mapHeightCountRef.current += delta / 4;
     mapTexture.offset.y = 1 - (mapHeightCountRef.current % 1);
+
+    if (flowLightTexture) {
+      flowLightTexture.forEach((texture: any) => {
+        texture.offset.y -= 0.0015;
+      });
+    }
   });
 
   if (!mapLoaded) {
@@ -322,6 +526,9 @@ const MapModel = ({
             <primitive object={i.mesh} key={i.name} rotation-x={-Math.PI / 2} />
           ))}
         </object3D>
+        {flowLight.map((i, index) => (
+          <primitive object={i} key={index} />
+        ))}
       </object3D>
       <Name begin={cameraEnd} name={name} />
       <InstancedGridOfSquares begin={cameraEnd} />

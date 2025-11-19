@@ -411,7 +411,7 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
 
     // 流光动画
     if (flowLightTexture) {
-      mapBorderCountRef.current += 0.001;
+      // mapBorderCountRef.current += 0.001;
       flowLightTexture.forEach((texture: any) => {
         texture.offset.y -= 0.001;
       });
