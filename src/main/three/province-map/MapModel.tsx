@@ -165,44 +165,35 @@ const MapModel = ({
       .center(center) // 地图中心点坐标
       .scale(80)
       .translate([0, 0]);
-    let maxAreaPositions: any[] = [];
+    let maxAreaPolygons: any[] = [];
     map.features.forEach((elem: any) => {
       const coordinates = elem.geometry.coordinates;
       coordinates.forEach((multiPolygon: any) => {
         if (Array.isArray(coordinates[0][0][0])) {
           multiPolygon.forEach((polygon: any) => {
-            const positions = [];
-            for (let i = 0; i < polygon.length; i++) {
-              const [x, z] = projection(polygon[i]) as number[];
-              if (!isNaN(x) && !isNaN(z)) {
-                positions[i * 3] = x;
-                positions[i * 3 + 1] = depth;
-                positions[i * 3 + 2] = z;
-              }
-            }
-            maxAreaPositions =
-              maxAreaPositions.length >= positions.length
-                ? maxAreaPositions
-                : positions;
+            maxAreaPolygons =
+              maxAreaPolygons.length >= polygon.length
+                ? maxAreaPolygons
+                : polygon;
           });
         } else {
-          const positions = [];
-          for (let i = 0; i < multiPolygon.length; i++) {
-            const [x, z] = projection(multiPolygon[i]) as number[];
-            if (!isNaN(x) && !isNaN(z)) {
-              positions[i * 3] = x;
-              positions[i * 3 + 1] = depth;
-              positions[i * 3 + 2] = z;
-            }
-          }
-          maxAreaPositions =
-            maxAreaPositions.length >= positions.length
-              ? maxAreaPositions
-              : positions;
+          maxAreaPolygons =
+            maxAreaPolygons.length >= multiPolygon.length
+              ? maxAreaPolygons
+              : multiPolygon;
         }
       });
     });
-    const vertices = getVertices(maxAreaPositions);
+    const positions = [];
+    for (let i = 0; i < maxAreaPolygons.length; i++) {
+      const [x, z] = projection(maxAreaPolygons[i]) as number[];
+      if (!isNaN(x) && !isNaN(z)) {
+        positions[i * 3] = x;
+        positions[i * 3 + 1] = depth;
+        positions[i * 3 + 2] = z;
+      }
+    }
+    const vertices = getVertices(positions);
     const [texture1, tubeMesh1] = dealFlowLight(vertices, scale);
     const [texture2, tubeMesh2] = dealFlowLight(vertices, scale);
     texture2.offset.y = 0.5;

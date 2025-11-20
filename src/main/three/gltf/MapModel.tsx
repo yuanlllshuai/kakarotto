@@ -52,8 +52,6 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
   // const showTagRef = useRef(false);
   // 地图高度动画step
   const mapHeightCountRef = useRef(0);
-  // 地图边沿动画step
-  const mapBorderCountRef = useRef(0);
   // 地图高度边缘
   const borderMeshRef = useRef<any>();
   // 是否开始动画

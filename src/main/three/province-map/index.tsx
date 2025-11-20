@@ -9,6 +9,7 @@ import { Select } from "antd";
 import * as TWEEN from "@tweenjs/tween.js";
 import MapModel from "./MapModel";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
+import { Progress } from "antd";
 
 const { Option } = Select;
 
@@ -64,6 +65,7 @@ function Index() {
   const [name, setName] = useState<string>("");
   const [mapLoaded, setMapLoaded] = useState<boolean>(false);
   const [cameraEnd, setCameraEnd] = useState<boolean>(false);
+  const [progress, setProgress] = useState<number>(0);
 
   useEffect(() => {
     const loader = new THREE.FileLoader();
@@ -82,6 +84,18 @@ function Index() {
       }
     );
   }, []);
+
+  useEffect(() => {
+    if (mapLoaded) {
+      setProgress(50);
+      setTimeout(() => {
+        setProgress(99);
+      }, 500);
+      setTimeout(() => {
+        setProgress(100);
+      }, 1000);
+    }
+  }, [mapLoaded]);
 
   const handleChange = (value: string, other: any) => {
     setPrvince(value);
@@ -147,6 +161,13 @@ function Index() {
               </Option>
             ))}
           </Select>
+        </div>
+      )}
+      {progress !== 100 && (
+        <div className={styles.loading}>
+          <div style={{ width: "80%" }}>
+            <Progress percent={progress} showInfo={false} />
+          </div>
         </div>
       )}
     </div>
