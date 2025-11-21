@@ -11,6 +11,7 @@ import OriginPoint from "../gltf/OriginPoint";
 import AnimationRing from "../gltf/AnimationRing";
 import PointLabel from "../gltf/PointLabel";
 import FlyLine from "../gltf/FlyLine";
+import * as TWEEN from "@tweenjs/tween.js";
 
 const MapModel = ({
   prvince,
@@ -30,9 +31,9 @@ const MapModel = ({
   const [borders, setBorders] = useState<any[]>([]);
   const [shaps, setShapes] = useState<any[]>([]);
   const [scale, setScale] = useState<number>(0);
-  const [depth, setDepth] = useState(0);
   const [labels, setLabels] = useState<any[]>([]);
   const [mapHsl, setMapHsl] = useState<any>(null);
+  const [mapDepthEnd, setMapDepthEnd] = useState<boolean>(false);
   // 流光轨迹
   const [flowLight, setFlowLight] = useState<any[]>([]);
   // 流光纹理
@@ -46,6 +47,7 @@ const MapModel = ({
   const currMapName = useRef<string>("");
   const lastMapName = useRef<string>("");
   const clickMapName = useRef<string>("");
+  const tweenRef = useRef<any>(null);
 
   // 地图边缘纹理
   const [mapTexture] = useTexture([mapHeightPng]);
@@ -69,14 +71,23 @@ const MapModel = ({
     gl.domElement.addEventListener("wheel", handleWheel);
     return () => gl.domElement.removeEventListener("wheel", handleWheel);
   }, [gl]);
+
+  // 增加鼠标移动事件
   useEffect(() => {
     if (cameraEnd) {
       window.addEventListener("mousemove", handleMouseMove);
+      setMapDepthAnimation();
     }
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
     };
   }, [cameraEnd]);
+
+  useEffect(() => {
+    if (cameraEnd && scale !== 0) {
+      setMapDepthAnimation();
+    }
+  }, [cameraEnd, scale]);
 
   useEffect(() => {
     if (prvince) {
@@ -98,6 +109,21 @@ const MapModel = ({
       );
     }
   }, [prvince]);
+
+  const setMapDepthAnimation = () => {
+    tweenRef.current = new TWEEN.Tween({ scale: 0 })
+      .to({ scale }, 400)
+      .easing(TWEEN.Easing.Cubic.InOut)
+      .onUpdate(({ scale }) => {
+        if (parentRef.current) {
+          parentRef.current.scale.y = scale;
+        }
+      })
+      .onComplete(() => {
+        setMapDepthEnd(true);
+      })
+      .start();
+  };
 
   const handleMouseMove = (event: any) => {
     if (event.target.tagName !== "CANVAS" || !cameraEnd) {
@@ -261,7 +287,6 @@ const MapModel = ({
     setScale(compScale);
     const depth = (0.12 * Math.max(crossX, crossZ)) / 2.96;
     mapTexture.repeat.set(1.5 * compScale, 1.5 * compScale);
-    setDepth(depth);
     return {
       center: [totalX / total, totalZ / total],
       depth,
@@ -498,6 +523,10 @@ const MapModel = ({
         texture.offset.y -= 0.0015;
       });
     }
+
+    if (tweenRef.current) {
+      tweenRef.current.update(); // Update tween animations
+    }
   });
 
   if (!mapLoaded) {
@@ -506,8 +535,8 @@ const MapModel = ({
 
   return (
     <>
-      <object3D ref={parentRef} scale={scale} position={[0, 0, 0]}>
-        {cameraEnd &&
+      <object3D ref={parentRef} scale={[scale, 0, scale]} position={[0, 0, 0]}>
+        {mapDepthEnd &&
           borders.map((i) => <primitive object={i.line} key={i.name} />)}
         <object3D ref={shapRef} onClick={(e: any) => e.stopPropagation()}>
           {shaps.map((i) => (
@@ -518,13 +547,13 @@ const MapModel = ({
           <primitive object={i} key={index} />
         ))}
       </object3D>
-      <Name begin={cameraEnd} name={name} />
+      <Name begin={mapDepthEnd} name={name} />
       <object3D position={[0, 0.4, 0]}>
-        <InstancedGridOfSquares begin={cameraEnd} />
+        <InstancedGridOfSquares begin={mapDepthEnd} />
       </object3D>
-      {cameraEnd && <Wave />}
-      {cameraEnd && <OriginPoint position={{ x: 0, z: 0, y: 0 }} />}
-      {cameraEnd && <AnimationRing />}
+      {mapDepthEnd && <Wave />}
+      {mapDepthEnd && <OriginPoint position={{ x: 0, z: 0, y: 0 }} />}
+      {mapDepthEnd && <AnimationRing />}
       {labels.map(
         ({
           position,
@@ -540,17 +569,17 @@ const MapModel = ({
             position={position}
             scale={1}
             label={label}
-            visible={cameraEnd}
+            visible={mapDepthEnd}
             weather={weather}
-            weatherBegin={cameraEnd}
+            weatherBegin={mapDepthEnd}
           />
         )
       )}
-      {cameraEnd &&
+      {mapDepthEnd &&
         labels.map(({ position, label }: { position: any; label: string }) => (
           <FlyLine key={label} position={position} />
         ))}
-      {cameraEnd && (
+      {mapDepthEnd && (
         <CycleRaycast
           preventDefault={true} // Call event.preventDefault() (default: true)
           scroll={false} // Wheel events (default: true)
