@@ -23,7 +23,7 @@ const PointLabel = memo(
   }) => {
     return (
       <>
-        <Billboard position={[position.x, 0.8, position.z]}>
+        <Billboard position={[position.x, position.y, position.z]}>
           <Html
             transform={true}
             style={{
@@ -36,7 +36,7 @@ const PointLabel = memo(
             <img src={icon} style={{ width: 20, height: 26 }} />
           </Html>
         </Billboard>
-        <Billboard position={[position.x, 1.6, position.z]}>
+        <Billboard position={[position.x, position.y * 2, position.z]}>
           <Html
             scale={scale}
             transform={true}

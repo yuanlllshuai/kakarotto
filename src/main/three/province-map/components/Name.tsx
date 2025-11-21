@@ -7,7 +7,7 @@ const PointLabel = memo(
     return (
       <>
         <Html
-          position={[0, 0, 16]}
+          position={[0, 0.5, 16]}
           // rotation-y={-Math.PI / 8}
           transform={true}
           className={begin ? style.reflect : style.reflect_hide}

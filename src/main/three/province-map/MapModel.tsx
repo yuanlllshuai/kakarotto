@@ -286,6 +286,7 @@ const MapModel = ({
       .center(center) // 地图中心点坐标
       .scale(80 * scale)
       .translate([0, 0]);
+    console.log(1111, depth, scale);
     map1.features.forEach((elem: any, index1: number) => {
       const [centerX, centerZ] = projectionCenter(
         elem.properties.centroid || elem.properties.center
@@ -293,10 +294,11 @@ const MapModel = ({
       labelArr.push({
         position: {
           x: centerX,
-          y: depth,
+          y: depth * scale,
           z: centerZ,
         },
         label: elem.properties.name,
+        weather: index1 % 10,
       });
       const coordinates = elem.geometry.coordinates;
       coordinates.forEach((multiPolygon: any, index2: number) => {
@@ -504,14 +506,9 @@ const MapModel = ({
 
   return (
     <>
-      <object3D
-        ref={parentRef}
-        scale={scale}
-        position={[0, -depth / 2 - 0.1, 0]}
-      >
-        {borders.map((i) => (
-          <primitive object={i.line} key={i.name} />
-        ))}
+      <object3D ref={parentRef} scale={scale} position={[0, 0, 0]}>
+        {cameraEnd &&
+          borders.map((i) => <primitive object={i.line} key={i.name} />)}
         <object3D ref={shapRef} onClick={(e: any) => e.stopPropagation()}>
           {shaps.map((i) => (
             <primitive object={i.mesh} key={i.name} rotation-x={-Math.PI / 2} />
@@ -522,21 +519,33 @@ const MapModel = ({
         ))}
       </object3D>
       <Name begin={cameraEnd} name={name} />
-      <InstancedGridOfSquares begin={cameraEnd} />
+      <object3D position={[0, 0.4, 0]}>
+        <InstancedGridOfSquares begin={cameraEnd} />
+      </object3D>
       {cameraEnd && <Wave />}
       {cameraEnd && <OriginPoint position={{ x: 0, z: 0, y: 0 }} />}
       {cameraEnd && <AnimationRing />}
-      {labels.map(({ position, label }: { position: any; label: string }) => (
-        <PointLabel
-          key={label}
-          position={position}
-          scale={1}
-          label={label}
-          visible={cameraEnd}
-          weather={null}
-          weatherBegin={cameraEnd}
-        />
-      ))}
+      {labels.map(
+        ({
+          position,
+          label,
+          weather,
+        }: {
+          position: any;
+          label: string;
+          weather: number;
+        }) => (
+          <PointLabel
+            key={label}
+            position={position}
+            scale={1}
+            label={label}
+            visible={cameraEnd}
+            weather={weather}
+            weatherBegin={cameraEnd}
+          />
+        )
+      )}
       {cameraEnd &&
         labels.map(({ position, label }: { position: any; label: string }) => (
           <FlyLine key={label} position={position} />
