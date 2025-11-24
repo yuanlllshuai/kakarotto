@@ -4,6 +4,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import * as d3 from "d3";
 import Name from "./components/Name";
+import LightCylinder from "./components/LightCylinder";
 import mapHeightPng from "../res/border.png";
 import InstancedGridOfSquares from "../gltf/InstancedGridOfSquares";
 import Wave from "../gltf/Wave";
@@ -19,18 +20,21 @@ const MapModel = ({
   cameraEnd,
   mapLoaded,
   setMapLoaded,
+  setLastAnimationEnd,
 }: {
   prvince: string;
   name: string;
   cameraEnd: boolean;
   mapLoaded: boolean;
   setMapLoaded: (loading: boolean) => void;
+  setLastAnimationEnd: (isEnd: boolean) => void;
 }) => {
   const { gl, raycaster, camera, mouse } = useThree();
 
   const [borders, setBorders] = useState<any[]>([]);
   const [shaps, setShapes] = useState<any[]>([]);
   const [scale, setScale] = useState<number>(0);
+  const [depth, setDepth] = useState<number>(0);
   const [labels, setLabels] = useState<any[]>([]);
   const [mapHsl, setMapHsl] = useState<any>(null);
   const [mapDepthEnd, setMapDepthEnd] = useState<boolean>(false);
@@ -48,6 +52,7 @@ const MapModel = ({
   const lastMapName = useRef<string>("");
   const clickMapName = useRef<string>("");
   const tweenRef = useRef<any>(null);
+  const mapHslRef = useRef<any>(null);
 
   // 地图边缘纹理
   const [mapTexture] = useTexture([mapHeightPng]);
@@ -92,7 +97,7 @@ const MapModel = ({
   useEffect(() => {
     if (prvince) {
       const loader = new THREE.FileLoader();
-      // setMapLoaded(false);
+      setMapDepthEnd(false);
       loader.load(
         `https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=${prvince}${
           prvince === "710000" ? "" : "_full"
@@ -111,6 +116,14 @@ const MapModel = ({
   }, [prvince]);
 
   const setMapDepthAnimation = () => {
+    if (shapRef.current) {
+      (shapRef.current as any).children.forEach((child: any) => {
+        const hsl = { ...mapHsl };
+        hsl.l += 0.2;
+        child.material[0].color.setHSL(hsl.h, hsl.s, hsl.l);
+        mapHslRef.current = hsl;
+      });
+    }
     tweenRef.current = new TWEEN.Tween({ scale: 0 })
       .to({ scale }, 400)
       .easing(TWEEN.Easing.Cubic.InOut)
@@ -159,11 +172,11 @@ const MapModel = ({
           child.name === currMapName.current ||
           child.name === clickMapName.current
         ) {
-          const hsl = { ...mapHsl };
+          const hsl = { ...mapHslRef.current };
           hsl.l += 0.2;
           child.material[0].color.setHSL(hsl.h, hsl.s, hsl.l);
         } else {
-          const hsl = { ...mapHsl };
+          const hsl = { ...mapHslRef.current };
           child.material[0].color.setHSL(hsl.h, hsl.s, hsl.l);
         }
       });
@@ -286,6 +299,7 @@ const MapModel = ({
     const compScale = (13 / Math.max(crossX, crossZ)) * 2;
     setScale(compScale);
     const depth = (0.12 * Math.max(crossX, crossZ)) / 2.96;
+    setDepth(depth);
     mapTexture.repeat.set(1.5 * compScale, 1.5 * compScale);
     return {
       center: [totalX / total, totalZ / total],
@@ -311,7 +325,6 @@ const MapModel = ({
       .center(center) // 地图中心点坐标
       .scale(80 * scale)
       .translate([0, 0]);
-    console.log(1111, depth, scale);
     map1.features.forEach((elem: any, index1: number) => {
       const [centerX, centerZ] = projectionCenter(
         elem.properties.centroid || elem.properties.center
@@ -356,7 +369,7 @@ const MapModel = ({
             const material = new THREE.MeshBasicMaterial({
               color: "#204e8f",
               transparent: true,
-              opacity: 0.7,
+              opacity: 0.4,
             });
             const hsl = { h: 0, s: 0, l: 0 };
             material.color.getHSL(hsl);
@@ -411,7 +424,7 @@ const MapModel = ({
           const material = new THREE.MeshBasicMaterial({
             color: "#204e8f",
             transparent: true,
-            opacity: 0.7,
+            opacity: 0.4,
           });
           const hsl = { h: 0, s: 0, l: 0 };
           material.color.getHSL(hsl);
@@ -552,7 +565,9 @@ const MapModel = ({
         <InstancedGridOfSquares begin={mapDepthEnd} />
       </object3D>
       {mapDepthEnd && <Wave />}
-      {mapDepthEnd && <OriginPoint position={{ x: 0, z: 0, y: 0 }} />}
+      {mapDepthEnd && (
+        <OriginPoint position={{ x: 0, z: 0, y: depth * scale }} />
+      )}
       {mapDepthEnd && <AnimationRing />}
       {labels.map(
         ({
@@ -579,6 +594,21 @@ const MapModel = ({
         labels.map(({ position, label }: { position: any; label: string }) => (
           <FlyLine key={label} position={position} />
         ))}
+      {mapDepthEnd && (
+        <LightCylinder
+          position={[0, depth * scale, 0]}
+          setLastAnimationEnd={setLastAnimationEnd}
+        />
+      )}
+      {/* {mapDepthEnd && (
+        <LightCylinder
+          position={[
+            labels[labels.length - 1].position.x,
+            depth * scale,
+            labels[labels.length - 1].position.z,
+          ]}
+        />
+      )} */}
       {mapDepthEnd && (
         <CycleRaycast
           preventDefault={true} // Call event.preventDefault() (default: true)

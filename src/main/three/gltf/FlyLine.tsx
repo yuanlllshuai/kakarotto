@@ -64,7 +64,7 @@ const FlyLine = memo(({ position }: any) => {
   });
   return (
     <>
-      <mesh position={[0, 0.6, 0]}>
+      <mesh position={[0, position.y, 0]}>
         <tubeGeometry args={[curve, 100, 0.02, 10, false]} />
         <meshStandardMaterial
           side={THREE.DoubleSide}

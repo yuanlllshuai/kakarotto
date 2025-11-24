@@ -489,7 +489,7 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
             <FlyLine key={label} position={position} />
           )
         )}
-      {mapAnimationEnd && <OriginPoint position={{ x: 0, z: 0, y: 0 }} />}
+      {mapAnimationEnd && <OriginPoint position={{ x: 0, z: 0, y: 0.6 }} />}
       <InstancedGridOfSquares begin={begin} />
       {begin && <Wave />}
       {mapAnimationEnd &&

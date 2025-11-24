@@ -10,6 +10,7 @@ import * as TWEEN from "@tweenjs/tween.js";
 import MapModel from "./MapModel";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { Progress } from "antd";
+import AnimateCard from "@/components/AnimateCard";
 
 const { Option } = Select;
 
@@ -66,6 +67,7 @@ function Index() {
   const [mapLoaded, setMapLoaded] = useState<boolean>(false);
   const [cameraEnd, setCameraEnd] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
+  const [lastAnimationEnd, setLastAnimationEnd] = useState<boolean>(false);
 
   useEffect(() => {
     const loader = new THREE.FileLoader();
@@ -125,6 +127,7 @@ function Index() {
               cameraEnd={cameraEnd}
               mapLoaded={mapLoaded}
               setMapLoaded={setMapLoaded}
+              setLastAnimationEnd={setLastAnimationEnd}
             />
           </Suspense>
           <EffectComposer>
@@ -170,6 +173,7 @@ function Index() {
           </div>
         </div>
       )}
+      <AnimateCard begin={lastAnimationEnd} />
     </div>
   );
 }

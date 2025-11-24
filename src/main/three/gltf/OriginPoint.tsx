@@ -19,7 +19,7 @@ const OriginPoint = memo(({ position }: any) => {
   return (
     <mesh
       ref={circleRef}
-      position={[position.x, 0.6, position.z]}
+      position={[position.x, position.y, position.z]}
       rotation-x={Math.PI / 2}
     >
       <circleGeometry args={[1, 32]} />
