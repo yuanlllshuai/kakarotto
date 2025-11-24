@@ -528,7 +528,7 @@ const MapModel = ({
   };
 
   useFrame((_state, delta) => {
-    mapHeightCountRef.current += delta / 4;
+    mapHeightCountRef.current += delta / 2;
     mapTexture.offset.y = 1 - (mapHeightCountRef.current % 1);
 
     if (flowLightTexture) {
