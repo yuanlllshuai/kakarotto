@@ -13,6 +13,7 @@ import AnimationRing from "../gltf/AnimationRing";
 import PointLabel from "../gltf/PointLabel";
 import FlyLine from "../gltf/FlyLine";
 import * as TWEEN from "@tweenjs/tween.js";
+import { Props, Border, Shape, Label } from "./type";
 
 const MapModel = ({
   prvince,
@@ -21,27 +22,22 @@ const MapModel = ({
   mapLoaded,
   setMapLoaded,
   setLastAnimationEnd,
-}: {
-  prvince: string;
-  name: string;
-  cameraEnd: boolean;
-  mapLoaded: boolean;
-  setMapLoaded: (loading: boolean) => void;
-  setLastAnimationEnd: (isEnd: boolean) => void;
-}) => {
+}: Props) => {
   const { gl, raycaster, camera, mouse } = useThree();
 
-  const [borders, setBorders] = useState<any[]>([]);
-  const [shaps, setShapes] = useState<any[]>([]);
+  const [borders, setBorders] = useState<Border[]>([]);
+  const [shaps, setShapes] = useState<Shape[]>([]);
   const [scale, setScale] = useState<number>(0);
   const [depth, setDepth] = useState<number>(0);
-  const [labels, setLabels] = useState<any[]>([]);
-  const [mapHsl, setMapHsl] = useState<any>(null);
+  const [labels, setLabels] = useState<Label[]>([]);
+  const [mapHsl, setMapHsl] = useState<THREE.HSL | null>(null);
   const [mapDepthEnd, setMapDepthEnd] = useState<boolean>(false);
   // 流光轨迹
-  const [flowLight, setFlowLight] = useState<any[]>([]);
+  const [flowLight, setFlowLight] = useState<THREE.Mesh[]>([]);
   // 流光纹理
-  const [flowLightTexture, setFlowLightTexture] = useState<any[]>([]);
+  const [flowLightTexture, setFlowLightTexture] = useState<
+    THREE.CanvasTexture[]
+  >([]);
   // 地图高度动画step
   const mapHeightCountRef = useRef(0);
   const parentRef = useRef<any>();
@@ -52,7 +48,7 @@ const MapModel = ({
   const lastMapName = useRef<string>("");
   const clickMapName = useRef<string>("");
   const tweenRef = useRef<any>(null);
-  const mapHslRef = useRef<any>(null);
+  const mapHslRef = useRef<THREE.HSL | null>(null);
 
   // 地图边缘纹理
   const [mapTexture] = useTexture([mapHeightPng]);
@@ -118,10 +114,12 @@ const MapModel = ({
   const setMapDepthAnimation = () => {
     if (shapRef.current) {
       (shapRef.current as any).children.forEach((child: any) => {
-        const hsl = { ...mapHsl };
-        hsl.l += 0.2;
-        child.material[0].color.setHSL(hsl.h, hsl.s, hsl.l);
-        mapHslRef.current = hsl;
+        if (mapHsl) {
+          const hsl = { ...mapHsl };
+          hsl.l += 0.2;
+          child.material[0].color.setHSL(hsl.h, hsl.s, hsl.l);
+          mapHslRef.current = hsl;
+        }
       });
     }
     tweenRef.current = new TWEEN.Tween({ scale: 0 })
@@ -138,7 +136,7 @@ const MapModel = ({
       .start();
   };
 
-  const handleMouseMove = (event: any) => {
+  const handleMouseMove: React.EventHandler<any> = (event) => {
     if (event.target.tagName !== "CANVAS" || !cameraEnd) {
       return;
     }
@@ -155,7 +153,7 @@ const MapModel = ({
     const intersects = raycaster.intersectObjects(shapRef.current.children);
     lastMapName.current = currMapName.current;
     if (intersects.length > 0) {
-      const intersect: any = intersects[0];
+      const intersect = intersects[0];
       currMapName.current = intersect.object.name;
     } else {
       currMapName.current = "";
@@ -167,17 +165,27 @@ const MapModel = ({
 
   const setMapColor = () => {
     if (shapRef.current) {
-      (shapRef.current as any).children.forEach((child: any) => {
-        if (
-          child.name === currMapName.current ||
-          child.name === clickMapName.current
-        ) {
-          const hsl = { ...mapHslRef.current };
-          hsl.l += 0.2;
-          child.material[0].color.setHSL(hsl.h, hsl.s, hsl.l);
-        } else {
-          const hsl = { ...mapHslRef.current };
-          child.material[0].color.setHSL(hsl.h, hsl.s, hsl.l);
+      shapRef.current.children.forEach((child: THREE.Mesh) => {
+        if (mapHslRef.current) {
+          if (
+            child.name === currMapName.current ||
+            child.name === clickMapName.current
+          ) {
+            const hsl = { ...mapHslRef.current };
+            hsl.l += 0.2;
+            (child.material as THREE.MeshBasicMaterial[])[0].color.setHSL(
+              hsl.h,
+              hsl.s,
+              hsl.l
+            );
+          } else {
+            const hsl = { ...mapHslRef.current };
+            (child.material as THREE.MeshBasicMaterial[])[0].color.setHSL(
+              hsl.h,
+              hsl.s,
+              hsl.l
+            );
+          }
         }
       });
     }
@@ -188,7 +196,7 @@ const MapModel = ({
       return null;
     }
     if (hits.length > 0) {
-      const intersect: any = hits[0];
+      const intersect = hits[0];
       clickMapName.current =
         clickMapName.current === intersect.object.name
           ? ""
@@ -198,13 +206,20 @@ const MapModel = ({
     return null;
   };
 
-  const getFlowLight = (map: any, { depth, center, scale }: any) => {
+  const getFlowLight = (
+    map: any,
+    {
+      depth,
+      center,
+      scale,
+    }: { depth: number; center: [number, number]; scale: number }
+  ) => {
     const projection = d3
       .geoMercator()
       .center(center) // 地图中心点坐标
       .scale(80)
       .translate([0, 0]);
-    let maxAreaPolygons: any[] = [];
+    let maxAreaPolygons: [number, number][] = [];
     map.features.forEach((elem: any) => {
       const coordinates = elem.geometry.coordinates;
       coordinates.forEach((multiPolygon: any) => {
@@ -225,7 +240,7 @@ const MapModel = ({
     });
     const positions = [];
     for (let i = 0; i < maxAreaPolygons.length; i++) {
-      const [x, z] = projection(maxAreaPolygons[i]) as number[];
+      const [x, z] = projection(maxAreaPolygons[i]) as [number, number];
       if (!isNaN(x) && !isNaN(z)) {
         positions[i * 3] = x;
         positions[i * 3 + 1] = depth;
@@ -266,7 +281,7 @@ const MapModel = ({
         if (Array.isArray(coordinates[0][0][0])) {
           multiPolygon.forEach((polygon: any) => {
             for (let i = 0; i < polygon.length; i++) {
-              const [x, z] = projection(polygon[i]) as number[];
+              const [x, z] = projection(polygon[i]) as [number, number];
               if (!isNaN(x) && !isNaN(z)) {
                 minX = Math.min(minX, x);
                 maxX = Math.max(maxX, x);
@@ -280,7 +295,7 @@ const MapModel = ({
           });
         } else {
           for (let i = 0; i < multiPolygon.length; i++) {
-            const [x, z] = projection(multiPolygon[i]) as number[];
+            const [x, z] = projection(multiPolygon[i]) as [number, number];
             if (!isNaN(x) && !isNaN(z)) {
               minX = Math.min(minX, x);
               maxX = Math.max(maxX, x);
@@ -311,9 +326,9 @@ const MapModel = ({
   const initMap = (map1: any, map2: any) => {
     const { depth, center, scale } = getComputeData(map1);
     getFlowLight(map2, { depth, center, scale });
-    const allBorders: any[] = [];
-    const allShaps: any[] = [];
-    const labelArr: any[] = [];
+    const allBorders: Border[] = [];
+    const allShaps: Shape[] = [];
+    const labelArr: Label[] = [];
 
     const projection = d3
       .geoMercator()
@@ -328,7 +343,7 @@ const MapModel = ({
     map1.features.forEach((elem: any, index1: number) => {
       const [centerX, centerZ] = projectionCenter(
         elem.properties.centroid || elem.properties.center
-      ) as number[];
+      ) as [number, number];
       labelArr.push({
         position: {
           x: centerX,
@@ -349,7 +364,7 @@ const MapModel = ({
             const lineGeometry = new THREE.BufferGeometry();
             const positions = new Float32Array(polygon.length * 3);
             for (let i = 0; i < polygon.length; i++) {
-              const [x, z] = projection(polygon[i]) as number[];
+              const [x, z] = projection(polygon[i]) as [number, number];
               if (!isNaN(x) && !isNaN(z)) {
                 if (i === 0) {
                   shape.moveTo(x, -z);
@@ -404,7 +419,7 @@ const MapModel = ({
           const lineGeometry = new THREE.BufferGeometry();
           const positions = new Float32Array(multiPolygon.length * 3);
           for (let i = 0; i < multiPolygon.length; i++) {
-            const [x, z] = projection(multiPolygon[i]) as number[];
+            const [x, z] = projection(multiPolygon[i]) as [number, number];
             if (!isNaN(x) && !isNaN(z)) {
               if (i === 0) {
                 shape.moveTo(x, -z);
@@ -458,7 +473,7 @@ const MapModel = ({
     setLabels(labelArr);
   };
 
-  const getVertices = (points: any) => {
+  const getVertices = (points: number[]) => {
     const vertices = [new THREE.Vector3(points[0], points[1], points[2])];
     let i = 1;
     const numPoints = points.length / 3;
@@ -473,7 +488,7 @@ const MapModel = ({
   };
 
   // 生成流光
-  const dealFlowLight = (vertices: any, scale: number) => {
+  const dealFlowLight = (vertices: THREE.Vector3[], scale: number) => {
     const tubeWidth = 0.012 * (8.78266872973055 / scale);
     const len = vertices.length;
     const curve = new THREE.CatmullRomCurve3(vertices, false);
@@ -492,7 +507,7 @@ const MapModel = ({
     canvas.height = 100;
     const context = canvas.getContext("2d")!;
     const gradient = context.createLinearGradient(0, 0, 0, 100);
-    const createGradient = (gradient: any) => {
+    const createGradient = (gradient: CanvasGradient) => {
       gradient.addColorStop(0, "rgba(160,32,240,1)");
       gradient.addColorStop(0.02, "rgba(160,32,240,0.8)");
       gradient.addColorStop(0.05, "rgba(160,32,240,0.4)");

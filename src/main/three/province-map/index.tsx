@@ -14,54 +14,67 @@ import AnimateCard from "@/components/AnimateCard";
 
 const { Option } = Select;
 
-const Camera = memo(({ setCameraEnd, begin }: any) => {
-  const cameraRef = useRef<any>(null);
-  const tweenRef = useRef<any>(null);
+const Camera = memo(
+  ({
+    setCameraEnd,
+    begin,
+  }: {
+    setCameraEnd: (isEnd: boolean) => void;
+    begin: boolean;
+  }) => {
+    const cameraRef = useRef<THREE.PerspectiveCamera>(null);
+    const tweenRef = useRef<any>(null);
 
-  useEffect(() => {
-    if (!begin) {
-      setCameraEnd(false);
-      return;
-    }
-    const beginPos = [-12, 12, 16];
-    const endPos = [0, 10, 26];
-    const startPoint = new THREE.Vector3(...beginPos);
-    const endPoint = new THREE.Vector3(...endPos);
+    useEffect(() => {
+      if (!begin) {
+        setCameraEnd(false);
+        return;
+      }
+      const beginPos = [-12, 12, 16];
+      const endPos = [0, 10, 26];
+      const startPoint = new THREE.Vector3(...beginPos);
+      const endPoint = new THREE.Vector3(...endPos);
 
-    tweenRef.current = new TWEEN.Tween(startPoint)
-      .to(endPoint, 3000) // 3 seconds duration
-      .easing(TWEEN.Easing.Cubic.InOut) // Cubic easing function
-      .onUpdate((position) => {
-        if (cameraRef.current) {
-          cameraRef.current.position.copy(position);
-        }
-      })
-      .onComplete(() => {
-        setCameraEnd(true);
-      })
-      .start();
-  }, [begin]);
+      tweenRef.current = new TWEEN.Tween(startPoint)
+        .to(endPoint, 3000)
+        .easing(TWEEN.Easing.Cubic.InOut)
+        .onUpdate((position) => {
+          if (cameraRef.current) {
+            cameraRef.current.position.copy(position);
+          }
+        })
+        .onComplete(() => {
+          setCameraEnd(true);
+        })
+        .start();
+    }, [begin]);
 
-  useFrame(() => {
-    if (tweenRef.current) {
-      tweenRef.current.update(); // Update tween animations
-    }
-  });
+    useFrame(() => {
+      if (tweenRef.current) {
+        tweenRef.current.update();
+      }
+    });
 
-  return (
-    <>
-      <PerspectiveCamera
-        ref={cameraRef}
-        makeDefault
-        args={[75, window.innerWidth / window.innerHeight, 0.1, 1000]}
-        position={[-18, 12, 12]}
-      />
-    </>
-  );
-});
+    return (
+      <>
+        <PerspectiveCamera
+          ref={cameraRef}
+          makeDefault
+          args={[75, window.innerWidth / window.innerHeight, 0.1, 1000]}
+          position={[-18, 12, 12]}
+        />
+      </>
+    );
+  }
+);
+
+type Prvince = {
+  adcode: string;
+  name: string;
+};
 
 function Index() {
-  const [prvinces, setPrvinces] = useState<any[]>([]);
+  const [prvinces, setPrvinces] = useState<Prvince[]>([]);
   const [prvince, setPrvince] = useState<string>("");
   const [name, setName] = useState<string>("");
   const [mapLoaded, setMapLoaded] = useState<boolean>(false);
@@ -75,11 +88,11 @@ function Index() {
       "https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json",
       function (data) {
         const prvinceOptions = JSON.parse(data as string)
-          .features.map((i: any) => ({
+          .features.map((i: Record<string, any>) => ({
             adcode: i.properties.adcode + "",
             name: i.properties.name,
           }))
-          .filter((i: any) => !!i.name);
+          .filter((i: Prvince) => !!i.name);
         setPrvince(prvinceOptions?.[0]?.adcode);
         setName(prvinceOptions?.[0]?.name);
         setPrvinces(prvinceOptions);
@@ -89,6 +102,7 @@ function Index() {
 
   useEffect(() => {
     if (mapLoaded) {
+      // 虚假的进度条
       setProgress(50);
       setTimeout(() => {
         setProgress(99);
@@ -156,6 +170,9 @@ function Index() {
               option.props.children
                 .toLowerCase()
                 .indexOf(input.toLowerCase()) >= 0
+            }
+            getPopupContainer={() =>
+              document.getElementById("province-map-container") as HTMLElement
             }
           >
             {prvinces.map(({ name, adcode }) => (

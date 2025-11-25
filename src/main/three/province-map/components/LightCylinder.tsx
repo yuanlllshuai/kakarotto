@@ -12,8 +12,8 @@ const Index = memo(
     position: any;
     setLastAnimationEnd: (isEnd: boolean) => void;
   }) => {
-    const [cylinder, setCylinder] = useState<any>();
-    const cylinderRef = useRef<any>(null);
+    const [cylinder, setCylinder] = useState<THREE.Mesh>();
+    const cylinderRef = useRef<THREE.Mesh>(null);
     const tweenRef = useRef<any>(null);
 
     useEffect(() => {
