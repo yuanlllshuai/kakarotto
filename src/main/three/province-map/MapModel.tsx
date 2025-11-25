@@ -206,6 +206,56 @@ const MapModel = ({
     return null;
   };
 
+  // 最大区域的流光效果
+  // const getFlowLight = (
+  //   map: any,
+  //   {
+  //     depth,
+  //     center,
+  //     scale,
+  //   }: { depth: number; center: [number, number]; scale: number }
+  // ) => {
+  //   const projection = d3
+  //     .geoMercator()
+  //     .center(center) // 地图中心点坐标
+  //     .scale(80)
+  //     .translate([0, 0]);
+  //   let maxAreaPolygons: [number, number][] = [];
+  //   map.features.forEach((elem: any) => {
+  //     const coordinates = elem.geometry.coordinates;
+  //     coordinates.forEach((multiPolygon: any) => {
+  //       if (Array.isArray(coordinates[0][0][0])) {
+  //         multiPolygon.forEach((polygon: any) => {
+  //           maxAreaPolygons =
+  //             maxAreaPolygons.length >= polygon.length
+  //               ? maxAreaPolygons
+  //               : polygon;
+  //         });
+  //       } else {
+  //         maxAreaPolygons =
+  //           maxAreaPolygons.length >= multiPolygon.length
+  //             ? maxAreaPolygons
+  //             : multiPolygon;
+  //       }
+  //     });
+  //   });
+  //   const positions = [];
+  //   for (let i = 0; i < maxAreaPolygons.length; i++) {
+  //     const [x, z] = projection(maxAreaPolygons[i]) as [number, number];
+  //     if (!isNaN(x) && !isNaN(z)) {
+  //       positions[i * 3] = x;
+  //       positions[i * 3 + 1] = depth;
+  //       positions[i * 3 + 2] = z;
+  //     }
+  //   }
+  //   const vertices = getVertices(positions);
+  //   const [texture1, tubeMesh1] = dealFlowLight(vertices, scale);
+  //   const [texture2, tubeMesh2] = dealFlowLight(vertices, scale);
+  //   texture2.offset.y = 0.5;
+  //   setFlowLight([tubeMesh1, tubeMesh2]);
+  //   setFlowLightTexture([texture1, texture2]);
+  // };
+  // 多区域的流光效果
   const getFlowLight = (
     map: any,
     {
@@ -219,40 +269,45 @@ const MapModel = ({
       .center(center) // 地图中心点坐标
       .scale(80)
       .translate([0, 0]);
-    let maxAreaPolygons: [number, number][] = [];
+    let areaPolygons: [number, number][][] = [];
     map.features.forEach((elem: any) => {
       const coordinates = elem.geometry.coordinates;
       coordinates.forEach((multiPolygon: any) => {
         if (Array.isArray(coordinates[0][0][0])) {
           multiPolygon.forEach((polygon: any) => {
-            maxAreaPolygons =
-              maxAreaPolygons.length >= polygon.length
-                ? maxAreaPolygons
-                : polygon;
+            if (polygon.length >= 20) {
+              areaPolygons.push(polygon);
+            }
           });
         } else {
-          maxAreaPolygons =
-            maxAreaPolygons.length >= multiPolygon.length
-              ? maxAreaPolygons
-              : multiPolygon;
+          if (multiPolygon.length >= 20) {
+            areaPolygons.push(multiPolygon);
+          }
         }
       });
     });
-    const positions = [];
-    for (let i = 0; i < maxAreaPolygons.length; i++) {
-      const [x, z] = projection(maxAreaPolygons[i]) as [number, number];
-      if (!isNaN(x) && !isNaN(z)) {
-        positions[i * 3] = x;
-        positions[i * 3 + 1] = depth;
-        positions[i * 3 + 2] = z;
-      }
-    }
-    const vertices = getVertices(positions);
-    const [texture1, tubeMesh1] = dealFlowLight(vertices, scale);
-    const [texture2, tubeMesh2] = dealFlowLight(vertices, scale);
-    texture2.offset.y = 0.5;
-    setFlowLight([tubeMesh1, tubeMesh2]);
-    setFlowLightTexture([texture1, texture2]);
+    const positions: number[][] = [];
+    areaPolygons.forEach((item: [number, number][], index: number) => {
+      positions[index] = [];
+      item.forEach((i: [number, number], ind: number) => {
+        const [x, z] = projection(i) as [number, number];
+        positions[index][ind * 3] = x;
+        positions[index][ind * 3 + 1] = depth;
+        positions[index][ind * 3 + 2] = z;
+      });
+    });
+    const flowLightArr: THREE.Mesh[] = [];
+    const flowLightTextureArr: THREE.CanvasTexture[] = [];
+    positions.forEach((item: number[]) => {
+      const vertices = getVertices(item);
+      const [texture1, tubeMesh1] = dealFlowLight(vertices, scale);
+      const [texture2, tubeMesh2] = dealFlowLight(vertices, scale);
+      texture2.offset.y = 0.5;
+      flowLightArr.push(tubeMesh1, tubeMesh2);
+      flowLightTextureArr.push(texture1, texture2);
+    });
+    setFlowLight(flowLightArr);
+    setFlowLightTexture(flowLightTextureArr);
   };
 
   const getComputeData: (map: any) => {
@@ -553,7 +608,7 @@ const MapModel = ({
     }
 
     if (tweenRef.current) {
-      tweenRef.current.update(); // Update tween animations
+      tweenRef.current.update();
     }
   });
 
