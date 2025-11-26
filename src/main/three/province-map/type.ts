@@ -1,16 +1,11 @@
 import * as THREE from "three";
 
-type Position = {
-  x: number,
-  y: number,
-  z: number
-}
-
 export type Props = {
   prvince: string;
   name: string;
   cameraEnd: boolean;
   mapLoaded: boolean;
+  openWeather: boolean;
   setMapLoaded: (loading: boolean) => void;
   setLastAnimationEnd: (isEnd: boolean) => void;
 };
@@ -26,7 +21,7 @@ export type Shape = {
 }
 
 export type Label = {
-  position: Position,
+  position: THREE.Vector3,
   label: string,
-  weather: number
+  weather: number | null
 }

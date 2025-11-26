@@ -55,7 +55,7 @@ const PointLabel = memo(
             }}
           >
             <span>{label}</span>
-            {weather !== null && (
+            {weather !== null && weatherBegin && (
               <span
                 style={{
                   color: "yellow",

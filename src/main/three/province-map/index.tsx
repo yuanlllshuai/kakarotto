@@ -5,11 +5,10 @@ import { useFrame } from "@react-three/fiber";
 import styles from "./index.module.scss";
 import * as THREE from "three";
 import ScreenFull from "@/components/ScreenFull";
-import { Select } from "antd";
+import { Select, Switch, Progress } from "antd";
 import * as TWEEN from "@tweenjs/tween.js";
 import MapModel from "./MapModel";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
-import { Progress } from "antd";
 import AnimateCard from "@/components/AnimateCard";
 
 const { Option } = Select;
@@ -81,6 +80,7 @@ function Index() {
   const [cameraEnd, setCameraEnd] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
   const [lastAnimationEnd, setLastAnimationEnd] = useState<boolean>(false);
+  const [openWeather, setOpenWeather] = useState<boolean>(false);
 
   useEffect(() => {
     const loader = new THREE.FileLoader();
@@ -93,9 +93,12 @@ function Index() {
             name: i.properties.name,
           }))
           .filter((i: Prvince) => !!i.name);
-        setPrvince(prvinceOptions?.[0]?.adcode);
-        setName(prvinceOptions?.[0]?.name);
-        setPrvinces(prvinceOptions);
+        const list = [{ adcode: "100000", name: "中华人民共和国" }].concat(
+          prvinceOptions
+        );
+        setPrvince(list?.[0]?.adcode);
+        setName(list?.[0]?.name);
+        setPrvinces(list);
       }
     );
   }, []);
@@ -140,6 +143,7 @@ function Index() {
               name={name}
               cameraEnd={cameraEnd}
               mapLoaded={mapLoaded}
+              openWeather={openWeather}
               setMapLoaded={setMapLoaded}
               setLastAnimationEnd={setLastAnimationEnd}
             />
@@ -181,6 +185,12 @@ function Index() {
               </Option>
             ))}
           </Select>
+          <Switch
+            checkedChildren="关闭天气"
+            unCheckedChildren="开启天气"
+            checked={openWeather}
+            onChange={(v) => setOpenWeather(v)}
+          />
         </div>
       )}
       {progress !== 100 && (
