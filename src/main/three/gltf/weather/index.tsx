@@ -27,7 +27,7 @@ const Index = memo(
       if (begin) {
         beginRef.current = true;
         const startPoint = new THREE.Vector3(0, 0, 0);
-        const endPoint = new THREE.Vector3(1, 1, 1);
+        const endPoint = new THREE.Vector3(0.9, 0.9, 0.9);
         tweenRef.current = new TWEEN.Tween(startPoint)
           .to(endPoint, 1000)
           .easing(TWEEN.Easing.Cubic.Out)
