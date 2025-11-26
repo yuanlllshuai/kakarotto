@@ -544,7 +544,7 @@ const MapModel = ({
 
   // 生成流光
   const dealFlowLight = (vertices: THREE.Vector3[], scale: number) => {
-    const tubeWidth = 0.012 * (8.78266872973055 / scale);
+    const tubeWidth = 0.006 * (8.78266872973055 / scale);
     const len = vertices.length;
     const curve = new THREE.CatmullRomCurve3(vertices, false);
     const points = curve.getPoints(len);
@@ -592,6 +592,8 @@ const MapModel = ({
       transparent: true,
       depthWrite: false,
       depthTest: false,
+      emissive: "cyan",
+      emissiveIntensity: 2,
     });
     const tubeMesh = new THREE.Mesh(tubeGeometry, material);
     return [texture, tubeMesh];
