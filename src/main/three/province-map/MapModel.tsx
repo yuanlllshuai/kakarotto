@@ -40,6 +40,12 @@ const MapModel = memo(
     const [flowLightTexture, setFlowLightTexture] = useState<
       THREE.CanvasTexture[]
     >([]);
+    // 流光轨迹
+    const [blockFlowLight, setBlockFlowLight] = useState<THREE.Mesh[]>([]);
+    // 流光纹理
+    const [blockFlowLightTexture, setBlockFlowLightTexture] = useState<
+      THREE.CanvasTexture[]
+    >([]);
     // 地图高度动画step
     const mapHeightCountRef = useRef(0);
     const parentRef = useRef<any>();
@@ -269,11 +275,6 @@ const MapModel = memo(
         scale,
       }: { depth: number; center: [number, number]; scale: number }
     ) => {
-      const projection = d3
-        .geoMercator()
-        .center(center) // 地图中心点坐标
-        .scale(80)
-        .translate([0, 0]);
       let areaPolygons: [number, number][][] = [];
       map.features.forEach((elem: any) => {
         const coordinates = elem.geometry.coordinates;
@@ -291,6 +292,33 @@ const MapModel = memo(
           }
         });
       });
+      const { flowLightArr, flowLightTextureArr } = getFlowMesh(
+        areaPolygons,
+        {
+          depth,
+          center,
+          scale,
+        },
+        false
+      );
+      setFlowLight(flowLightArr);
+      setFlowLightTexture(flowLightTextureArr);
+    };
+
+    const getFlowMesh = (
+      areaPolygons: any,
+      {
+        depth,
+        center,
+        scale,
+      }: { depth: number; center: [number, number]; scale: number },
+      isBlock: boolean
+    ) => {
+      const projection = d3
+        .geoMercator()
+        .center(center) // 地图中心点坐标
+        .scale(80)
+        .translate([0, 0]);
       const positions: number[][] = [];
       areaPolygons.forEach((item: [number, number][], index: number) => {
         positions[index] = [];
@@ -305,14 +333,19 @@ const MapModel = memo(
       const flowLightTextureArr: THREE.CanvasTexture[] = [];
       positions.forEach((item: number[]) => {
         const vertices = getVertices(item);
-        const [texture1, tubeMesh1] = dealFlowLight(vertices, scale);
-        const [texture2, tubeMesh2] = dealFlowLight(vertices, scale);
-        texture2.offset.y = 0.5;
-        flowLightArr.push(tubeMesh1, tubeMesh2);
-        flowLightTextureArr.push(texture1, texture2);
+        if (isBlock) {
+          const [texture1, tubeMesh1] = dealFlowLight(vertices, scale, isBlock);
+          flowLightArr.push(tubeMesh1);
+          flowLightTextureArr.push(texture1);
+        } else {
+          const [texture1, tubeMesh1] = dealFlowLight(vertices, scale, isBlock);
+          const [texture2, tubeMesh2] = dealFlowLight(vertices, scale, isBlock);
+          texture2.offset.y = 0.5;
+          flowLightArr.push(tubeMesh1, tubeMesh2);
+          flowLightTextureArr.push(texture1, texture2);
+        }
       });
-      setFlowLight(flowLightArr);
-      setFlowLightTexture(flowLightTextureArr);
+      return { flowLightArr, flowLightTextureArr };
     };
 
     const getComputeData: (map: any) => {
@@ -392,6 +425,7 @@ const MapModel = memo(
       const allBorders: Border[] = [];
       const allShaps: Shape[] = [];
       const labelArr: Label[] = [];
+      const blockPolygons: [number, number][][] = [];
 
       const projection = d3
         .geoMercator()
@@ -418,6 +452,9 @@ const MapModel = memo(
           coordinates.forEach((multiPolygon: any, index2: number) => {
             if (Array.isArray(coordinates[0][0][0])) {
               multiPolygon.forEach((polygon: any, index3: number) => {
+                if (polygon.length >= 20) {
+                  blockPolygons.push(polygon);
+                }
                 const lineMaterial = new THREE.LineBasicMaterial({
                   color: 0xb1d2ff,
                 });
@@ -476,6 +513,9 @@ const MapModel = memo(
                 });
               });
             } else {
+              if (multiPolygon.length >= 20) {
+                blockPolygons.push(multiPolygon);
+              }
               const lineMaterial = new THREE.LineBasicMaterial({
                 color: 0xb1d2ff,
               });
@@ -538,6 +578,18 @@ const MapModel = memo(
       setBorders(allBorders);
       setShapes(allShaps);
       setLabels(labelArr);
+
+      const { flowLightArr, flowLightTextureArr } = getFlowMesh(
+        blockPolygons,
+        {
+          depth,
+          center,
+          scale,
+        },
+        true
+      );
+      setBlockFlowLight(flowLightArr);
+      setBlockFlowLightTexture(flowLightTextureArr);
     };
 
     const getVertices = (points: number[]) => {
@@ -555,8 +607,12 @@ const MapModel = memo(
     };
 
     // 生成流光
-    const dealFlowLight = (vertices: THREE.Vector3[], scale: number) => {
-      const tubeWidth = 0.006 * (8.78266872973055 / scale);
+    const dealFlowLight = (
+      vertices: THREE.Vector3[],
+      scale: number,
+      isBlock: boolean
+    ) => {
+      const tubeWidth = (isBlock ? 0.003 : 0.006) * (8.78266872973055 / scale);
       const len = vertices.length;
       const curve = new THREE.CatmullRomCurve3(vertices, false);
       const points = curve.getPoints(len);
@@ -576,11 +632,17 @@ const MapModel = memo(
       const gradient = context.createLinearGradient(0, 0, 0, 100);
       const createGradient = (gradient: CanvasGradient) => {
         gradient.addColorStop(0, "rgba(160,32,240,1)");
-        gradient.addColorStop(0.02, "rgba(160,32,240,0.8)");
-        gradient.addColorStop(0.05, "rgba(160,32,240,0.4)");
-        gradient.addColorStop(0.07, "rgba(160,32,240,0.2)");
-        gradient.addColorStop(0.1, "rgba(160,32,240,0.1)");
-        gradient.addColorStop(0.2, "rgba(255,255,255,0.1)");
+        if (isBlock) {
+          gradient.addColorStop(0.05, "rgba(255,255,255,0)");
+          gradient.addColorStop(0.1, "rgba(255,255,255,0)");
+          gradient.addColorStop(0.2, "rgba(255,255,255,0)");
+        } else {
+          gradient.addColorStop(0.02, "rgba(160,32,240,0.8)");
+          gradient.addColorStop(0.05, "rgba(160,32,240,0.4)");
+          gradient.addColorStop(0.07, "rgba(160,32,240,0.2)");
+          gradient.addColorStop(0.1, "rgba(160,32,240,0.1)");
+          gradient.addColorStop(0.2, "rgba(255,255,255,0.1)");
+        }
         gradient.addColorStop(0.3, "rgba(255,255,255,0)");
         gradient.addColorStop(0.4, "rgba(255,255,255,0)");
         gradient.addColorStop(0.5, "rgba(255,255,255,0)");
@@ -615,11 +677,12 @@ const MapModel = memo(
       mapHeightCountRef.current += delta / 2;
       mapTexture.offset.y = 1 - (mapHeightCountRef.current % 1);
 
-      if (flowLightTexture) {
-        flowLightTexture.forEach((texture: any) => {
-          texture.offset.y -= 0.0015;
-        });
-      }
+      flowLightTexture.forEach((texture: any) => {
+        texture.offset.y -= 0.0015;
+      });
+      blockFlowLightTexture.forEach((texture: any) => {
+        texture.offset.y -= 0.0015;
+      });
 
       if (tweenRef.current) {
         tweenRef.current.update();
@@ -651,6 +714,10 @@ const MapModel = memo(
           {flowLight.map((i, index) => (
             <primitive object={i} key={index} />
           ))}
+          {mapDepthEnd &&
+            blockFlowLight.map((i, index) => (
+              <primitive object={i} key={index} />
+            ))}
         </object3D>
         {prvince !== "100000" && <Name begin={mapDepthEnd} name={name} />}
         <object3D position={[0, 0.4, 0]}>
@@ -684,20 +751,11 @@ const MapModel = memo(
             setLastAnimationEnd={setLastAnimationEnd}
           />
         )}
-        {/* {mapDepthEnd && (
-        <LightCylinder
-          position={[
-            labels[labels.length - 1].position.x,
-            depth * scale,
-            labels[labels.length - 1].position.z,
-          ]}
-        />
-      )} */}
         {mapDepthEnd && (
           <CycleRaycast
-            preventDefault={true} // Call event.preventDefault() (default: true)
-            scroll={false} // Wheel events (default: true)
-            keyCode={0} // Keyboard events (default: 9 [Tab])
+            preventDefault={true}
+            scroll={false}
+            keyCode={0}
             onChanged={onRaycastChanged}
             portal={shapRef.current}
           />

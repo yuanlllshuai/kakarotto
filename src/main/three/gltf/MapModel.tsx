@@ -508,9 +508,9 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
       {begin && <AnimationRing />}
 
       <CycleRaycast
-        preventDefault={true} // Call event.preventDefault() (default: true)
-        scroll={false} // Wheel events (default: true)
-        keyCode={0} // Keyboard events (default: 9 [Tab])
+        preventDefault={true}
+        scroll={false}
+        keyCode={0}
         onChanged={onRaycastChanged}
         portal={partRef.current}
       />
