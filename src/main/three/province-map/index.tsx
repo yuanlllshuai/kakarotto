@@ -29,13 +29,13 @@ const Camera = memo(
         setCameraEnd(false);
         return;
       }
-      const beginPos = [-12, 12, 16];
-      const endPos = [0, 10, 26];
+      const beginPos = [-8, 20, 16];
+      const endPos = [0, 8, 30];
       const startPoint = new THREE.Vector3(...beginPos);
       const endPoint = new THREE.Vector3(...endPos);
 
       tweenRef.current = new TWEEN.Tween(startPoint)
-        .to(endPoint, 3000)
+        .to(endPoint, 4000)
         .easing(TWEEN.Easing.Cubic.InOut)
         .onUpdate((position) => {
           if (cameraRef.current) {

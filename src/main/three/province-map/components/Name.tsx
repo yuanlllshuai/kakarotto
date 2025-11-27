@@ -1,13 +1,22 @@
 import { Html } from "@react-three/drei";
 import style from "./style.module.scss";
 import { memo } from "react";
+import * as THREE from "three";
 
 const PointLabel = memo(
-  ({ begin, name = "" }: { begin: boolean; name: string }) => {
+  ({
+    begin,
+    name = "",
+    position,
+  }: {
+    begin: boolean;
+    name: string;
+    position: THREE.Vector3;
+  }) => {
     return (
       <>
         <Html
-          position={[0, 0.5, 16]}
+          position={position}
           // rotation-y={-Math.PI / 8}
           transform={true}
           className={begin ? style.reflect : style.reflect_hide}

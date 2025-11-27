@@ -27,35 +27,53 @@ const MapModel = memo(
   }: Props) => {
     const { gl, raycaster, camera, mouse } = useThree();
 
+    // 地图区块边线Line
     const [borders, setBorders] = useState<Border[]>([]);
+    // 地图区块Mesh
     const [shaps, setShapes] = useState<Shape[]>([]);
+    // 地图缩放比例（不同省份面积大小不同）
     const [scale, setScale] = useState<number>(0);
+    // 地图厚度
     const [depth, setDepth] = useState<number>(0);
+    // 位置标签信息
     const [labels, setLabels] = useState<Label[]>([]);
+    // 地图颜色
     const [mapHsl, setMapHsl] = useState<THREE.HSL | null>(null);
+    // 地图厚度动画是否结束
     const [mapDepthEnd, setMapDepthEnd] = useState<boolean>(false);
-    // 流光轨迹
+    // 边界流光轨迹
     const [flowLight, setFlowLight] = useState<THREE.Mesh[]>([]);
-    // 流光纹理
+    // 边界流光纹理
     const [flowLightTexture, setFlowLightTexture] = useState<
       THREE.CanvasTexture[]
     >([]);
-    // 流光轨迹
+    // 区块边界流光轨迹
     const [blockFlowLight, setBlockFlowLight] = useState<THREE.Mesh[]>([]);
-    // 流光纹理
+    // 区块边界流光纹理
     const [blockFlowLightTexture, setBlockFlowLightTexture] = useState<
       THREE.CanvasTexture[]
     >([]);
-    // 地图高度动画step
-    const mapHeightCountRef = useRef(0);
+    // 展示区域名称
+    const [showName, setShowName] = useState<string>("");
+
+    // 地图厚度动画step
+    const mapDepthCountRef = useRef(0);
+
     const parentRef = useRef<any>();
     const shapRef = useRef<any>();
+    // 当前是否处于滚轮滚动状态
     const isScrollingRef = useRef(false);
+    // 滚动事件防抖定时器
     const scrollTimeout = useRef<any>(null);
+    // 记录当前高亮区块名称
     const currMapName = useRef<string>("");
+    // 记录前一次高亮区块名称
     const lastMapName = useRef<string>("");
+    // 记录当前点击后的高亮区块名称
     const clickMapName = useRef<string>("");
+    // 地图厚度动画
     const tweenRef = useRef<any>(null);
+    // 地图颜色
     const mapHslRef = useRef<THREE.HSL | null>(null);
 
     // 地图边缘纹理
@@ -85,28 +103,31 @@ const MapModel = memo(
     useEffect(() => {
       if (cameraEnd) {
         window.addEventListener("mousemove", handleMouseMove);
-        setMapDepthAnimation();
       }
       return () => {
         window.removeEventListener("mousemove", handleMouseMove);
       };
     }, [cameraEnd]);
 
+    // 相机动画结束后开启地图厚度动画
     useEffect(() => {
       if (cameraEnd && scale !== 0) {
         setMapDepthAnimation();
       }
     }, [cameraEnd, scale]);
 
+    // 省份切换后获取地图坐标数据
     useEffect(() => {
       if (prvince) {
         const loader = new THREE.FileLoader();
         setMapDepthEnd(false);
+        // 地图边界及区块坐标
         loader.load(
           `https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=${prvince}${
             prvince === "710000" ? "" : "_full"
           }`,
           function (data1) {
+            // 地图边界坐标，主要用于绘制地图边界流光效果
             loader.load(
               `https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=${prvince}`,
               function (data2) {
@@ -122,7 +143,22 @@ const MapModel = memo(
       }
     }, [prvince]);
 
+    // 省份切换后改变展示名称
+    useEffect(() => {
+      if (mapDepthEnd && name !== showName) {
+        if (!showName) {
+          setShowName(name);
+        } else {
+          setTimeout(() => {
+            setShowName(name);
+          }, 500);
+        }
+      }
+    }, [mapDepthEnd, name]);
+
+    // 创建地图厚度动画
     const setMapDepthAnimation = () => {
+      // 降低所有区块透明度
       if (shapRef.current) {
         (shapRef.current as any).children.forEach((child: any) => {
           if (mapHsl) {
@@ -133,12 +169,12 @@ const MapModel = memo(
           }
         });
       }
-      tweenRef.current = new TWEEN.Tween({ scale: 0 })
-        .to({ scale }, 400)
+      tweenRef.current = new TWEEN.Tween({ scaleY: 0 })
+        .to({ scaleY: scale }, 400)
         .easing(TWEEN.Easing.Cubic.InOut)
-        .onUpdate(({ scale }) => {
+        .onUpdate(({ scaleY }) => {
           if (parentRef.current) {
-            parentRef.current.scale.y = scale;
+            parentRef.current.scale.y = scaleY;
           }
         })
         .onComplete(() => {
@@ -147,6 +183,7 @@ const MapModel = memo(
         .start();
     };
 
+    // 鼠标移动事件，只在相机动画结束和在画布上移动时执行
     const handleMouseMove: React.EventHandler<any> = (event) => {
       if (event.target.tagName !== "CANVAS" || !cameraEnd) {
         return;
@@ -155,7 +192,7 @@ const MapModel = memo(
       handleMove();
     };
 
-    // 处理移动事件
+    // 处理移动事件，射线检测鼠标经过区域
     const handleMove = () => {
       raycaster.setFromCamera(mouse, camera);
       if (!shapRef.current) {
@@ -170,10 +207,12 @@ const MapModel = memo(
         currMapName.current = "";
       }
       if (lastMapName.current !== currMapName.current) {
+        // 鼠标经过的区块高亮
         setMapColor();
       }
     };
 
+    // 设置鼠标经过或点击过的区块高亮
     const setMapColor = () => {
       if (shapRef.current) {
         shapRef.current.children.forEach((child: THREE.Mesh) => {
@@ -202,6 +241,7 @@ const MapModel = memo(
       }
     };
 
+    // 鼠标点击时的射线检测
     const onRaycastChanged = (hits: THREE.Intersection[]) => {
       if (isScrollingRef.current) {
         return null;
@@ -266,6 +306,7 @@ const MapModel = memo(
     //   setFlowLight([tubeMesh1, tubeMesh2]);
     //   setFlowLightTexture([texture1, texture2]);
     // };
+
     // 多区域的流光效果
     const getFlowLight = (
       map: any,
@@ -305,6 +346,7 @@ const MapModel = memo(
       setFlowLightTexture(flowLightTextureArr);
     };
 
+    // 获取创建的所有流光纹理和Mesh
     const getFlowMesh = (
       areaPolygons: any,
       {
@@ -312,7 +354,7 @@ const MapModel = memo(
         center,
         scale,
       }: { depth: number; center: [number, number]; scale: number },
-      isBlock: boolean
+      isBlock: boolean // 区块还是整个地图
     ) => {
       const projection = d3
         .geoMercator()
@@ -333,11 +375,13 @@ const MapModel = memo(
       const flowLightTextureArr: THREE.CanvasTexture[] = [];
       positions.forEach((item: number[]) => {
         const vertices = getVertices(item);
+        // 区块只需要一条流光效果
         if (isBlock) {
           const [texture1, tubeMesh1] = dealFlowLight(vertices, scale, isBlock);
           flowLightArr.push(tubeMesh1);
           flowLightTextureArr.push(texture1);
         } else {
+          // 边界需要两条流光效果
           const [texture1, tubeMesh1] = dealFlowLight(vertices, scale, isBlock);
           const [texture2, tubeMesh2] = dealFlowLight(vertices, scale, isBlock);
           texture2.offset.y = 0.5;
@@ -348,6 +392,7 @@ const MapModel = memo(
       return { flowLightArr, flowLightTextureArr };
     };
 
+    // 计算当前省份地图厚度、缩放比例及中心点
     const getComputeData: (map: any) => {
       depth: number;
       center: [number, number];
@@ -359,13 +404,13 @@ const MapModel = memo(
         .center([center[0], center[1]])
         .scale(80)
         .translate([0, 0]);
-      let minX = 0;
-      let maxX = 0;
-      let minZ = 0;
-      let maxZ = 0;
-      let totalX = 0;
-      let totalZ = 0;
-      let total = 0;
+      let minX = 0; // x方向坐标最小值
+      let maxX = 0; // x方向坐标最大值
+      let minZ = 0; // z方向坐标最小值
+      let maxZ = 0; // z方向坐标最大值
+      let totalX = 0; // x方向坐标值综合
+      let totalZ = 0; // y方向坐标值综合
+      let total = 0; // 总坐标数
       // 不同省份面积有大有小
       // 首次遍历获取地图缩放比例及厚度换算公式
       map.features
@@ -419,8 +464,10 @@ const MapModel = memo(
       };
     };
 
+    // 地图初始化
     const initMap = (map1: any, map2: any) => {
       const { depth, center, scale } = getComputeData(map1);
+      // 生成地图边界流光
       getFlowLight(map2, { depth, center, scale });
       const allBorders: Border[] = [];
       const allShaps: Shape[] = [];
@@ -440,6 +487,7 @@ const MapModel = memo(
       map1.features
         .filter((i: any) => !!i.properties.name)
         .forEach((elem: any, index1: number) => {
+          // 各区块中心标签数据
           const [centerX, centerZ] = projectionCenter(
             elem.properties.centroid || elem.properties.center
           ) as [number, number];
@@ -579,6 +627,7 @@ const MapModel = memo(
       setShapes(allShaps);
       setLabels(labelArr);
 
+      // 创建区块流光
       const { flowLightArr, flowLightTextureArr } = getFlowMesh(
         blockPolygons,
         {
@@ -592,6 +641,7 @@ const MapModel = memo(
       setBlockFlowLightTexture(flowLightTextureArr);
     };
 
+    // 数组坐标转三维向量坐标
     const getVertices = (points: number[]) => {
       const vertices = [new THREE.Vector3(points[0], points[1], points[2])];
       let i = 1;
@@ -674,9 +724,11 @@ const MapModel = memo(
     };
 
     useFrame((_state, delta) => {
-      mapHeightCountRef.current += delta / 2;
-      mapTexture.offset.y = 1 - (mapHeightCountRef.current % 1);
+      // 地图纹理动画
+      mapDepthCountRef.current += delta / 2;
+      mapTexture.offset.y = 1 - (mapDepthCountRef.current % 1);
 
+      // 流光动画
       flowLightTexture.forEach((texture: any) => {
         texture.offset.y -= 0.0015;
       });
@@ -684,6 +736,7 @@ const MapModel = memo(
         texture.offset.y -= 0.0015;
       });
 
+      // 地图厚度动画
       if (tweenRef.current) {
         tweenRef.current.update();
       }
@@ -719,7 +772,15 @@ const MapModel = memo(
               <primitive object={i} key={index} />
             ))}
         </object3D>
-        {prvince !== "100000" && <Name begin={mapDepthEnd} name={name} />}
+        <Name
+          begin={mapDepthEnd}
+          name={showName}
+          position={
+            prvince === "100000"
+              ? new THREE.Vector3(-6, 0.5, 16)
+              : new THREE.Vector3(0, 0.5, 16)
+          }
+        />
         <object3D position={[0, 0.4, 0]}>
           <InstancedGridOfSquares begin={mapDepthEnd} />
         </object3D>
