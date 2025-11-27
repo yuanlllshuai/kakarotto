@@ -1,30 +1,29 @@
 import {
-    Outlet,
-    // Form,
-    // useLoaderData, 
-    // useNavigation
+  Outlet,
+  // Form,
+  // useLoaderData,
+  // useNavigation
 } from "react-router-dom";
-import styles from './index.module.scss';
-import Bg from '@/components/Bg';
-import Header from '../header';
+import styles from "./index.module.scss";
+import Bg from "@/components/Bg";
+import Header from "../header";
 
 function App() {
+  // const data: any = useLoaderData();
+  // const navigation = useNavigation();
 
-    // const data: any = useLoaderData();
-    // const navigation = useNavigation();
+  // useEffect(() => {
+  //     console.log('data', data)
+  // }, [data])
+  // useEffect(() => {
+  //     console.log('navigation', navigation)
+  // }, [navigation])
 
-    // useEffect(() => {
-    //     console.log('data', data)
-    // }, [data])
-    // useEffect(() => {
-    //     console.log('navigation', navigation)
-    // }, [navigation])
-
-    return (
-        <Bg>
-            <div className={styles.app}>
-                <Header />
-                {/* <div style={{ border: '1px solid red' }}>
+  return (
+    <Bg>
+      <div className={styles.app}>
+        <Header />
+        {/* <div style={{ border: '1px solid red' }}>
                     {navigation.state}
                 </div>
                 <Form method="post" action='/'>
@@ -36,12 +35,12 @@ function App() {
                     />
                     <button type="submit">New</button>
                 </Form> */}
-                <div className={styles.content}>
-                    <Outlet />
-                </div>
-            </div>
-        </Bg>
-    )
+        <div className={styles.content}>
+          <Outlet />
+        </div>
+      </div>
+    </Bg>
+  );
 }
 
-export default App
+export default App;
