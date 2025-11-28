@@ -56,9 +56,9 @@ const MapModel = memo(
     // 展示区域名称
     const [showName, setShowName] = useState<string>("");
 
+    const lastPrvince = useRef<string>("");
     // 地图厚度动画step
     const mapDepthCountRef = useRef(0);
-
     const parentRef = useRef<any>();
     const shapRef = useRef<any>();
     // 当前是否处于滚轮滚动状态
@@ -71,8 +71,10 @@ const MapModel = memo(
     const lastMapName = useRef<string>("");
     // 记录当前点击后的高亮区块名称
     const clickMapName = useRef<string>("");
-    // 地图厚度动画
-    const tweenRef = useRef<any>(null);
+    // 地图上升动画
+    const tweenBeginRef = useRef<any>(null);
+    // 地图下降动画
+    const tweenEndRef = useRef<any>(null);
     // 地图颜色
     const mapHslRef = useRef<THREE.HSL | null>(null);
 
@@ -112,15 +114,21 @@ const MapModel = memo(
     // 相机动画结束后开启地图厚度动画
     useEffect(() => {
       if (cameraEnd && scale !== 0) {
-        setMapDepthAnimation();
+        if (!lastPrvince.current) {
+          setMapDepthAnimation();
+        } else {
+          setTimeout(() => {
+            setMapDepthAnimation();
+          }, 500);
+        }
       }
     }, [cameraEnd, scale]);
 
     // 省份切换后获取地图坐标数据
     useEffect(() => {
       if (prvince) {
-        const loader = new THREE.FileLoader();
         setMapDepthEnd(false);
+        const loader = new THREE.FileLoader();
         // 地图边界及区块坐标
         loader.load(
           `https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=${prvince}${
@@ -131,11 +139,31 @@ const MapModel = memo(
             loader.load(
               `https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=${prvince}`,
               function (data2) {
-                initMap(
-                  JSON.parse(data1 as string),
-                  JSON.parse(data2 as string)
-                );
-                setMapLoaded(true);
+                if (!lastPrvince.current) {
+                  initMap(
+                    JSON.parse(data1 as string),
+                    JSON.parse(data2 as string)
+                  );
+                  setMapLoaded(true);
+                } else {
+                  tweenEndRef.current = new TWEEN.Tween({ scaleY: scale })
+                    .to({ scaleY: 0 }, 500)
+                    .easing(TWEEN.Easing.Cubic.InOut)
+                    .onUpdate(({ scaleY }) => {
+                      if (parentRef.current) {
+                        parentRef.current.scale.y = scaleY;
+                      }
+                    })
+                    .onComplete(() => {
+                      initMap(
+                        JSON.parse(data1 as string),
+                        JSON.parse(data2 as string)
+                      );
+                      setMapLoaded(true);
+                    })
+                    .start();
+                }
+                lastPrvince.current = prvince;
               }
             );
           }
@@ -169,9 +197,9 @@ const MapModel = memo(
           }
         });
       }
-      tweenRef.current = new TWEEN.Tween({ scaleY: 0 })
-        .to({ scaleY: scale }, 400)
-        .easing(TWEEN.Easing.Cubic.InOut)
+      tweenBeginRef.current = new TWEEN.Tween({ scaleY: 0 })
+        .to({ scaleY: scale }, 500)
+        .easing(TWEEN.Easing.Cubic.Out)
         .onUpdate(({ scaleY }) => {
           if (parentRef.current) {
             parentRef.current.scale.y = scaleY;
@@ -737,8 +765,12 @@ const MapModel = memo(
       });
 
       // 地图厚度动画
-      if (tweenRef.current) {
-        tweenRef.current.update();
+      if (tweenBeginRef.current) {
+        tweenBeginRef.current.update();
+      }
+      // 地图厚度动画
+      if (tweenEndRef.current) {
+        tweenEndRef.current.update();
       }
     });
 
