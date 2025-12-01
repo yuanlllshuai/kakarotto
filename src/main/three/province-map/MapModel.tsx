@@ -436,8 +436,8 @@ const MapModel = memo(
       let maxX = 0; // x方向坐标最大值
       let minZ = 0; // z方向坐标最小值
       let maxZ = 0; // z方向坐标最大值
-      let totalX = 0; // x方向坐标值综合
-      let totalZ = 0; // y方向坐标值综合
+      let totalX = 0; // x方向坐标值总和
+      let totalZ = 0; // y方向坐标值总和
       let total = 0; // 总坐标数
       // 不同省份面积有大有小
       // 首次遍历获取地图缩放比例及厚度换算公式
@@ -477,16 +477,21 @@ const MapModel = memo(
             }
           });
         });
-      const crossX = maxX - minX;
-      const crossZ = maxZ - minZ;
+      const crossX = maxX - minX; // x方向横跨距离
+      const crossZ = maxZ - minZ; // z方向横跨距离
+      // console.log(Math.max(crossX, crossZ));
+      // 设置一个基准值26，不同省份按照比例缩放，使视觉上大小显示一致
+      // 对于全国地图，使其再放大一些
       const compScale =
-        (13 / Math.max(crossX, crossZ)) * 2 * (prvince === "100000" ? 1.5 : 1);
+        (26 / Math.max(crossX, crossZ)) * (prvince === "100000" ? 1.5 : 1);
       setScale(compScale);
+      // 以北京市为准（Math.max(crossX, crossZ)值为2.96），设置地图厚度为0.12，其他省份以此缩放
       const depth = (0.12 * Math.max(crossX, crossZ)) / 2.96;
       setDepth(depth);
+      // 纹理重复数，设置基准值1.5，其他省份以此缩放
       mapTexture.repeat.set(1.5 * compScale, 1.5 * compScale);
       return {
-        center: [totalX / total, totalZ / total],
+        center: [totalX / total, totalZ / total], // 地图经过墨卡托投影后的中心点
         depth,
         scale: compScale,
       };
@@ -503,13 +508,14 @@ const MapModel = memo(
       const blockPolygons: [number, number][][] = [];
 
       const projection = d3
-        .geoMercator()
-        .center(center) // 地图中心点坐标
-        .scale(80)
-        .translate([0, 0]);
+        .geoMercator() // 墨卡托投影
+        .center(center) // 投影中心
+        .scale(80) // 投影缩放
+        .translate([0, 0]); // 移动到坐标原点
+
       const projectionCenter = d3
         .geoMercator()
-        .center(center) // 地图中心点坐标
+        .center(center)
         .scale(80 * scale)
         .translate([0, 0]);
       map1.features
