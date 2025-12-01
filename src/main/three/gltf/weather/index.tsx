@@ -47,15 +47,12 @@ const Index = memo(
       }
     });
 
-    if (!begin) {
-      return <></>;
-    }
-
     return (
       <group
         ref={groupRef}
         scale={[0, 0, 0]}
         position={[position.x, 6, position.z]}
+        visible={begin}
       >
         {weather === 0 && <Sun position={new THREE.Vector3(0, 0, 0)} />}
         {weather === 1 && <Cloudy />}
