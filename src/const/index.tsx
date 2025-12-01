@@ -20,7 +20,7 @@ export const navConfig = [
     icon: "cube-three",
     children: [
       { key: "learn", label: "学习", path: "/three/index" },
-      { key: "gltf", label: "Gltf", path: "/three/gltf" },
+      // { key: "gltf", label: "Gltf", path: "/three/gltf" },
       { key: "solar", label: "太阳系", path: "/three/solar" },
       { key: "map-plane", label: "地图平面", path: "/three/map-plane" },
       { key: "shader", label: "着色器", path: "/three/shader" },
