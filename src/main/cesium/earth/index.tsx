@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { createOsmBuildingsAsync, Ion, Terrain, Viewer } from "cesium";
-import "cesium/Build/Cesium/Widgets/widgets.css";
+import styles from "./index.module.scss";
+import ScreenFull from "@/components/ScreenFull";
 
 const Index = () => {
   useEffect(() => {
@@ -30,7 +31,16 @@ const Index = () => {
     viewer.scene.primitives.add(buildingTileset);
   };
 
-  return <div id="earthContainer"></div>;
+  return (
+    <div
+      id="cesium-earth-container"
+      style={{ width: "100%", height: "100%", position: "relative" }}
+    >
+      <ScreenFull containerId="cesium-earth-container" position="top-center">
+        <div id="earthContainer" className={styles.container}></div>
+      </ScreenFull>
+    </div>
+  );
 };
 
 export default Index;
