@@ -115,8 +115,10 @@ const MapModel = memo(
     useEffect(() => {
       if (cameraEnd && scale !== 0) {
         if (!lastPrvince.current) {
+          // 首次直接开始厚度动画
           setMapDepthAnimation();
         } else {
+          // 后续需要先等待500ms的地图退去动画
           setTimeout(() => {
             setMapDepthAnimation();
           }, 500);
@@ -140,12 +142,14 @@ const MapModel = memo(
               `https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=${prvince}`,
               function (data2) {
                 if (!lastPrvince.current) {
+                  // 首次直接渲染
                   initMap(
                     JSON.parse(data1 as string),
                     JSON.parse(data2 as string)
                   );
                   setMapLoaded(true);
                 } else {
+                  // 省份切换后，先执行退去动画，动画完成后再渲染新的省份
                   tweenEndRef.current = new TWEEN.Tween({ scaleY: scale })
                     .to({ scaleY: 0 }, 500)
                     .easing(TWEEN.Easing.Cubic.InOut)
@@ -197,6 +201,7 @@ const MapModel = memo(
           }
         });
       }
+      // 地图厚度动画
       tweenBeginRef.current = new TWEEN.Tween({ scaleY: 0 })
         .to({ scaleY: scale }, 500)
         .easing(TWEEN.Easing.Cubic.Out)

@@ -3,7 +3,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import styles from "./index.module.scss";
 import * as THREE from "three";
-import mapPng from "@/assets/local.jpg";
+import mapPng from "@/assets/map.jpg";
 import ScreenFull from "@/components/ScreenFull";
 
 const mapSize = 1000;
@@ -38,7 +38,7 @@ const MapModel = () => {
           const vertexIndex = (y * mapSize + x) * 3;
           const pixelIndex = (y * mapSize + x) * 4;
           const heightValue = imageData[pixelIndex] / 255;
-          vertices[vertexIndex + 2] = heightValue * 100;
+          vertices[vertexIndex + 2] = heightValue * 50;
         }
       }
       geometryRef.current.attributes.position.needsUpdate = true;

@@ -16,7 +16,13 @@ export const navConfig = [
   {
     key: "three",
     label: "Three.js",
-    paths: ["/three/index", "/three/gltf", "/three/solar"],
+    paths: [
+      "/three/index",
+      "/three/solar",
+      "/three/map-plane",
+      "/three/shader",
+      "/three/province-map",
+    ],
     icon: "cube-three",
     children: [
       { key: "learn", label: "学习", path: "/three/index" },
@@ -26,6 +32,13 @@ export const navConfig = [
       { key: "shader", label: "着色器", path: "/three/shader" },
       { key: "province-map", label: "省份地图", path: "/three/province-map" },
     ],
+  },
+  {
+    key: "cesium",
+    label: "Cesium.js",
+    paths: ["/cesium/earth"],
+    icon: "earth",
+    children: [{ key: "earth", label: "地球", path: "/cesium/earth" }],
   },
   { key: "settings", label: "设置", icon: "settings", path: "/settings" },
 ];

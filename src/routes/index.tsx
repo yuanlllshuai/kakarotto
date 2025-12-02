@@ -15,6 +15,7 @@ import {
   ThreeShader,
   ThreeProvinceMap,
 } from "@/main/three";
+import { CesiumEarth } from "@/main/cesium";
 import Settings from "@/main/settings";
 
 const router = createHashRouter(
@@ -25,11 +26,14 @@ const router = createHashRouter(
       </Route>
       <Route path="three">
         <Route path="index" element={<ThreeLearn />} />
-        <Route path="gltf" lazy={() => import("@/main/three/gltf/index")} />
+        {/* <Route path="gltf" lazy={() => import("@/main/three/gltf/index")} /> */}
         <Route path="solar" element={<ThreeSolar />} />
         <Route path="map-plane" element={<ThreeMapPlane />} />
         <Route path="shader" element={<ThreeShader />} />
         <Route path="province-map" element={<ThreeProvinceMap />} />
+      </Route>
+      <Route path="cesium">
+        <Route path="earth" element={<CesiumEarth />} />
       </Route>
       <Route path="settings" element={<Settings />} />
       <Route path="*" errorElement={<ErrorPage />} element={<ErrorPage />} />
