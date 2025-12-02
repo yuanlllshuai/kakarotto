@@ -34,7 +34,8 @@
     "react-router-dom": "^6.23.0",
     "screenfull": "^6.0.2",
     "sort-by": "^1.2.0",
-    "three": "^0.164.1"
+    "three": "^0.164.1",
+    "vite-plugin-cesium": "^1.2.23"
   },
   "devDependencies": {
     "@types/d3": "^7.4.3",

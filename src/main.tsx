@@ -12,7 +12,7 @@ axios.defaults.headers.common["Authorization"] = "Bearer token";
 axios.defaults.headers.post["Content-Type"] =
   "application/x-www-form-urlencoded";
 
-(window as any).CESIUM_BASE_URL = "node_modules/cesium/Build/Cesium";
+// (window as any).CESIUM_BASE_URL = "node_modules/cesium/Build/Cesium";
 
 const domNode = document.getElementById("root") as HTMLElement;
 // hydrateRoot(domNode, <App />);
