@@ -1,12 +1,9 @@
-// import { Home, AllApplication } from '@icon-park/react';
-
 export const navConfig = [
   { key: "main", label: "首页", icon: "shouyehome", path: "/" },
   {
     key: "charts",
     label: "Echarts",
     icon: "charts",
-    paths: ["/bar", "/line", "/pie"],
     children: [
       { key: "bar", label: "柱状图", path: "/bar" },
       { key: "line", label: "折线图", path: "/line" },
@@ -16,13 +13,6 @@ export const navConfig = [
   {
     key: "three",
     label: "Three.js",
-    paths: [
-      "/three/index",
-      "/three/solar",
-      "/three/map-plane",
-      "/three/shader",
-      "/three/province-map",
-    ],
     icon: "cube-three",
     children: [
       { key: "learn", label: "学习", path: "/three/index" },
@@ -36,9 +26,17 @@ export const navConfig = [
   {
     key: "cesium",
     label: "Cesium.js",
-    paths: ["/cesium/earth"],
     icon: "earth",
-    children: [{ key: "earth", label: "地球", path: "/cesium/earth" }],
+    children: [
+      {
+        key: "flight-tracker",
+        label: "航班跟踪器",
+        path: "/cesium/flight-tracker",
+      },
+    ],
   },
   { key: "settings", label: "设置", icon: "settings", path: "/settings" },
 ];
+
+export const CesiumAccessToken =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIzZmEyNDI5Mi0zYTRhLTRlMzItOTM2MS0xNTVmNjcyMThiMzEiLCJpZCI6MzY1NzU2LCJpYXQiOjE3NjQ2NTY1MTd9.gDooJhL6g0ohUhvA4LLpAkg1TihL_q1S5Tr0UCDkjhM";

@@ -1,1 +1,1 @@
-export { default as CesiumEarth } from "./earth";
+export { default as CesiumFlight } from "./flight-tracker";

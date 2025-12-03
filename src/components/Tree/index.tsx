@@ -15,7 +15,10 @@ const Index: FC<IndexProps> = ({ data }) => {
 
   useEffect(() => {
     if (!init.current) {
-      const curr = data.find((i: any) => i.paths?.includes(pathname));
+      const curr = data.find((item: any) => {
+        const paths = item.children?.map((i: any) => i.path);
+        return paths?.includes(pathname);
+      });
       if (curr) {
         setRoutes([curr.key]);
       }
@@ -95,12 +98,13 @@ const Index: FC<IndexProps> = ({ data }) => {
     }
     // 有子节点
     if (haveChildren) {
+      const paths = item.children?.map((i: any) => i.path);
       return (
         <div
           className={classNames(
             styles.item,
             styles.item_hover2,
-            item.paths?.includes(pathname) && styles.item_active2
+            paths?.includes(pathname) && styles.item_active2
           )}
           onClick={() => openHandle(key)}
         >
