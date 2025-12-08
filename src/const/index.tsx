@@ -33,6 +33,11 @@ export const navConfig = [
         label: "航班跟踪器",
         path: "/cesium/flight-tracker",
       },
+      {
+        key: "building",
+        label: "建筑",
+        path: "/cesium/building",
+      },
     ],
   },
   { key: "settings", label: "设置", icon: "settings", path: "/settings" },

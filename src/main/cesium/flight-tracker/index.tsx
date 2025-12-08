@@ -12,13 +12,11 @@ const Index = () => {
 
   const init = async () => {
     Cesium.Ion.defaultAccessToken = CesiumAccessToken;
-    const viewer = new Cesium.Viewer("earthContainer", {
+    const viewer = new Cesium.Viewer("flight-container", {
       terrain: Cesium.Terrain.fromWorldTerrain(),
     });
-    const osmBuildings = await Cesium.createOsmBuildingsAsync();
-    viewer.scene.primitives.add(osmBuildings);
 
-    await delay(1000);
+    await delay(2000);
 
     const dataPoint = {
       longitude: -122.39053,
@@ -114,11 +112,11 @@ const Index = () => {
 
   return (
     <div
-      id="cesium-earth-container"
+      id="cesium-flight-container"
       style={{ width: "100%", height: "100%", position: "relative" }}
     >
-      <ScreenFull containerId="cesium-earth-container" position="top-center">
-        <div id="earthContainer" className={styles.container}></div>
+      <ScreenFull containerId="cesium-flight-container" position="top-center">
+        <div id="flight-container" className={styles.container}></div>
       </ScreenFull>
     </div>
   );
