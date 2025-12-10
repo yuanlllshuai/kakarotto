@@ -30,7 +30,7 @@ const Camera = memo(
         return;
       }
       const beginPos = [-8, 20, 16];
-      const endPos = [0, 8, 30];
+      const endPos = [0, 14, 26];
       const startPoint = new THREE.Vector3(...beginPos);
       const endPoint = new THREE.Vector3(...endPos);
 
