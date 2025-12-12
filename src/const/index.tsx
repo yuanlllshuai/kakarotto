@@ -21,6 +21,7 @@ export const navConfig = [
       { key: "map-plane", label: "地图平面", path: "/three/map-plane" },
       { key: "shader", label: "着色器", path: "/three/shader" },
       { key: "province-map", label: "省份地图", path: "/three/province-map" },
+      { key: "practice", label: "练习", path: "/three/practice" },
     ],
   },
   {

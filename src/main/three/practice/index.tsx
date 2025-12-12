@@ -5,13 +5,10 @@ import { useFrame } from "@react-three/fiber";
 import styles from "./index.module.scss";
 import * as THREE from "three";
 import ScreenFull from "@/components/ScreenFull";
-import { Select, Switch, Progress } from "antd";
+import { Progress } from "antd";
 import * as TWEEN from "@tweenjs/tween.js";
 import MapModel from "./MapModel";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
-import AnimateCard from "@/components/AnimateCard";
-
-const { Option } = Select;
 
 const Camera = memo(
   ({
@@ -30,7 +27,7 @@ const Camera = memo(
         return;
       }
       const beginPos = [-8, 20, 16];
-      const endPos = [0, 14, 26];
+      const endPos = [0, 6, 10];
       const startPoint = new THREE.Vector3(...beginPos);
       const endPoint = new THREE.Vector3(...endPos);
 
@@ -67,41 +64,10 @@ const Camera = memo(
   }
 );
 
-type Prvince = {
-  adcode: string;
-  name: string;
-};
-
 function Index() {
-  const [prvinces, setPrvinces] = useState<Prvince[]>([]);
-  const [prvince, setPrvince] = useState<string>("");
-  const [name, setName] = useState<string>("");
   const [mapLoaded, setMapLoaded] = useState<boolean>(false);
   const [cameraEnd, setCameraEnd] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
-  const [lastAnimationEnd, setLastAnimationEnd] = useState<boolean>(false);
-  const [openWeather, setOpenWeather] = useState<boolean>(false);
-
-  useEffect(() => {
-    const loader = new THREE.FileLoader();
-    loader.load(
-      "https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json",
-      function (data) {
-        const prvinceOptions = JSON.parse(data as string)
-          .features.map((i: Record<string, any>) => ({
-            adcode: i.properties.adcode + "",
-            name: i.properties.name,
-          }))
-          .filter((i: Prvince) => !!i.name);
-        const list = [{ adcode: "100000", name: "中华人民共和国" }].concat(
-          prvinceOptions
-        );
-        setPrvince(list?.[0]?.adcode);
-        setName(list?.[0]?.name);
-        setPrvinces(list);
-      }
-    );
-  }, []);
 
   useEffect(() => {
     if (mapLoaded) {
@@ -116,11 +82,6 @@ function Index() {
     }
   }, [mapLoaded]);
 
-  const handleChange = (value: string, other: any) => {
-    setPrvince(value);
-    setName(other.children);
-  };
-
   const render = () => {
     return (
       <div className={styles.model}>
@@ -130,7 +91,7 @@ function Index() {
           }}
         >
           <Camera setCameraEnd={setCameraEnd} begin={mapLoaded} />
-          {/* <axesHelper scale={20} /> */}
+          <axesHelper scale={1} />
           <OrbitControls
             makeDefault
             enableRotate={cameraEnd}
@@ -138,19 +99,11 @@ function Index() {
           />
           <ambientLight intensity={3} />
           <Suspense fallback={<></>}>
-            <MapModel
-              prvince={prvince}
-              name={name}
-              cameraEnd={cameraEnd}
-              mapLoaded={mapLoaded}
-              openWeather={openWeather}
-              setMapLoaded={setMapLoaded}
-              setLastAnimationEnd={setLastAnimationEnd}
-            />
+            <MapModel setMapLoaded={setMapLoaded} cameraEnd={cameraEnd} />
           </Suspense>
           <EffectComposer>
             <Bloom
-              intensity={1.0} // The bloom intensity.
+              intensity={1} // The bloom intensity.
               mipmapBlur
               luminanceThreshold={1}
             />
@@ -161,38 +114,8 @@ function Index() {
   };
 
   return (
-    <div className={styles.container} id="province-map-container">
-      <ScreenFull containerId="province-map-container">{render()}</ScreenFull>
-      {prvinces.length !== 0 && (
-        <div className={styles.select}>
-          <Select
-            value={prvince}
-            style={{ width: 160 }}
-            showSearch
-            onChange={handleChange}
-            filterOption={(input, option: any) =>
-              option.props.children
-                .toLowerCase()
-                .indexOf(input.toLowerCase()) >= 0
-            }
-            getPopupContainer={() =>
-              document.getElementById("province-map-container") as HTMLElement
-            }
-          >
-            {prvinces.map(({ name, adcode }) => (
-              <Option value={adcode} key={adcode}>
-                {name}
-              </Option>
-            ))}
-          </Select>
-          <Switch
-            checkedChildren="关闭天气"
-            unCheckedChildren="开启天气"
-            checked={openWeather}
-            onChange={(v) => setOpenWeather(v)}
-          />
-        </div>
-      )}
+    <div className={styles.container} id="practice-map-container">
+      <ScreenFull containerId="practice-map-container">{render()}</ScreenFull>
       {progress !== 100 && (
         <div className={styles.loading}>
           <div style={{ width: "80%" }}>
@@ -200,7 +123,6 @@ function Index() {
           </div>
         </div>
       )}
-      <AnimateCard begin={lastAnimationEnd} />
     </div>
   );
 }

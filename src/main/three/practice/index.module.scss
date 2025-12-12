@@ -1,0 +1,32 @@
+.container {
+  height: 100%;
+  align-items: center;
+  position: relative;
+}
+
+.loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  z-index: 99999999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.select {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px
+}
+
+.model {
+  height: 100%;
+  transition: opacity 0.5s;
+}

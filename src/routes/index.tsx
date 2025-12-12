@@ -14,6 +14,7 @@ import {
   ThreeMapPlane,
   ThreeShader,
   ThreeProvinceMap,
+  ThreePractive,
 } from "@/main/three";
 import { CesiumFlight, CesiumBuilding } from "@/main/cesium";
 import Settings from "@/main/settings";
@@ -31,6 +32,7 @@ const router = createHashRouter(
         <Route path="map-plane" element={<ThreeMapPlane />} />
         <Route path="shader" element={<ThreeShader />} />
         <Route path="province-map" element={<ThreeProvinceMap />} />
+        <Route path="practice" element={<ThreePractive />} />
       </Route>
       <Route path="cesium">
         <Route path="flight-tracker" element={<CesiumFlight />} />

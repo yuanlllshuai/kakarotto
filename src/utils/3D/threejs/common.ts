@@ -81,3 +81,40 @@ export function makeXYZGUI(gui: any, vector3: any, name: any, onChangeFn: any) {
 }
 
 export const DEFAULT_SIZE = { width: window.innerWidth, height: window.innerHeight };
+
+export const createLinearGradientShaderMaterial = () => {
+  const material = new THREE.ShaderMaterial({
+    uniforms: {
+      innerColor: { value: new THREE.Color("#007898") },
+    },
+    vertexShader: `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+    fragmentShader: `
+    uniform vec3 innerColor;
+    varying vec2 vUv;
+
+    void main() {
+      vec2 uv = (vUv - 0.5) * 2.0;
+      float t = (uv.y + 1.0) / 2.0;
+
+      vec3 color = innerColor;
+      float alpha = t;
+
+      // Discard fully transparent fragments
+      if (alpha < 0.01) discard;
+
+      gl_FragColor = vec4(color, alpha);
+    }
+  `,
+    transparent: true,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+    depthTest: true, // ✅ Enable depth test
+  });
+  return material;
+}
