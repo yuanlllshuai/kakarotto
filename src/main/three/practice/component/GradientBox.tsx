@@ -9,18 +9,24 @@ type Props = {
   lineWidth?: number;
   hasHighlight?: boolean;
   highlightProps?: HighlightProps;
-  alpha?: number;
+  opacity?: number;
+  wallOpacity?: number;
   hasDashedLine?: boolean;
+  borderColor?: [number, number, number, number];
+  hideBorderIndexes?: number[];
 };
 
 const MapModel = memo(
   ({
     colors,
-    lineWidth = 1,
+    lineWidth = 2,
     hasHighlight = false,
     highlightProps = {},
-    alpha = 0.1,
+    opacity = 0.1,
+    wallOpacity = 0.1,
     hasDashedLine = false,
+    borderColor = [12, 23, 55, 0.1],
+    hideBorderIndexes = [],
   }: Props) => {
     const [plane, setPlane] = useState<any>(null);
     const [walls, setWalls] = useState<any[]>([]);
@@ -159,7 +165,7 @@ const MapModel = memo(
           outerRadius: { value: 3.8 }, // 外正方形半径（红色区域）
           innerColor: { value: new THREE.Color(colors[0]) }, // 默认内颜色
           outerColor: { value: new THREE.Color(colors[1]) }, // 默认外颜色
-          uAlpha: { value: alpha },
+          uAlpha: { value: opacity },
         },
         vertexShader: `
       varying vec2 vUv;
@@ -198,8 +204,8 @@ const MapModel = memo(
     `,
         transparent: true,
         side: THREE.DoubleSide,
-        depthWrite: false,
-        depthTest: false,
+        // depthWrite: false,
+        // depthTest: false,
       });
       const mesh = new THREE.Mesh(geometry, material);
       setPlane(mesh);
@@ -233,7 +239,7 @@ const MapModel = memo(
         uniforms: {
           innerColor: { value: new THREE.Color(colors[0]) },
           outerColor: { value: new THREE.Color(colors[1]) },
-          uAlpha: { value: alpha },
+          uAlpha: { value: wallOpacity },
         },
         vertexShader: `
         varying vec2 vUv;
@@ -270,7 +276,7 @@ const MapModel = memo(
     useFrame(() => {
       if (lineRef1.current && hasDashedLine) {
         yRef1.current += 0.002;
-        oRef1.current = 0.5 - (yRef1.current / 0.2) * 0.5;
+        oRef1.current = 0.3 - (yRef1.current / 0.2) * 0.3;
         lineRef1.current.children.forEach((line: any) => {
           line.position.y = yRef1.current;
           line.material.opacity = oRef1.current;
@@ -280,13 +286,13 @@ const MapModel = memo(
         if (yRef1.current >= 0.1 && !isLine2Started.current) {
           isLine2Started.current = true;
           yRef2.current = 0;
-          oRef2.current = 0.5;
+          oRef2.current = 0.3;
         }
 
         // lineRef2 动画逻辑
         if (isLine2Started.current) {
           yRef2.current += 0.002;
-          oRef2.current = 0.5 - (yRef2.current / 0.2) * 0.5;
+          oRef2.current = 0.3 - (yRef2.current / 0.2) * 0.3;
           lineRef2.current.children.forEach((line: any) => {
             line.position.y = yRef2.current;
             line.material.opacity = oRef2.current;
@@ -322,15 +328,13 @@ const MapModel = memo(
             lineWidth={lineWidth}
             dashed={false}
             segments
+            opacity={hideBorderIndexes.includes(index) ? 0 : 0.1}
             vertexColors={
               index < 4
-                ? [
-                    [12, 23, 55, 0.1],
-                    [12, 23, 55, 0.1],
-                  ]
+                ? [borderColor, borderColor]
                 : [
-                    [12, 23, 55, 0.1],
-                    [12, 23, 55, 0],
+                    borderColor,
+                    [borderColor[0], borderColor[1], borderColor[2], 0],
                   ]
             }
           />
@@ -341,22 +345,12 @@ const MapModel = memo(
               <Line
                 key={index}
                 points={i.points}
-                lineWidth={lineWidth}
+                lineWidth={1}
                 dashed={false}
                 segments
                 position={[0, 0, 0]}
                 opacity={0}
-                vertexColors={
-                  index < 4
-                    ? [
-                        [12, 23, 55, 0.1],
-                        [12, 23, 55, 0.1],
-                      ]
-                    : [
-                        [12, 23, 55, 0.1],
-                        [12, 23, 55, 0],
-                      ]
-                }
+                vertexColors={[borderColor, borderColor]}
               />
             ))}
           </object3D>
@@ -367,22 +361,12 @@ const MapModel = memo(
               <Line
                 key={index}
                 points={i.points}
-                lineWidth={lineWidth}
+                lineWidth={1}
                 dashed={false}
                 segments
                 position={[0, 0, 0]}
                 opacity={0}
-                vertexColors={
-                  index < 4
-                    ? [
-                        [12, 23, 55, 0.1],
-                        [12, 23, 55, 0.1],
-                      ]
-                    : [
-                        [12, 23, 55, 0.1],
-                        [12, 23, 55, 0],
-                      ]
-                }
+                vertexColors={[borderColor, borderColor]}
               />
             ))}
           </object3D>
