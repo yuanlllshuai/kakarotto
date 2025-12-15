@@ -76,7 +76,16 @@ const MapModel = memo(({ setMapLoaded, cameraEnd }: any) => {
         <InstancedGridOfSquares begin={cameraEnd} />
       </object3D>
       <Labels />
-      <Line />
+      <object3D position={[0, 4, 0]} scale-y={0.001}>
+        <Line
+          points={[
+            [0, 2, 0],
+            [0, 2, 1],
+            [1, 2, 1],
+          ]}
+          color="cyan"
+        />
+      </object3D>
     </>
   );
 });
