@@ -104,7 +104,7 @@ function Index() {
           </Suspense>
           <EffectComposer>
             <Bloom
-              intensity={0.1} // The bloom intensity.
+              intensity={0.2} // The bloom intensity.
               mipmapBlur
               luminanceThreshold={1}
             />

@@ -1,8 +1,9 @@
 import { memo, useEffect } from "react";
 import InstancedGridOfSquares from "../gltf/InstancedGridOfSquares";
 import GradientBox from "./component/GradientBox";
-import LinkRoad from "./component/LinkRoad";
-import Labels from "./component/Labels";
+import Labels from "./Labels";
+import Road from "./Road";
+import Line from "./component/Line";
 // import * as THREE from "three";
 
 const MapModel = memo(({ setMapLoaded, cameraEnd }: any) => {
@@ -70,19 +71,12 @@ const MapModel = memo(({ setMapLoaded, cameraEnd }: any) => {
           borderColor={[175, 211, 248, 0.01]}
         />
       </object3D>
-      <object3D position={[0, 4, -2.75]}>
-        <LinkRoad />
-      </object3D>
-      <object3D position={[2.75, 4, 0]} rotation-y={-Math.PI / 2}>
-        <LinkRoad />
-      </object3D>
-      <object3D position={[-2.75, 4, 0]} rotation-y={Math.PI / 2}>
-        <LinkRoad />
-      </object3D>
+      <Road />
       <object3D position={[0, 0.4, 0]}>
         <InstancedGridOfSquares begin={cameraEnd} />
       </object3D>
       <Labels />
+      <Line />
     </>
   );
 });
