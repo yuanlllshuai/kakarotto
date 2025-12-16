@@ -1,8 +1,13 @@
 import * as THREE from "three";
 
-const Index = () => {
+type Props = {
+  position?: [number, number, number];
+  scale?: number;
+};
+
+const Index = ({ position = [0, 0, 0], scale = 0.015 }: Props) => {
   return (
-    <mesh position={[0, 0, 0]} rotation-x={Math.PI / 2}>
+    <mesh position={position} rotation-x={Math.PI / 2} scale={scale}>
       <ringGeometry args={[4, 5, 100]} />
       <meshBasicMaterial
         transparent={true}

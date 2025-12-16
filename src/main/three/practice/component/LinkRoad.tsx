@@ -5,7 +5,7 @@ const Index = () => {
   return (
     <>
       <mesh rotation-x={Math.PI / 2}>
-        <planeGeometry args={[0.5, 1.5]}></planeGeometry>
+        <planeGeometry args={[0.3, 1.5]}></planeGeometry>
         <meshBasicMaterial
           transparent={true}
           opacity={0.1}
@@ -15,7 +15,7 @@ const Index = () => {
       </mesh>
       <Highlight
         meshProps={{ "rotation-x": Math.PI / 2 }}
-        planProps={{ args: [0.5, 1.5] }}
+        planProps={{ args: [0.3, 1.5] }}
         color="#00FFFF"
       />
     </>
