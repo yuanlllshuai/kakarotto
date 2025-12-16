@@ -7,6 +7,8 @@ type Props = {
   width?: number;
   color?: string;
   segments?: number;
+  direction?: 1 | -1;
+  hasArrow?: boolean;
 };
 
 const Index = ({
@@ -14,13 +16,59 @@ const Index = ({
   color = "#FFF",
   width = 0.005,
   segments = 40,
+  direction = 1,
+  hasArrow = true,
 }: Props) => {
   const [line, setLine] = useState<THREE.Mesh>();
+  const [arrow, setArrow] = useState<THREE.Mesh>();
   const lineRef = useRef<any>(null);
 
   useEffect(() => {
     createLine();
-  }, []);
+    createArrow();
+  }, [points]);
+
+  const createArrow = () => {
+    if (!hasArrow) {
+      return;
+    }
+    const arrowVertices = new Float32Array([
+      0,
+      0,
+      0,
+      0.5,
+      0,
+      0,
+      0,
+      0,
+      -Math.sqrt(3) / 2,
+      0,
+      0,
+      -Math.sqrt(3) / 2,
+      -0.5,
+      0,
+      0,
+      0,
+      0,
+      0,
+    ]);
+    const arrowGeometry = new THREE.BufferGeometry();
+    arrowGeometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(arrowVertices, 3)
+    );
+    const material = new THREE.MeshStandardMaterial({
+      color,
+      side: THREE.DoubleSide,
+      transparent: true,
+      depthWrite: false,
+      depthTest: false,
+      emissive: color,
+      emissiveIntensity: 2,
+    });
+    const mesh = new THREE.Mesh(arrowGeometry, material);
+    setArrow(mesh);
+  };
 
   const createPath = (points: [number, number, number][]) => {
     let vertices: THREE.Vector3[] = [];
@@ -94,12 +142,32 @@ const Index = ({
     lineRef.current = texture;
     setLine(tubeMesh);
   };
+  const getRotationY = () => {
+    if (points.length < 2) return 0;
+    const p1 = points[points.length - 2];
+    const p2 = points[points.length - 1];
+    const dx = p1[0] - p2[0];
+    const dy = p1[2] - p2[2];
+    return Math.atan2(dx, dy);
+  };
   useFrame(() => {
     if (lineRef.current) {
-      lineRef.current.offset.y -= 0.03;
+      lineRef.current.offset.y += 0.03 * direction;
     }
   });
-  return <>{line && <primitive object={line} />}</>;
+  return (
+    <>
+      {line && <primitive object={line} />}
+      {arrow && (
+        <primitive
+          object={arrow}
+          position={points[points.length - 1]}
+          scale={0.1}
+          rotation-y={getRotationY()}
+        />
+      )}
+    </>
+  );
 };
 
 export default Index;

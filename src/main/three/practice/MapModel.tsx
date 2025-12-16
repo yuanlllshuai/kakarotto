@@ -3,8 +3,8 @@ import InstancedGridOfSquares from "../gltf/InstancedGridOfSquares";
 import GradientBox from "./component/GradientBox";
 import Labels from "./Labels";
 import Road from "./Road";
-import Line from "./component/Line";
-// import * as THREE from "three";
+import CenterBox from "./CenterBox";
+import FrontBox from "./FrontBox";
 
 const MapModel = memo(({ setMapLoaded, cameraEnd }: any) => {
   useEffect(() => {
@@ -14,42 +14,9 @@ const MapModel = memo(({ setMapLoaded, cameraEnd }: any) => {
   return (
     <>
       /** 中间盒子 */
-      <object3D position={[0, 2, 0]}>
-        <GradientBox
-          colors={["#007898", "#29a1c5"]}
-          borderColor={[142, 225, 245, 0.02]}
-        />
-        <object3D position={[0, 2.1, 0]} scale={0.2} scale-y={0.05}>
-          <GradientBox
-            colors={["#3ccadc", "#3ccadc"]}
-            opacity={0.7}
-            borderColor={[142, 225, 245, 0.02]}
-          />
-        </object3D>
-      </object3D>
-      <object3D
-        position={[0, 2, 2 * 1.305]}
-        scale-x={0.3}
-        rotation-y={Math.PI / 2}
-      >
-        <GradientBox
-          colors={["#09a6ae", "#0ba1a9"]}
-          hasHighlight={true}
-          opacity={0.2}
-          highlightProps={{
-            meshProps: {
-              "rotation-x": Math.PI / 2,
-              "position-y": 2,
-            },
-            planProps: { args: [4, 4] },
-            color: "#0ba1a9",
-            intensity: 1,
-          }}
-          borderColor={[124, 246, 254, 0.02]}
-          hasDashedLine={true}
-          hideBorderIndexes={[2, 5, 7]}
-        />
-      </object3D>
+      <CenterBox />
+      /** 前方盒子 */
+      <FrontBox />
       <object3D position={[-4.5, 2, 0]} scale-x={0.5}>
         <GradientBox
           colors={["#083b64", "#1c5586"]}
@@ -76,16 +43,6 @@ const MapModel = memo(({ setMapLoaded, cameraEnd }: any) => {
         <InstancedGridOfSquares begin={cameraEnd} />
       </object3D>
       <Labels />
-      <object3D position={[0, 4, 0]} scale-y={0.001}>
-        <Line
-          points={[
-            [0, 2, 0],
-            [0, 2, 1],
-            [1, 2, 1],
-          ]}
-          color="cyan"
-        />
-      </object3D>
     </>
   );
 });

@@ -68,6 +68,24 @@ const Index = () => {
         <div>CV被控变量</div>
         <div style={{ fontSize: 7, opacity: 0.6 }}>Controlled Variable</div>
       </Html>
+      <Html
+        position={[2, 3.5, 0]}
+        // rotation-x={-Math.PI / 2}
+        rotation-y={Math.PI / 2}
+        transform={true}
+        style={{
+          userSelect: "none",
+          color: "#5bd2e4",
+          fontSize: 14,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          opacity: 1,
+        }}
+      >
+        <div>窑APC控制器</div>
+        <div style={{ fontSize: 7, opacity: 0.6 }}>Kiln APC Controller</div>
+      </Html>
     </>
   );
 };
