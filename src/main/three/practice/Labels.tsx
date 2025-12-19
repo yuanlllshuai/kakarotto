@@ -12,7 +12,7 @@ const Index = () => {
         font={font as any}
       >
         AI
-        <meshPhongMaterial color="#7bfcfe" transparent={true} opacity={1.7} />
+        <meshPhongMaterial color="#7bfcfe" transparent={true} opacity={1} />
       </Text3D>
       <Html
         position={[0, 3.5, -3.5]}
@@ -32,7 +32,7 @@ const Index = () => {
         <div>DV干扰变量</div>
         <div style={{ fontSize: 7, opacity: 0.6 }}>Disturbance Variable</div>
       </Html>
-      <Html
+      {/* <Html
         position={[-3.5, 3.5, 0]}
         // rotation-x={-Math.PI / 2}
         rotation-y={Math.PI / 2}
@@ -49,7 +49,7 @@ const Index = () => {
       >
         <div>MV操作变量</div>
         <div style={{ fontSize: 7, opacity: 0.6 }}>Manipulate Variable</div>
-      </Html>
+      </Html> */}
       <Html
         position={[5.5, 3.5, 0]}
         // rotation-x={-Math.PI / 2}

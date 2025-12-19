@@ -35,7 +35,7 @@ const Index = ({
     const arrowVertices = new Float32Array([
       0,
       0,
-      0,
+      -0.2,
       0.5,
       0,
       0,
@@ -50,7 +50,7 @@ const Index = ({
       0,
       0,
       0,
-      0,
+      -0.2,
     ]);
     const arrowGeometry = new THREE.BufferGeometry();
     arrowGeometry.setAttribute(

@@ -19,7 +19,7 @@ type Props = {
 const MapModel = memo(
   ({
     colors,
-    lineWidth = 2,
+    lineWidth = 1,
     hasHighlight = false,
     highlightProps = {},
     opacity = 0.1,
@@ -274,39 +274,45 @@ const MapModel = memo(
     };
 
     useFrame(() => {
+      const maxPositionY = 0.26;
+      const maxOpacity = 0.3;
+      const stepY = 0.002;
+
       if (lineRef1.current && hasDashedLine) {
-        yRef1.current += 0.002;
-        oRef1.current = 0.3 - (yRef1.current / 0.2) * 0.3;
+        yRef1.current += stepY;
+        oRef1.current =
+          maxOpacity - (yRef1.current / maxPositionY) * maxOpacity;
         lineRef1.current.children.forEach((line: any) => {
           line.position.y = yRef1.current;
           line.material.opacity = oRef1.current;
         });
 
         // 当 lineRef1 动画进行到一半时，触发 lineRef2 动画
-        if (yRef1.current >= 0.1 && !isLine2Started.current) {
+        if (yRef1.current >= maxPositionY / 2 && !isLine2Started.current) {
           isLine2Started.current = true;
           yRef2.current = 0;
-          oRef2.current = 0.3;
+          oRef2.current = maxPositionY;
         }
 
         // lineRef2 动画逻辑
         if (isLine2Started.current) {
-          yRef2.current += 0.002;
-          oRef2.current = 0.3 - (yRef2.current / 0.2) * 0.3;
+          yRef2.current += stepY;
+          oRef2.current =
+            maxOpacity - (yRef2.current / maxPositionY) * maxOpacity;
           lineRef2.current.children.forEach((line: any) => {
             line.position.y = yRef2.current;
             line.material.opacity = oRef2.current;
           });
 
           // 重置 lineRef2 动画
-          if (yRef2.current > 0.2) {
+          if (yRef2.current > maxPositionY) {
             yRef2.current = 0;
             isLine2Started.current = false;
           }
         }
 
         // 重置 lineRef1 动画
-        if (yRef1.current > 0.2) {
+        if (yRef1.current > maxPositionY) {
           yRef1.current = 0;
         }
       }

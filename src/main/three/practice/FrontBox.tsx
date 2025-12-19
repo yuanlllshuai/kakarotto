@@ -12,6 +12,7 @@ const Index = () => {
           colors={["#09a6ae", "#0ba1a9"]}
           hasHighlight={true}
           opacity={0.2}
+          wallOpacity={0.2}
           highlightProps={{
             meshProps: {
               "rotation-x": Math.PI / 2,

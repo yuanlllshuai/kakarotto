@@ -4,6 +4,27 @@ import { Html } from "@react-three/drei";
 import Ring from "./component/Ring";
 
 const Index = () => {
+  const text = (
+    content: string = "",
+    position: [number, number],
+    color: string = "#00FFFF",
+    fontSize: number = 8
+  ) => {
+    return (
+      <Html
+        position={[position[0], 4, position[1]]}
+        rotation-x={-Math.PI / 2}
+        transform={true}
+        style={{
+          userSelect: "none",
+          color,
+          fontSize,
+        }}
+      >
+        <span>{content}</span>
+      </Html>
+    );
+  };
   return (
     <>
       <object3D position={[0, 2, 0]}>
@@ -20,7 +41,6 @@ const Index = () => {
           >
             <GradientBox
               colors={["#3ccadc", "#3ccadc"]}
-              opacity={0.7}
               borderColor={[142, 225, 245, 0.02]}
             />
           </object3D>
@@ -44,7 +64,6 @@ const Index = () => {
           <object3D position={[0, 0, 0]} scale={0.18} scale-y={0.05}>
             <GradientBox
               colors={["#3ccadc", "#3ccadc"]}
-              opacity={0.7}
               borderColor={[142, 225, 245, 0.02]}
             />
           </object3D>
@@ -71,7 +90,6 @@ const Index = () => {
           <object3D position={[0, 0, 0]} scale={0.18} scale-y={0.05}>
             <GradientBox
               colors={["#3ccadc", "#3ccadc"]}
-              opacity={0.7}
               borderColor={[142, 225, 245, 0.02]}
             />
           </object3D>
@@ -98,7 +116,6 @@ const Index = () => {
           <object3D position={[0, 0, 0]} scale={0.18} scale-y={0.05}>
             <GradientBox
               colors={["#3ccadc", "#3ccadc"]}
-              opacity={0.7}
               borderColor={[142, 225, 245, 0.02]}
             />
           </object3D>
@@ -121,7 +138,7 @@ const Index = () => {
             <div>矫正</div>
           </Html>
         </object3D>
-        <object3D position={[-0.5, 2.1, -0.3]}>
+        <object3D position={[-0.5, 2.1, -0.2]}>
           <object3D
             position={[0, 0, 0]}
             scale={0.34}
@@ -130,7 +147,6 @@ const Index = () => {
           >
             <GradientBox
               colors={["#015d80", "#015d80"]}
-              opacity={0.7}
               borderColor={[142, 225, 245, 0.02]}
             />
           </object3D>
@@ -150,7 +166,7 @@ const Index = () => {
             <div>优化操作控制</div>
           </Html>
         </object3D>
-        <object3D position={[-0.5, 2.1, 0.2]}>
+        <object3D position={[-0.5, 2.1, 0.3]}>
           <object3D
             position={[0, 0, 0]}
             scale={0.34}
@@ -159,7 +175,6 @@ const Index = () => {
           >
             <GradientBox
               colors={["#015d80", "#015d80"]}
-              opacity={0.7}
               borderColor={[142, 225, 245, 0.02]}
             />
           </object3D>
@@ -188,7 +203,6 @@ const Index = () => {
           >
             <GradientBox
               colors={["#015d80", "#015d80"]}
-              opacity={0.7}
               borderColor={[142, 225, 245, 0.02]}
             />
           </object3D>
@@ -217,7 +231,6 @@ const Index = () => {
           >
             <GradientBox
               colors={["#015d80", "#015d80"]}
-              opacity={0.7}
               borderColor={[142, 225, 245, 0.02]}
             />
           </object3D>
@@ -246,7 +259,6 @@ const Index = () => {
           >
             <GradientBox
               colors={["#015d80", "#015d80"]}
-              opacity={0.7}
               borderColor={[142, 225, 245, 0.02]}
             />
           </object3D>
@@ -342,13 +354,24 @@ const Index = () => {
         <Line
           points={[
             [0.15, 0, -1.1],
-            [0.15, 0, -0.11],
+            [0.15, 0, -0],
           ]}
           color="cyan"
         />
       </object3D>
       <Ring position={[-1.445, 4, -1.2]} />
       <Ring position={[1.55, 4, 0]} />
+      {text("y", [-1.75, -1.45], "#d396f7", 5)}
+      {text("+", [-1.6, -1.4])}
+      {text("-", [-1.6, -1.0])}
+      {text("u", [0.15, -1.35], "#d396f7", 5)}
+      {text("y", [1.55, -1.45], "#d396f7", 5)}
+      {text("e", [1.65, 0.6], "#d396f7", 5)}
+      {text("y", [1.25, -0.2], "#d396f7", 5)}
+      {text("y", [-1, 0.9], "#d396f7", 5)}
+      {text("+", [1.4, -0.17])}
+      {text("-", [1.4, 0.15])}
+      {text("min J(K)", [-0.5, -0.65], "#d396f7", 5)}
     </>
   );
 };
