@@ -1,6 +1,5 @@
 import GradientBox from "./component/GradientBox";
-import { Text3D } from "@react-three/drei";
-import font from "@/fonts/Inter_Bold.json";
+import Label from "./component/Label";
 
 const Index = () => {
   return (
@@ -22,17 +21,10 @@ const Index = () => {
           emissive={[255, 0, 0]}
         />
       </mesh>
-      {/* MV操作变量 */}
-      <Text3D
-        rotation-y={Math.PI / 2}
-        position={[-3.5, 3.5, 1.3]}
-        height={0.001}
-        size={0.2}
-        font={font as any}
-      >
-        Manipulate Variable
-        <meshBasicMaterial color="#76add3" transparent={true} opacity={0.8} />
-      </Text3D>
+      <Label
+        position={[-3.5, 3.6, 0]}
+        content={["MV操作变量", "Manipulate Variable"]}
+      />
     </>
   );
 };
