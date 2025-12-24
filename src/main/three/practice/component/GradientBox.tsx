@@ -5,7 +5,7 @@ import Highlight, { HighlightProps } from "./Highlight";
 import { useFrame } from "@react-three/fiber";
 
 type Props = {
-  colors: [string, string];
+  colors: [string, string] | [string];
   lineWidth?: number;
   hasHighlight?: boolean;
   highlightProps?: HighlightProps;
@@ -14,6 +14,7 @@ type Props = {
   hasDashedLine?: boolean;
   borderColor?: [number, number, number, number];
   hideBorderIndexes?: number[];
+  isGradient?: boolean;
 };
 
 const MapModel = memo(
@@ -27,6 +28,7 @@ const MapModel = memo(
     hasDashedLine = false,
     borderColor = [12, 23, 55, 0.1],
     hideBorderIndexes = [],
+    isGradient = true,
   }: Props) => {
     const [plane, setPlane] = useState<any>(null);
     const [walls, setWalls] = useState<any[]>([]);
@@ -157,7 +159,7 @@ const MapModel = memo(
       };
 
       const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-      const material = new THREE.ShaderMaterial({
+      const shaderMaterial = new THREE.ShaderMaterial({
         uniforms: {
           cornerRadius: { value: 0.1 }, //  默认圆角半径更小（0.1）
           center: { value: new THREE.Vector2(-1, -1) }, // 默认中心点为 (0, 0)
@@ -168,46 +170,54 @@ const MapModel = memo(
           uAlpha: { value: opacity },
         },
         vertexShader: `
-      varying vec2 vUv;
-      void main() {
-        vUv = uv;
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }
-    `,
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
         fragmentShader: `
-      uniform vec2 center;
-      uniform float innerRadius;
-      uniform float outerRadius;
-      uniform float cornerRadius;
-      uniform vec3 innerColor;
-      uniform vec3 outerColor;
-      varying vec2 vUv;
-      uniform float uAlpha;
+          uniform vec2 center;
+          uniform float innerRadius;
+          uniform float outerRadius;
+          uniform float cornerRadius;
+          uniform vec3 innerColor;
+          uniform vec3 outerColor;
+          varying vec2 vUv;
+          uniform float uAlpha;
 
-      void main() {
-        // 将 UV 映射到 [-1, 1] 范围
-        vec2 uv = (vUv - 0.5) * 2.0;
+          void main() {
+            // 将 UV 映射到 [-1, 1] 范围
+            vec2 uv = (vUv - 0.5) * 2.0;
 
-        // 计算到中心点的偏移
-        vec2 offsetUV = uv - center;
+            // 计算到中心点的偏移
+            vec2 offsetUV = uv - center;
 
-        // 计算到圆角正方形边界的距离
-        vec2 d = abs(offsetUV) - vec2(1.0);
-        float dist = length(max(vec2(0.0), d)) - cornerRadius;
+            // 计算到圆角正方形边界的距离
+            vec2 d = abs(offsetUV) - vec2(1.0);
+            float dist = length(max(vec2(0.0), d)) - cornerRadius;
 
-        // 颜色渐变：innerColor → outerColor
-        float t = smoothstep(innerRadius, outerRadius, dist);
-        vec3 color = mix(innerColor, outerColor, t);
+            // 颜色渐变：innerColor → outerColor
+            float t = smoothstep(innerRadius, outerRadius, dist);
+            vec3 color = mix(innerColor, outerColor, t);
 
-        gl_FragColor = vec4(color, 0.3 + uAlpha);
-      }
-    `,
+            gl_FragColor = vec4(color, 0.3 + uAlpha);
+          }
+        `,
         transparent: true,
         side: THREE.DoubleSide,
         // depthWrite: false,
         // depthTest: false,
       });
-      const mesh = new THREE.Mesh(geometry, material);
+      const material = new THREE.MeshBasicMaterial({
+        transparent: true,
+        color: colors[0],
+        opacity,
+      });
+      const mesh = new THREE.Mesh(
+        geometry,
+        isGradient ? shaderMaterial : material
+      );
       setPlane(mesh);
     };
 
@@ -238,7 +248,7 @@ const MapModel = memo(
       const material = new THREE.ShaderMaterial({
         uniforms: {
           innerColor: { value: new THREE.Color(colors[0]) },
-          outerColor: { value: new THREE.Color(colors[1]) },
+          outerColor: { value: new THREE.Color(colors[1] || colors[0]) },
           uAlpha: { value: wallOpacity },
         },
         vertexShader: `
