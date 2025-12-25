@@ -65,9 +65,6 @@ const Index = ({
             float highlightWidth = 0.4;
             float distance = abs(uv.y - highlightPosition);
             highlight = 1.0 - smoothstep(0.0, highlightWidth, distance);
-          } else {
-            // 后 2 秒：高光完全消失
-            highlight = 0.0;
           }
 
           // 默认颜色为透明，高光颜色和亮度由 uniforms 控制
