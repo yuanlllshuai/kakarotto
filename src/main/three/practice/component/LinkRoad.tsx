@@ -18,6 +18,51 @@ const Index = () => {
   });
 
   const createArrow = () => {
+    const start = -7.5;
+    const end = 7.5;
+    const border1 = 1.15;
+    const border2 = -border1;
+    const width = 0.07;
+    const line1 = [
+      -border1,
+      0,
+      start,
+      -(border1 - width),
+      0,
+      start,
+      -border1,
+      0,
+      end,
+      -border1,
+      0,
+      end,
+      -(border1 - width),
+      0,
+      end,
+      -(border1 - width),
+      0,
+      start,
+    ];
+    const line2 = [
+      -border2,
+      0,
+      start,
+      -(border2 - width),
+      0,
+      start,
+      -border2,
+      0,
+      end,
+      -border2,
+      0,
+      end,
+      -(border2 - width),
+      0,
+      end,
+      -(border2 - width),
+      0,
+      start,
+    ];
     const basePoints = [
       0,
       0,
@@ -38,7 +83,7 @@ const Index = () => {
       0,
       0.2,
     ];
-    const allPoints: number[] = [];
+    const allPoints: number[] = [...line1, ...line2];
     const min = -6;
     const max = 5;
     const num = 5;
@@ -66,7 +111,7 @@ const Index = () => {
     const uvs: number[] = [];
     for (let i = 0; i < allPoints.length / 3; i++) {
       const x = allPoints[i * 3];
-      const y = allPoints[i * 3 + 2] / (7.3 + Math.sqrt(3) / 2) + 1;
+      const y = allPoints[i * 3 + 2] / (Math.abs(start) + Math.sqrt(3) / 2) + 1;
       uvs.push(x, y);
     }
     arrowGeometry.setAttribute(
