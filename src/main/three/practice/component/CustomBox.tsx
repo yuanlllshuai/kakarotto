@@ -56,7 +56,7 @@ const Index = () => {
       side: THREE.DoubleSide,
       depthTest: true,
       depthWrite: true,
-      ...(isBloom ? { emissive: color, emissiveIntensity: 0.5 } : {}),
+      ...(isBloom ? { emissive: color, emissiveIntensity: 10 } : {}),
     });
     const mesh = new THREE.Mesh(geometry, material);
 
@@ -88,6 +88,7 @@ const Index = () => {
       borderColor: "#FFF",
       depth: 0.8,
       isBloom: true,
+      opacity: 1,
     });
     return object;
   };
