@@ -28,24 +28,24 @@ const Index = () => {
   });
   return (
     <>
-      <object3D position={[-4.5, 2, 0]} scale-x={0.5}>
+      <object3D position={[4.5, 2, 0]} scale-x={0.5}>
         <GradientBox
           colors={["#083b64", "#1c5586"]}
           hasDashedLine={true}
           borderColor={[175, 211, 248, 0.01]}
         />
       </object3D>
-      <object3D ref={boxRef} position={[-4.5, 4.5, 0]}>
+      <Label
+        position={[5.5, 3.6, 0]}
+        content={["CV被控变量", "Controlled Variable"]}
+      />
+      <object3D ref={boxRef} position={[4.5, 4.5, 0]}>
         {[-1.2, -0.4, 0.4, 1.2].map((i) => (
           <object3D key={`${i}`} position={[0, 0, i]}>
             <CustomBox />
           </object3D>
         ))}
       </object3D>
-      <Label
-        position={[-3.5, 3.6, 0]}
-        content={["MV操作变量", "Manipulate Variable"]}
-      />
     </>
   );
 };

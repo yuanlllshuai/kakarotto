@@ -2,6 +2,7 @@ import GradientBox from "./component/GradientBox";
 import Line from "./component/Line";
 import { Html } from "@react-three/drei";
 import Ring from "./component/Ring";
+import Label from "./component/Label";
 
 const Index = () => {
   const text = (
@@ -213,6 +214,11 @@ const Index = () => {
       {text("+", [1.4, -0.17])}
       {text("-", [1.4, 0.15])}
       {text("min J(K)", [-0.5, -0.65], "#d396f7", 5)}
+      <Label
+        position={[2, 3.6, 0]}
+        content={["窑APC控制器", "Kiln APC Controller"]}
+        color="#5bd2e4"
+      />
     </>
   );
 };
