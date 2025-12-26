@@ -54,8 +54,8 @@ const Index = () => {
       transparent: true,
       opacity,
       side: THREE.DoubleSide,
-      depthTest: false,
-      depthWrite: false,
+      depthTest: true,
+      depthWrite: true,
       ...(isBloom ? { emissive: color, emissiveIntensity: 0.5 } : {}),
     });
     const mesh = new THREE.Mesh(geometry, material);
@@ -65,6 +65,8 @@ const Index = () => {
     const lineMaterial = new THREE.LineBasicMaterial({
       color: borderColor,
       linewidth: 1,
+      depthTest: false,
+      depthWrite: false,
     });
     const line = new THREE.LineSegments(edges, lineMaterial);
     const object3D = new THREE.Object3D();
