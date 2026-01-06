@@ -5,3 +5,4 @@ export { default as ThreeMapPlane } from "./map-plane";
 export { default as ThreeShader } from "./shader";
 export { default as ThreeProvinceMap } from "./province-map";
 export { default as ThreePractive } from "./practice";
+export { default as ThreePractive2 } from "./practice2";
