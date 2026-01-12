@@ -6,6 +6,8 @@ import { useFrame } from "@react-three/fiber";
 import { RoundedBox as Ball } from "@react-three/drei";
 import Model1 from "./components/Model1";
 
+const linrOffset = 1;
+
 const points: [number, number, number][] = [
   [-2.4, 5, 1.4],
   [-0.8, 5, 1.4],
@@ -35,6 +37,7 @@ const Index = () => {
   const [lines, setLines] = useState<THREE.Mesh[]>([]);
   const [animationLines, setAnimationLines] = useState<THREE.Mesh[]>([]);
   const lineRef = useRef<any>(null);
+  const countRef = useRef(0);
 
   useEffect(() => {
     const lineArr = points.map((i) => createLine(i, false));
@@ -46,7 +49,7 @@ const Index = () => {
 
   const createLine = (points: [number, number, number], isBloom: boolean) => {
     const vertices: THREE.Vector3[] = [
-      new THREE.Vector3(...points),
+      new THREE.Vector3(points[0], 4.78, points[2]),
       new THREE.Vector3(0, 6.8, 0.4),
     ];
     const smoothCurve = new THREE.CatmullRomCurve3(vertices, false);
@@ -82,8 +85,10 @@ const Index = () => {
     context.fillStyle = gradient;
     context.fillRect(0, 0, 1, 100);
     const texture: any = new THREE.CanvasTexture(canvas);
-    const repeatY = 1; // 根据线的长度设置重复次数
-    texture.repeat.set(0, repeatY);
+    // const repeatY = 1; // 根据线的长度设置重复次数
+    // texture.repeat.set(0, repeatY);
+    texture.offset.y = -linrOffset; // 初始偏移量
+    texture.repeat.set(0, 0.5); // 防止重复
     texture.wrapS = THREE.RepeatWrapping; // 防止拉伸
     texture.wrapT = THREE.RepeatWrapping; // 防止拉伸
     texture.rotation = Math.PI / 2;
@@ -92,9 +97,9 @@ const Index = () => {
       side: THREE.DoubleSide,
       transparent: true,
       depthWrite: false,
-      depthTest: false,
+      depthTest: true,
       emissive: isBloom ? "#fda36b" : "#FF6302",
-      emissiveIntensity: isBloom ? 10 : 0.5,
+      emissiveIntensity: isBloom ? 2 : 0.5,
     });
     const tubeMesh = new THREE.Mesh(tubeGeometry, material);
     return tubeMesh;
@@ -102,10 +107,15 @@ const Index = () => {
 
   useFrame(() => {
     if (lineRef.current) {
-      // lineRef.current.offset.y += 0.03;
-      lineRef.current.children.forEach((i: any) => {
-        i.material.map.offset.y += 0.01;
-      });
+      countRef.current += 0.008;
+
+      if (parseInt(countRef.current + "") % 2 === 0) {
+        lineRef.current.children.forEach((i: any) => {
+          // i.material.map.offset.y += 0.01;
+          i.material.map.offset.y =
+            -linrOffset + (countRef.current % linrOffset);
+        });
+      }
     }
   });
 
@@ -120,9 +130,9 @@ const Index = () => {
         animationBorderColor="#FF6302"
         borderColor="#FFF"
       />
-      {points.map((i) => (
+      {points.map((i, index) => (
         <object3D position={[i[0], 4.38, i[2]]} key={i.join(",")} scale={1.2}>
-          <Model1 />
+          <Model1 index={index} />
         </object3D>
       ))}
       {lines.map((i, index) => (

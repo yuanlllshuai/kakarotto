@@ -17,7 +17,7 @@ type Props = {
 
 const Index = memo(
   ({
-    topColor = ["#3F3D3C", "#3F3D3C"],
+    topColor = ["#494848", "#3F3D3C"],
     wallColor,
     transform = {},
     wallOffset = 0,
@@ -96,53 +96,48 @@ const Index = memo(
       // });
       const topMaterial = new THREE.ShaderMaterial({
         uniforms: {
-          cornerRadius: { value: 0.1 }, //  默认圆角半径更小（0.1）
-          center: { value: new THREE.Vector2(-1, -1) }, // 默认中心点为 (0, 0)
-          innerRadius: { value: 1.6 }, // 内正方形半径（白色区域）
-          outerRadius: { value: 3.8 }, // 外正方形半径（红色区域）
-          innerColor: { value: new THREE.Color(topColor[0]) }, // 默认内颜色
-          outerColor: { value: new THREE.Color(topColor[1]) }, // 默认外颜色
+          center: { value: new THREE.Vector2(0, 0) }, // 渐变中心点
+          innerRadius: { value: 0.5 }, // 内部颜色半径
+          outerRadius: { value: 1.0 }, // 外部颜色半径
+          innerColor: { value: new THREE.Color(topColor[0]) },
+          outerColor: { value: new THREE.Color(topColor[1]) },
           uAlpha: { value: 1 },
         },
         vertexShader: `
-                varying vec2 vUv;
-                void main() {
-                  vUv = uv;
-                  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                }
-              `,
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
         fragmentShader: `
-                uniform vec2 center;
-                uniform float innerRadius;
-                uniform float outerRadius;
-                uniform float cornerRadius;
-                uniform vec3 innerColor;
-                uniform vec3 outerColor;
-                varying vec2 vUv;
-                uniform float uAlpha;
-      
-                void main() {
-                  // 将 UV 映射到 [-1, 1] 范围
-                  vec2 uv = (vUv - 0.5) * 2.0;
-      
-                  // 计算到中心点的偏移
-                  vec2 offsetUV = uv - center;
-      
-                  // 计算到圆角正方形边界的距离
-                  vec2 d = abs(offsetUV) - vec2(1.0);
-                  float dist = length(max(vec2(0.0), d)) - cornerRadius;
-      
-                  // 颜色渐变：innerColor → outerColor
-                  float t = smoothstep(innerRadius, outerRadius, dist);
-                  vec3 color = mix(innerColor, outerColor, t);
-      
-                  gl_FragColor = vec4(color, 0.3 + uAlpha);
-                }
-              `,
-        // transparent: true,
+          uniform vec2 center;
+          uniform float innerRadius;
+          uniform float outerRadius;
+          uniform vec3 innerColor;
+          uniform vec3 outerColor;
+          varying vec2 vUv;
+          uniform float uAlpha;
+
+          void main() {
+            // 将 UV 映射到 [-1, 1] 范围
+            vec2 uv = (vUv - 0.5) * 2.0;
+
+            // 计算到中心点的距离
+            float dist = distance(uv, center);
+
+            // 使用 smoothstep 实现平滑渐变过渡
+            float t = smoothstep(innerRadius, outerRadius, dist);
+
+            // 混合颜色
+            vec3 color = mix(innerColor, outerColor, t);
+
+            gl_FragColor = vec4(color, uAlpha);
+          }
+        `,
         side: THREE.DoubleSide,
-        // depthWrite: true,
-        // depthTest: true,
+        // transparent: true,
+        // depthWrite: false,
       });
 
       const wallMaterial = new THREE.ShaderMaterial({

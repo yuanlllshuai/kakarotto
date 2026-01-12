@@ -98,7 +98,7 @@ function Index() {
             enableZoom={cameraEnd}
           />
           <ambientLight intensity={1} />
-          <directionalLight position={[20, 20, 20]} intensity={2} />
+          <directionalLight position={[20, 10, 2]} intensity={4} />
           <Suspense fallback={<></>}>
             <MapModel setMapLoaded={setMapLoaded} cameraEnd={cameraEnd} />
           </Suspense>
