@@ -40,7 +40,7 @@ function TexturedCube() {
   );
 }
 
-function Index() {
+export const Component = () => {
   const render = () => {
     return (
       <div className={styles.model}>
@@ -70,6 +70,4 @@ function Index() {
       <ScreenFull containerId="shader-learn-container">{render()}</ScreenFull>
     </div>
   );
-}
-
-export default Index;
+};

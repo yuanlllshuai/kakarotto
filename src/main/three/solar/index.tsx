@@ -4,7 +4,7 @@ import { useResize } from "@/utils/hooks";
 import styles from "./index.module.scss";
 import ScreenFull from "@/components/ScreenFull";
 
-const Index = () => {
+export const Component = () => {
   const domRef = useRef<any>(null);
   const lineRef = useRef<any>(null);
 
@@ -42,5 +42,3 @@ const Index = () => {
     </div>
   );
 };
-
-export default Index;

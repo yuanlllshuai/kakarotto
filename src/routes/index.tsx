@@ -4,44 +4,70 @@ import {
   createRoutesFromElements,
   Route,
 } from "react-router-dom";
-import Main from "@/main/index";
-import ErrorPage from "@/components/ErrorPage";
-import Index from "@/main/home";
-import {
-  // ThreeGltf,
-  ThreeLearn,
-  ThreeSolar,
-  ThreeMapPlane,
-  ThreeShader,
-  ThreeProvinceMap,
-  ThreePractive,
-  ThreePractive2,
-} from "@/main/three";
-import { CesiumFlight, CesiumBuilding } from "@/main/cesium";
-import Settings from "@/main/settings";
+// import Main from "@/main/index";
+import { Component } from "@/components/ErrorPage";
+// import Index from "@/main/home";
+// import {
+//   ThreeGltf,
+//   ThreeLearn,
+//   ThreeSolar,
+//   ThreeMapPlane,
+//   ThreeShader,
+//   ThreeProvinceMap,
+//   ThreePractive,
+//   ThreePractive2,
+// } from "@/main/three";
+// import { CesiumFlight, CesiumBuilding } from "@/main/cesium";
+// import Settings from "@/main/settings";
 
 const router = createHashRouter(
   createRoutesFromElements(
-    <Route path="/" element={<Main />} errorElement={<ErrorPage />}>
-      <Route errorElement={<ErrorPage />}>
-        <Route index element={<Index />}></Route>
+    <Route
+      path="/"
+      lazy={() => import("@/main/index")}
+      errorElement={<Component />}
+    >
+      <Route errorElement={<Component />}>
+        <Route index lazy={() => import("@/main/home")}></Route>
       </Route>
       <Route path="three">
-        <Route path="index" element={<ThreeLearn />} />
+        <Route path="index" lazy={() => import("@/main/three/learn/index")} />
         {/* <Route path="gltf" lazy={() => import("@/main/three/gltf/index")} /> */}
-        <Route path="solar" element={<ThreeSolar />} />
-        <Route path="map-plane" element={<ThreeMapPlane />} />
-        <Route path="shader" element={<ThreeShader />} />
-        <Route path="province-map" element={<ThreeProvinceMap />} />
-        <Route path="practice1" element={<ThreePractive />} />
-        <Route path="practice2" element={<ThreePractive2 />} />
+        <Route path="solar" lazy={() => import("@/main/three/solar/index")} />
+        <Route
+          path="map-plane"
+          lazy={() => import("@/main/three/map-plane/index")}
+        />
+        <Route path="shader" lazy={() => import("@/main/three/shader/index")} />
+        <Route
+          path="province-map"
+          lazy={() => import("@/main/three/province-map/index")}
+        />
+        <Route
+          path="practice1"
+          lazy={() => import("@/main/three/practice/index")}
+        />
+        <Route
+          path="practice2"
+          lazy={() => import("@/main/three/practice2/index")}
+        />
       </Route>
       <Route path="cesium">
-        <Route path="flight-tracker" element={<CesiumFlight />} />
-        <Route path="building" element={<CesiumBuilding />} />
+        <Route
+          path="flight-tracker"
+          lazy={() => import("@/main/cesium/flight-tracker/index")}
+        />
+        <Route
+          path="building"
+          lazy={() => import("@/main/cesium/building/index")}
+        />
       </Route>
-      <Route path="settings" element={<Settings />} />
-      <Route path="*" errorElement={<ErrorPage />} element={<ErrorPage />} />
+      <Route path="settings" lazy={() => import("@/main/settings")} />
+      <Route
+        path="*"
+        errorElement={<Component />}
+        lazy={() => import("@/components/ErrorPage")}
+      />
     </Route>
   )
 );

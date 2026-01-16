@@ -25,7 +25,7 @@ import styles from "./index.module.scss";
 //     )
 // }
 
-const Index = () => {
+export const Component = () => {
   useEffect(() => {
     // axios.get('/api/v1/user/getChannel')
     //     .then(response => {
@@ -107,5 +107,3 @@ const Index = () => {
     </div>
   );
 };
-
-export default Index;

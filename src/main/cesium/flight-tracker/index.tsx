@@ -5,7 +5,7 @@ import ScreenFull from "@/components/ScreenFull";
 import { CesiumAccessToken } from "@/const";
 import { delay } from "@/utils";
 
-const Index = () => {
+export const Component = () => {
   useEffect(() => {
     init();
   }, []);
@@ -121,5 +121,3 @@ const Index = () => {
     </div>
   );
 };
-
-export default Index;

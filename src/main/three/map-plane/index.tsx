@@ -61,7 +61,7 @@ const MapModel = () => {
   );
 };
 
-function Index() {
+export const Component = () => {
   const render = () => {
     return (
       <div className={styles.model}>
@@ -104,6 +104,4 @@ function Index() {
       <ScreenFull containerId="map-plane-container">{render()}</ScreenFull>
     </div>
   );
-}
-
-export default Index;
+};

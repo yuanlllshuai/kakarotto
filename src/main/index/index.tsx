@@ -8,7 +8,7 @@ import styles from "./index.module.scss";
 import Bg from "@/components/Bg";
 import Header from "../header";
 
-function App() {
+export const Component = () => {
   // const data: any = useLoaderData();
   // const navigation = useNavigation();
 
@@ -41,6 +41,4 @@ function App() {
       </div>
     </Bg>
   );
-}
-
-export default App;
+};

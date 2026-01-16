@@ -5,7 +5,7 @@ import styles from "./index.module.scss";
 import { Segmented } from "antd";
 import ScreenFull from "@/components/ScreenFull";
 
-const Index = () => {
+export const Component = () => {
   const domRef = useRef<any>(null);
   const boxRef = useRef<any>(null);
   const [lightType, setLightType] = useState<number>(0);
@@ -66,5 +66,3 @@ const Index = () => {
     </div>
   );
 };
-
-export default Index;

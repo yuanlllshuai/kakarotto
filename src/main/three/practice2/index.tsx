@@ -64,7 +64,7 @@ const Camera = memo(
   }
 );
 
-function Index() {
+export const Component = () => {
   const [mapLoaded, setMapLoaded] = useState<boolean>(false);
   const [cameraEnd, setCameraEnd] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
@@ -126,6 +126,4 @@ function Index() {
       )}
     </div>
   );
-}
-
-export default Index;
+};

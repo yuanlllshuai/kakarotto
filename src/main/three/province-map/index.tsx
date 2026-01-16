@@ -72,7 +72,7 @@ type Prvince = {
   name: string;
 };
 
-function Index() {
+export const Component = () => {
   const [prvinces, setPrvinces] = useState<Prvince[]>([]);
   const [prvince, setPrvince] = useState<string>("");
   const [name, setName] = useState<string>("");
@@ -203,6 +203,4 @@ function Index() {
       <AnimateCard begin={lastAnimationEnd} />
     </div>
   );
-}
-
-export default Index;
+};
