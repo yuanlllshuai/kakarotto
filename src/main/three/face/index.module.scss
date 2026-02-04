@@ -1,0 +1,27 @@
+.container {
+    height: 100%;
+    align-items: center;
+    position: relative;
+}
+
+.loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%
+}
+
+.model {
+    height: 100%;
+    transition: opacity 0.5s;
+}
+
+.img{
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1;
+  width: 200px;
+  height: 200px
+}

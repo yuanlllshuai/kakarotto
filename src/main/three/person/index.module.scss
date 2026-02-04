@@ -1,0 +1,28 @@
+.container {
+    height: 100%;
+    align-items: center;
+    position: relative;
+}
+
+.loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%
+}
+
+.model {
+    height: 100%;
+    transition: opacity 0.5s;
+}
+
+.btn {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 999;
+}

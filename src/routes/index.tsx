@@ -51,6 +51,8 @@ const router = createHashRouter(
           path="practice2"
           lazy={() => import("@/main/three/practice2/index")}
         />
+        <Route path="person" lazy={() => import("@/main/three/person/index")} />
+        <Route path="face" lazy={() => import("@/main/three/face/index")} />
       </Route>
       <Route path="cesium">
         <Route
@@ -68,8 +70,8 @@ const router = createHashRouter(
         errorElement={<Component />}
         lazy={() => import("@/components/ErrorPage")}
       />
-    </Route>
-  )
+    </Route>,
+  ),
 );
 
 // const router = createBrowserRouter([
