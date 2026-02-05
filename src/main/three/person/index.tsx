@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { useGLTF, OrbitControls, useProgress } from "@react-three/drei";
+import { useGLTF, useFBX, OrbitControls, useProgress } from "@react-three/drei";
 import styles from "./index.module.scss";
 import * as THREE from "three";
 import ScreenFull from "@/components/ScreenFull";
@@ -9,8 +9,14 @@ import { Progress, Button } from "antd";
 import { speechData } from "./const";
 
 function Person({ setMapInit, playInfo }: any) {
+  const actionFbx = useFBX(
+    "/gltf_models/actions/HandRaising.fbx",
+    // "https://models.readyplayer.me/6981acd86ac2615313a63e4f.glb?morphTargets=ARKit",
+  );
+  // console.log(fbx);
   const { scene } = useGLTF(
-    "https://models.readyplayer.me/6981acd86ac2615313a63e4f.glb?morphTargets=ARKit",
+    // "https://models.readyplayer.me/6981acd86ac2615313a63e4f.glb?morphTargets=ARKit",
+    "/gltf_models/person.glb",
   );
 
   const guiRef = useRef<any>();
@@ -20,6 +26,7 @@ function Person({ setMapInit, playInfo }: any) {
   const eyeRRef = useRef();
   const mixerRef1 = useRef<any>();
   const mixerRef2 = useRef<any>();
+  const mixerRef3 = useRef<any>();
   const playInfoRef = useRef<any>({});
 
   useEffect(() => {
@@ -98,7 +105,7 @@ function Person({ setMapInit, playInfo }: any) {
       }
       const clip = createAnimation(faceRef.current, speechData);
       const action = mixerRef1.current.clipAction(clip);
-      action.setLoop(THREE.LoopOnce);
+      // action.setLoop(THREE.LoopOnce);
       action.play();
     }
     if (playInfo.begin && toothRef.current) {
@@ -107,9 +114,23 @@ function Person({ setMapInit, playInfo }: any) {
       }
       const clip = createAnimation(toothRef.current, speechData);
       const action = mixerRef2.current.clipAction(clip);
-      action.setLoop(THREE.LoopOnce);
+      // action.setLoop(THREE.LoopOnce);
       action.play();
     }
+    if (playInfo.begin && toothRef.current) {
+      mixerRef3.current = new THREE.AnimationMixer(scene);
+      const action = mixerRef3.current.clipAction(actionFbx.animations[0]);
+      // action.setLoop(THREE.LoopOnce);
+      action.play();
+    }
+    // if (playInfo.begin && faceRef.current) {
+    //   if (!mixerRef1.current) {
+    //     mixerRef1.current = new THREE.AnimationMixer(faceRef.current);
+    //   }
+    //   const action = mixerRef1.current.clipAction(actionFbx.animations[0]);
+    //   action.setLoop(THREE.LoopOnce);
+    //   action.play();
+    // }
   }, [playInfo]);
 
   useFrame((_state, delta) => {
@@ -118,6 +139,9 @@ function Person({ setMapInit, playInfo }: any) {
     }
     if (mixerRef2.current && playInfoRef.current.begin) {
       mixerRef2.current.update(delta);
+    }
+    if (mixerRef3.current && playInfoRef.current.begin) {
+      mixerRef3.current.update(delta);
     }
   });
 
