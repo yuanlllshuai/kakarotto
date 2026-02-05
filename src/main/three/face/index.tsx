@@ -6,9 +6,10 @@ import * as THREE from "three";
 import ScreenFull from "@/components/ScreenFull";
 import { KTX2Loader } from "three-stdlib";
 import { GUI } from "lil-gui";
-import { Progress } from "antd";
+import { Progress, Button } from "antd";
+import { speechData, blendshapesMap } from "./const";
 
-function Face({ setMapInit }: any) {
+function Face({ setMapInit, playInfo }: any) {
   const { gl } = useThree();
   const ktx2Loader = new KTX2Loader();
   ktx2Loader.setTranscoderPath(
@@ -24,20 +25,15 @@ function Face({ setMapInit }: any) {
   );
 
   const guiRef = useRef<any>();
-  const faceRef = useRef();
+  const faceRef = useRef<THREE.Mesh>();
   const eyeLRef = useRef();
   const eyeRRef = useRef();
   const mixerRef = useRef<any>();
+  const playInfoRef = useRef<any>({});
 
   useEffect(() => {
     if (scene) {
-      const mesh = scene.children[0];
-      mixerRef.current = new THREE.AnimationMixer(mesh);
-      mixerRef.current.clipAction(animations[0]).play();
-      mixerRef.current.clipAction(animations[1]).play();
-      mixerRef.current.clipAction(animations[2]).play();
-      // mixerRef.current.clipAction(animations[3]).play();
-
+      console.log(scene, animations);
       scene.traverse((child: any) => {
         if (child.name.includes("mesh_2")) {
           faceRef.current = child;
@@ -71,8 +67,48 @@ function Face({ setMapInit }: any) {
     };
   }, [scene]);
 
+  const createAnimation = (mesh: THREE.Mesh, speechData: any) => {
+    const tracks: THREE.NumberKeyframeTrack[] = [];
+    const dictionary: any = mesh.morphTargetDictionary;
+
+    speechData.tracks.forEach((trackData: any) => {
+      const index = dictionary[blendshapesMap[trackData.name]];
+      if (index !== undefined) {
+        // 注意：属性路径必须指向 influences 数组的具体索引
+        const trackName = `.morphTargetInfluences[${index}]`;
+        tracks.push(
+          new THREE.NumberKeyframeTrack(
+            trackName,
+            trackData.times,
+            trackData.values,
+          ),
+        );
+      }
+    });
+
+    const clip = new THREE.AnimationClip(
+      speechData.name,
+      speechData.duration,
+      tracks,
+    );
+    return clip;
+  };
+
+  useEffect(() => {
+    playInfoRef.current = playInfo;
+    if (playInfo.begin && faceRef.current) {
+      if (!mixerRef.current) {
+        mixerRef.current = new THREE.AnimationMixer(faceRef.current);
+      }
+      const clip = createAnimation(faceRef.current, speechData);
+      const action = mixerRef.current.clipAction(clip);
+      action.setLoop(THREE.LoopOnce);
+      action.play();
+    }
+  }, [playInfo]);
+
   useFrame((_state, delta) => {
-    if (mixerRef.current) {
+    if (mixerRef.current && playInfoRef.current.begin) {
       mixerRef.current.update(delta);
     }
   });
@@ -90,10 +126,22 @@ function Face({ setMapInit }: any) {
 export const Component = () => {
   const { progress } = useProgress();
   const [mapInit, setMapInit] = useState<boolean>(false);
+  const [playInfo, setPlayInfo] = useState<any>({ begin: false });
 
   const render = () => {
     return (
       <div className={styles.model}>
+        <div className={styles.btns}>
+          <Button
+            onClick={() =>
+              setPlayInfo({
+                begin: true,
+              })
+            }
+          >
+            你好，我叫小明，请大家多多关照
+          </Button>
+        </div>
         <Canvas
           shadows
           camera={{ position: [0, 0, 4], near: 0.1, far: 1000 }}
@@ -106,7 +154,7 @@ export const Component = () => {
           <ambientLight intensity={1} />
           <pointLight position={[10, 10, 10]} decay={0} intensity={3} />
           <Suspense fallback={<></>}>
-            <Face setMapInit={setMapInit} />
+            <Face setMapInit={setMapInit} playInfo={playInfo} />
           </Suspense>
         </Canvas>
       </div>

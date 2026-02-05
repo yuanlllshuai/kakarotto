@@ -17,11 +17,12 @@
     transition: opacity 0.5s;
 }
 
-.img{
+.btns{
   position: absolute;
   top: 10px;
   left: 10px;
   z-index: 1;
-  width: 200px;
-  height: 200px
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }

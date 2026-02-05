@@ -23,7 +23,7 @@ export const navConfig = [
       { key: "province-map", label: "省份地图", path: "/three/province-map" },
       { key: "practice1", label: "练习1", path: "/three/practice1" },
       { key: "practice2", label: "练习2", path: "/three/practice2" },
-      // { key: "person", label: "数字人", path: "/three/person" },
+      { key: "person", label: "数字人", path: "/three/person" },
       { key: "face", label: "人脸", path: "/three/face" },
     ],
   },

@@ -1,88 +1,123 @@
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { useGLTF, OrbitControls } from "@react-three/drei";
+import { useGLTF, OrbitControls, useProgress } from "@react-three/drei";
 import styles from "./index.module.scss";
 import * as THREE from "three";
 import ScreenFull from "@/components/ScreenFull";
-import { Button } from "antd";
+import { GUI } from "lil-gui";
+import { Progress, Button } from "antd";
+import { speechData } from "./const";
 
-function TexturedCube({ begin }: { begin: boolean }) {
+function Person({ setMapInit, playInfo }: any) {
   const { scene } = useGLTF(
-    "https://models.readyplayer.me/6981acd86ac2615313a63e4f.glb",
+    "https://models.readyplayer.me/6981acd86ac2615313a63e4f.glb?morphTargets=ARKit",
   );
 
-  const headRef = useRef<any>(null);
-  const teethRef = useRef<any>(null);
-  const analyserRef = useRef<any>(null);
+  const guiRef = useRef<any>();
+  const faceRef = useRef<THREE.Mesh>();
+  const toothRef = useRef<THREE.Mesh>();
+  const eyeLRef = useRef();
+  const eyeRRef = useRef();
+  const mixerRef1 = useRef<any>();
+  const mixerRef2 = useRef<any>();
+  const playInfoRef = useRef<any>({});
 
   useEffect(() => {
     if (scene) {
-      let headMesh, teethMesh;
-      // 1. 在模型加载后遍历找到这两个关键 Mesh
+      console.log(scene);
       scene.traverse((child: any) => {
-        if (child.name.includes("Head")) headMesh = child;
-        if (child.name.includes("Teeth")) teethMesh = child;
+        if (child.name === "Wolf3D_Head") {
+          faceRef.current = child;
+          const gui = new GUI();
+
+          const influences = child.morphTargetInfluences;
+          console.log(child);
+
+          for (const [key, value] of Object.entries(
+            child.morphTargetDictionary,
+          )) {
+            gui
+              .add(influences, value as number, 0, 1, 0.01)
+              .name(key.replace("blendShape1.", ""))
+              .listen(influences);
+          }
+          guiRef.current = gui;
+        }
+        if (child.name === "Wolf3D_Teeth") {
+          toothRef.current = child;
+        }
+        if (child.name.includes("EyeLeft")) {
+          eyeLRef.current = child;
+        }
+        if (child.name.includes("EyeRight")) {
+          eyeRRef.current = child;
+        }
       });
-      headRef.current = headMesh;
-      teethRef.current = teethMesh;
+      setMapInit(true);
     }
+    return () => {
+      guiRef.current.destroy();
+      guiRef.current = null;
+    };
   }, [scene]);
 
-  useEffect(() => {
-    if (begin) {
-      initAudio();
-    }
-  }, [begin]);
+  const createAnimation = (mesh: THREE.Mesh, speechData: any) => {
+    const tracks: THREE.NumberKeyframeTrack[] = [];
+    const dictionary: any = mesh.morphTargetDictionary;
 
-  const initAudio = async () => {
-    const fftSize = 128;
-    const listener = new THREE.AudioListener();
-    const audio = new THREE.Audio(listener);
-    const file = "/audio.wav";
-    const loader = new THREE.AudioLoader();
-    loader.load(file, function (buffer) {
-      audio.setBuffer(buffer);
-      audio.setLoop(true);
-      audio.setVolume(0.5);
-      audio.play();
-    });
-    analyserRef.current = new THREE.AudioAnalyser(audio, fftSize);
-  };
-
-  const setMouthOpen = (amount: number) => {
-    [headRef.current, teethRef.current].forEach((mesh) => {
-      if (!mesh) return;
-      // RPM 标准模型中张嘴的目标名称通常是 'jawOpen'
-      const index1 = mesh.morphTargetDictionary["mouthOpen"];
-      if (index1 !== undefined) {
-        const currentWeight = mesh.morphTargetInfluences[index1];
-        const speed = amount < currentWeight ? 0.3 : 0.15;
-        mesh.morphTargetInfluences[index1] = THREE.MathUtils.lerp(
-          currentWeight,
-          amount,
-          speed,
+    speechData.tracks.forEach((trackData: any) => {
+      const index = dictionary[trackData.name];
+      if (index !== undefined) {
+        // 注意：属性路径必须指向 influences 数组的具体索引
+        const trackName = `.morphTargetInfluences[${index}]`;
+        tracks.push(
+          new THREE.NumberKeyframeTrack(
+            trackName,
+            trackData.times,
+            trackData.values,
+          ),
         );
+      } else {
+        console.log(trackData.name);
       }
     });
+
+    const clip = new THREE.AnimationClip(
+      speechData.name,
+      speechData.duration,
+      tracks,
+    );
+    return clip;
   };
 
-  useFrame(() => {
-    if (analyserRef.current) {
-      const data = analyserRef.current.getFrequencyData(); // 获取频率数组 (通常256位)
-      let lowFreqSum = 0;
-      for (let i = 0; i < 30; i++) {
-        lowFreqSum += data[i];
+  useEffect(() => {
+    playInfoRef.current = playInfo;
+    if (playInfo.begin && faceRef.current) {
+      if (!mixerRef1.current) {
+        mixerRef1.current = new THREE.AnimationMixer(faceRef.current);
       }
-      let frequencyVolume = lowFreqSum / (24 * 255); // 归一化到 0-1
+      const clip = createAnimation(faceRef.current, speechData);
+      const action = mixerRef1.current.clipAction(clip);
+      action.setLoop(THREE.LoopOnce);
+      action.play();
+    }
+    if (playInfo.begin && toothRef.current) {
+      if (!mixerRef2.current) {
+        mixerRef2.current = new THREE.AnimationMixer(toothRef.current);
+      }
+      const clip = createAnimation(toothRef.current, speechData);
+      const action = mixerRef2.current.clipAction(clip);
+      action.setLoop(THREE.LoopOnce);
+      action.play();
+    }
+  }, [playInfo]);
 
-      // 2. 动态阈值门限：低于 0.1 直接归零，防止细微声音导致“含着嘴”
-      const threshold = 0.12;
-      let targetWeight = 0;
-      if (frequencyVolume > threshold) {
-        // 重新映射：将 [threshold, 1] 映射到 [0, 1] 增强动作幅度
-        targetWeight = (frequencyVolume - threshold) / (1 - threshold);
-      }
-      setMouthOpen(targetWeight);
+  useFrame((_state, delta) => {
+    if (mixerRef1.current && playInfoRef.current.begin) {
+      mixerRef1.current.update(delta);
+    }
+    if (mixerRef2.current && playInfoRef.current.begin) {
+      mixerRef2.current.update(delta);
     }
   });
 
@@ -97,17 +132,22 @@ function TexturedCube({ begin }: { begin: boolean }) {
 }
 
 export const Component = () => {
-  const [begin, setBegin] = useState<boolean>(false);
+  const { progress } = useProgress();
+  const [mapInit, setMapInit] = useState<boolean>(false);
+  const [playInfo, setPlayInfo] = useState<any>({ begin: false });
+
   const render = () => {
     return (
       <div className={styles.model}>
-        <div className={styles.btn}>
+        <div className={styles.btns}>
           <Button
-            onClick={() => {
-              setBegin(true);
-            }}
+            onClick={() =>
+              setPlayInfo({
+                begin: true,
+              })
+            }
           >
-            play
+            你好，我叫小明，请大家多多关照
           </Button>
         </div>
         <Canvas
@@ -117,12 +157,12 @@ export const Component = () => {
             background: new THREE.Color("rgb(2, 3, 34)"),
           }}
         >
-          <axesHelper scale={10} />
+          {/* <axesHelper scale={10} /> */}
           <OrbitControls makeDefault />
           <ambientLight intensity={1} />
           <pointLight position={[10, 10, 10]} decay={0} intensity={3} />
           <Suspense fallback={<></>}>
-            <TexturedCube begin={begin} />
+            <Person setMapInit={setMapInit} playInfo={playInfo} />
           </Suspense>
         </Canvas>
       </div>
@@ -130,8 +170,15 @@ export const Component = () => {
   };
 
   return (
-    <div className={styles.container} id="person-container">
-      <ScreenFull containerId="person-container">{render()}</ScreenFull>
+    <div className={styles.container} id="face-container">
+      {!mapInit && (
+        <div className={styles.loading}>
+          <div style={{ width: "80%" }}>
+            <Progress percent={progress} showInfo={false} />
+          </div>
+        </div>
+      )}
+      <ScreenFull containerId="face-container">{render()}</ScreenFull>
     </div>
   );
 };
