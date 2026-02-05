@@ -9,29 +9,28 @@ import { Progress, Button } from "antd";
 import { speechData } from "./const";
 
 function Person({ setMapInit, playInfo }: any) {
-  const actionFbx = useFBX(
-    "/gltf_models/actions/HandRaising.fbx",
-    // "https://models.readyplayer.me/6981acd86ac2615313a63e4f.glb?morphTargets=ARKit",
-  );
+  const handRaising = useFBX("/gltf_models/actions/HandRaising.fbx");
+  const standing = useFBX("/gltf_models/actions/Standing.fbx");
   // console.log(fbx);
   const { scene } = useGLTF(
     // "https://models.readyplayer.me/6981acd86ac2615313a63e4f.glb?morphTargets=ARKit",
     "/gltf_models/person.glb",
   );
 
+  console.log(standing);
+
   const guiRef = useRef<any>();
   const faceRef = useRef<THREE.Mesh>();
   const toothRef = useRef<THREE.Mesh>();
-  const eyeLRef = useRef();
-  const eyeRRef = useRef();
   const mixerRef1 = useRef<any>();
   const mixerRef2 = useRef<any>();
   const mixerRef3 = useRef<any>();
   const playInfoRef = useRef<any>({});
+  const standActionRef = useRef<any>();
+  const handActionRef = useRef<any>();
 
   useEffect(() => {
     if (scene) {
-      console.log(scene);
       scene.traverse((child: any) => {
         if (child.name === "Wolf3D_Head") {
           faceRef.current = child;
@@ -53,13 +52,8 @@ function Person({ setMapInit, playInfo }: any) {
         if (child.name === "Wolf3D_Teeth") {
           toothRef.current = child;
         }
-        if (child.name.includes("EyeLeft")) {
-          eyeLRef.current = child;
-        }
-        if (child.name.includes("EyeRight")) {
-          eyeRRef.current = child;
-        }
       });
+      beginStand();
       setMapInit(true);
     }
     return () => {
@@ -97,6 +91,45 @@ function Person({ setMapInit, playInfo }: any) {
     return clip;
   };
 
+  const beginStand = () => {
+    mixerRef3.current = new THREE.AnimationMixer(scene);
+    standActionRef.current = mixerRef3.current.clipAction(
+      standing.animations[0],
+    );
+    handActionRef.current = mixerRef3.current.clipAction(
+      handRaising.animations[0],
+    );
+    standActionRef.current.play();
+    handActionRef.current.setLoop(THREE.LoopOnce);
+    handActionRef.current.clampWhenFinished = true;
+  };
+
+  const playWave = () => {
+    handActionRef.current.reset();
+    handActionRef.current.enabled = true;
+    standActionRef.current.crossFadeTo(handActionRef.current, 0.4, true);
+    handActionRef.current.play();
+    const duration = handActionRef.current.getClip().duration; // 获取动画总时长
+    const fadeTime = 0.5; // 切回 Idle 的混成耗时
+    const leadTime = 0.2; // 提前量（秒）：在 Wave 结束前 0.2s 就开始切回
+
+    // 计算触发切回的延迟毫秒数
+    const delay = (duration - fadeTime - leadTime) * 1000;
+
+    setTimeout(
+      () => {
+        handActionRef.current.crossFadeTo(
+          standActionRef.current,
+          fadeTime,
+          true,
+        );
+        standActionRef.current.enabled = true;
+        standActionRef.current.play();
+      },
+      Math.max(0, delay),
+    );
+  };
+
   useEffect(() => {
     playInfoRef.current = playInfo;
     if (playInfo.begin && faceRef.current) {
@@ -105,7 +138,7 @@ function Person({ setMapInit, playInfo }: any) {
       }
       const clip = createAnimation(faceRef.current, speechData);
       const action = mixerRef1.current.clipAction(clip);
-      // action.setLoop(THREE.LoopOnce);
+      action.setLoop(THREE.LoopOnce);
       action.play();
     }
     if (playInfo.begin && toothRef.current) {
@@ -114,23 +147,12 @@ function Person({ setMapInit, playInfo }: any) {
       }
       const clip = createAnimation(toothRef.current, speechData);
       const action = mixerRef2.current.clipAction(clip);
-      // action.setLoop(THREE.LoopOnce);
+      action.setLoop(THREE.LoopOnce);
       action.play();
     }
-    if (playInfo.begin && toothRef.current) {
-      mixerRef3.current = new THREE.AnimationMixer(scene);
-      const action = mixerRef3.current.clipAction(actionFbx.animations[0]);
-      // action.setLoop(THREE.LoopOnce);
-      action.play();
+    if (playInfo.begin) {
+      playWave();
     }
-    // if (playInfo.begin && faceRef.current) {
-    //   if (!mixerRef1.current) {
-    //     mixerRef1.current = new THREE.AnimationMixer(faceRef.current);
-    //   }
-    //   const action = mixerRef1.current.clipAction(actionFbx.animations[0]);
-    //   action.setLoop(THREE.LoopOnce);
-    //   action.play();
-    // }
   }, [playInfo]);
 
   useFrame((_state, delta) => {
@@ -140,7 +162,7 @@ function Person({ setMapInit, playInfo }: any) {
     if (mixerRef2.current && playInfoRef.current.begin) {
       mixerRef2.current.update(delta);
     }
-    if (mixerRef3.current && playInfoRef.current.begin) {
+    if (mixerRef3.current) {
       mixerRef3.current.update(delta);
     }
   });
@@ -194,7 +216,7 @@ export const Component = () => {
   };
 
   return (
-    <div className={styles.container} id="face-container">
+    <div className={styles.container} id="person-container">
       {!mapInit && (
         <div className={styles.loading}>
           <div style={{ width: "80%" }}>
@@ -202,7 +224,9 @@ export const Component = () => {
           </div>
         </div>
       )}
-      <ScreenFull containerId="face-container">{render()}</ScreenFull>
+      <ScreenFull containerId="person-container" position="top-center">
+        {render()}
+      </ScreenFull>
     </div>
   );
 };
