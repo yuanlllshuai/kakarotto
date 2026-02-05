@@ -110,7 +110,7 @@ function Person({ setMapInit, playInfo }: any) {
     standActionRef.current.crossFadeTo(handActionRef.current, 0.4, true);
     handActionRef.current.play();
     const duration = handActionRef.current.getClip().duration; // 获取动画总时长
-    const fadeTime = 0.5; // 切回 Idle 的混成耗时
+    const fadeTime = 0.8; // 切回 Idle 的混成耗时
     const leadTime = 0.2; // 提前量（秒）：在 Wave 结束前 0.2s 就开始切回
 
     // 计算触发切回的延迟毫秒数
