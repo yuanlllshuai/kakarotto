@@ -17,8 +17,6 @@ function Person({ setMapInit, playInfo }: any) {
     "/gltf_models/person.glb",
   );
 
-  console.log(standing);
-
   const guiRef = useRef<any>();
   const faceRef = useRef<THREE.Mesh>();
   const toothRef = useRef<THREE.Mesh>();
@@ -31,14 +29,13 @@ function Person({ setMapInit, playInfo }: any) {
 
   useEffect(() => {
     if (scene) {
+      console.log(scene, standing);
+
       scene.traverse((child: any) => {
         if (child.name === "Wolf3D_Head") {
           faceRef.current = child;
           const gui = new GUI();
-
           const influences = child.morphTargetInfluences;
-          console.log(child);
-
           for (const [key, value] of Object.entries(
             child.morphTargetDictionary,
           )) {
@@ -51,6 +48,9 @@ function Person({ setMapInit, playInfo }: any) {
         }
         if (child.name === "Wolf3D_Teeth") {
           toothRef.current = child;
+        }
+        if (child.name === "Armature") {
+          console.log(child);
         }
       });
       beginStand();
@@ -111,7 +111,7 @@ function Person({ setMapInit, playInfo }: any) {
     handActionRef.current.play();
     const duration = handActionRef.current.getClip().duration; // 获取动画总时长
     const fadeTime = 0.8; // 切回 Idle 的混成耗时
-    const leadTime = 0.2; // 提前量（秒）：在 Wave 结束前 0.2s 就开始切回
+    const leadTime = 0.3; // 提前量（秒）：在 Wave 结束前 0.2s 就开始切回
 
     // 计算触发切回的延迟毫秒数
     const delay = (duration - fadeTime - leadTime) * 1000;
