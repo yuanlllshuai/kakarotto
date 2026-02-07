@@ -22,7 +22,7 @@ function Person({ setMapInit, playInfo }: any) {
     false,
     (loader) => {
       loader.register((parser: any) => new VRMLoaderPlugin(parser) as any);
-    },
+    }
     // "https://models.readyplayer.me/69857ef1378169941737bd42.glb",
   );
 
@@ -39,7 +39,7 @@ function Person({ setMapInit, playInfo }: any) {
   useEffect(() => {
     if (userData?.vrm?.scene) {
       console.log(userData, handRaising);
-      createVrmAnimationClip(standing.animations[0]);
+      createVrmAnimationClip(handRaising.animations[0]);
       // userData.vrm.humanoid.resetPose();
       // userData.vrm.scene.updateMatrixWorld(true);
       // userData.vrm.humanoid.resetRawPose();
@@ -47,27 +47,39 @@ function Person({ setMapInit, playInfo }: any) {
       // userData?.vrm?.scene.children[0].traverse((child: any) => {
       //   names.push(child.name);
       // });
-      // userData?.vrm?.scene.traverse((child: any) => {
-      //   if (child.name === "Face_(merged)(Clone)") {
-      //     faceRef.current = child;
-      //     const gui = new GUI();
+      let bone: any = null;
+      userData?.vrm?.scene.traverse((child: any) => {
+        if (child.name === "Root") {
+          bone = child;
+        }
+        // if (child.name === "Face_(merged)(Clone)") {
+        //   faceRef.current = child;
+        //   const gui = new GUI();
 
-      //     const influences = child.morphTargetInfluences;
+        //   const influences = child.morphTargetInfluences;
 
-      //     for (const [key, value] of Object.entries(
-      //       child.morphTargetDictionary,
-      //     )) {
-      //       gui
-      //         .add(influences, value as number, 0, 10, 0.1)
-      //         .name(key.replace("blendShape1.", ""))
-      //         .listen(influences);
-      //     }
-      //     guiRef.current = gui;
-      //   }
-      //   if (child.name === "Wolf3D_Teeth") {
-      //     toothRef.current = child;
+        //   for (const [key, value] of Object.entries(
+        //     child.morphTargetDictionary,
+        //   )) {
+        //     gui
+        //       .add(influences, value as number, 0, 10, 0.1)
+        //       .name(key.replace("blendShape1.", ""))
+        //       .listen(influences);
+        //   }
+        //   guiRef.current = gui;
+        // }
+      });
+      // const gui = new GUI();
+      // bone.traverse((child: any) => {
+      //   if (child.name && child.name !== "J_Bip_C_Hips") {
+      //     const influences = child.rotation;
+      //     gui
+      //       .add(influences, "y", -2 * Math.PI, 2 * Math.PI, 0.1)
+      //       .name(child.name)
+      //       .listen(influences);
       //   }
       // });
+      // guiRef.current = gui;
       // beginStand();
       setMapInit(true);
     }
@@ -91,16 +103,16 @@ function Person({ setMapInit, playInfo }: any) {
             new THREE.VectorKeyframeTrack(
               `${vrmNodeName}.${propertyName}`,
               track.times,
-              track.values,
-            ),
+              track.values
+            )
           );
         } else {
           tracks.push(
             new THREE.QuaternionKeyframeTrack(
               `${vrmNodeName}.${propertyName}`,
               track.times,
-              track.values,
-            ),
+              track.values
+            )
           );
         }
       } else {
@@ -110,13 +122,14 @@ function Person({ setMapInit, playInfo }: any) {
     const vrmClip = new THREE.AnimationClip(
       "vrmAnimation",
       animationClip.duration,
-      tracks,
+      tracks
     );
 
     // 5. 播放动画
     mixerRef3.current = new THREE.AnimationMixer(userData.vrm.scene);
     mixerRef3.current.clipAction(vrmClip).play();
-    console.log(vrmClip);
+    mixerRef3.current.update(0.0001);
+    // console.log(vrmClip);
   };
 
   const createAnimation = (mesh: THREE.Mesh, speechData: any) => {
@@ -132,8 +145,8 @@ function Person({ setMapInit, playInfo }: any) {
           new THREE.NumberKeyframeTrack(
             trackName,
             trackData.times,
-            trackData.values,
-          ),
+            trackData.values
+          )
         );
       } else {
         console.log(trackData.name);
@@ -143,7 +156,7 @@ function Person({ setMapInit, playInfo }: any) {
     const clip = new THREE.AnimationClip(
       speechData.name,
       speechData.duration,
-      tracks,
+      tracks
     );
     return clip;
   };
@@ -151,10 +164,10 @@ function Person({ setMapInit, playInfo }: any) {
   const beginStand = () => {
     mixerRef3.current = new THREE.AnimationMixer(userData.vrm.scene);
     standActionRef.current = mixerRef3.current.clipAction(
-      standing.animations[0],
+      standing.animations[0]
     );
     handActionRef.current = mixerRef3.current.clipAction(
-      handRaising.animations[0],
+      handRaising.animations[0]
     );
     standActionRef.current.play();
     handActionRef.current.setLoop(THREE.LoopOnce);
@@ -173,18 +186,11 @@ function Person({ setMapInit, playInfo }: any) {
     // 计算触发切回的延迟毫秒数
     const delay = (duration - fadeTime - leadTime) * 1000;
 
-    setTimeout(
-      () => {
-        handActionRef.current.crossFadeTo(
-          standActionRef.current,
-          fadeTime,
-          true,
-        );
-        standActionRef.current.enabled = true;
-        standActionRef.current.play();
-      },
-      Math.max(0, delay),
-    );
+    setTimeout(() => {
+      handActionRef.current.crossFadeTo(standActionRef.current, fadeTime, true);
+      standActionRef.current.enabled = true;
+      standActionRef.current.play();
+    }, Math.max(0, delay));
   };
 
   useEffect(() => {
