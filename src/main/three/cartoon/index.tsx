@@ -6,7 +6,7 @@ import * as THREE from "three";
 import ScreenFull from "@/components/ScreenFull";
 import { GUI } from "lil-gui";
 import { Progress, Button } from "antd";
-import { VRMLoaderPlugin } from "@pixiv/three-vrm";
+import { VRMLoaderPlugin, VRMUtils } from "@pixiv/three-vrm";
 import {
   createVRMAnimationClip,
   VRMAnimationLoaderPlugin,
@@ -47,6 +47,9 @@ function Person({ setMapInit, playInfo }: any) {
     },
   );
 
+  VRMUtils.removeUnnecessaryVertices(userData.vrm.scene);
+  VRMUtils.removeUnnecessaryJoints(userData.vrm.scene);
+
   const guiRef = useRef<any>();
 
   useEffect(() => {
@@ -59,6 +62,7 @@ function Person({ setMapInit, playInfo }: any) {
         if (child.name === "Root") {
           bone = child;
         }
+        child.frustumCulled = false;
       });
       const gui = new GUI();
       bone.traverse((child: any) => {
