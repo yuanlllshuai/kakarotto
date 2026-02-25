@@ -12,6 +12,7 @@ import {
   VRMAnimationLoaderPlugin,
   VRMLookAtQuaternionProxy,
 } from "@pixiv/three-vrm-animation";
+import { set } from "lodash";
 
 let waiting: any = null;
 let appearing: any = null;
@@ -54,9 +55,6 @@ function Person({ setMapInit, playInfo }: any) {
 
   useEffect(() => {
     if (userData?.vrm?.scene) {
-      setTimeout(() => {
-        createVrmAnimationClip();
-      }, 0);
       let bone: any = null;
       userData?.vrm?.scene.traverse((child: any) => {
         if (child.name === "Root") {
@@ -90,6 +88,9 @@ function Person({ setMapInit, playInfo }: any) {
       });
       guiRef.current = gui;
       setMapInit(true);
+      setTimeout(() => {
+        createVrmAnimationClip();
+      }, 0);
     }
     return () => {
       if (guiRef.current) {
@@ -189,10 +190,19 @@ export const Component = () => {
   const { progress } = useProgress();
   const [mapInit, setMapInit] = useState<boolean>(false);
   const [playInfo, setPlayInfo] = useState<any>({ begin: false });
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    if (mapInit) {
+      setTimeout(() => {
+        setShow(true);
+      }, 0);
+    }
+  }, [mapInit]);
 
   const render = () => {
     return (
-      <div className={styles.model}>
+      <div className={styles.model} style={{ opacity: show ? 1 : 0 }}>
         <div className={styles.btns}>
           <Button
             onClick={() =>
@@ -207,9 +217,9 @@ export const Component = () => {
         <Canvas
           shadows
           camera={{ position: [0, 0, 3], near: 0.1, far: 1000 }}
-          scene={{
-            background: new THREE.Color("rgb(2, 3, 34)"),
-          }}
+          // scene={{
+          //   background: new THREE.Color("rgba(34, 2, 20, 1)"),
+          // }}
         >
           {/* <axesHelper scale={10} /> */}
           <OrbitControls makeDefault />

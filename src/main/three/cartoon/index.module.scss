@@ -27,3 +27,12 @@
   flex-direction: column;
   gap: 8px;
 }
+.hide{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 80%;
+  height: 100%;
+  background-color: #FFF;
+  z-index: 1;
+}
