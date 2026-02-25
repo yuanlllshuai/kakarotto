@@ -5,18 +5,22 @@ import styles from "./index.module.scss";
 import * as THREE from "three";
 import ScreenFull from "@/components/ScreenFull";
 import { GUI } from "lil-gui";
-import { Progress } from "antd";
+import { Progress, Button } from "antd";
 import { VRMLoaderPlugin } from "@pixiv/three-vrm";
 import {
   createVRMAnimationClip,
   VRMAnimationLoaderPlugin,
   VRMLookAtQuaternionProxy,
 } from "@pixiv/three-vrm-animation";
-// import { GLTFLoader } from "three-stdlib";
-let waiting: any = null;
 
-function Person({ setMapInit }: any) {
+let waiting: any = null;
+let appearing: any = null;
+let liked: any = null;
+
+function Person({ setMapInit, playInfo }: any) {
   const mixerRef = useRef<any>();
+  const waitingActionRef = useRef<any>();
+  const likedActionRef = useRef<any>();
 
   const { userData } = useGLTF(
     "/gltf_models/girl.vrm",
@@ -30,9 +34,16 @@ function Person({ setMapInit }: any) {
       loader
         .loadAsync("/gltf_models/actions/waiting.vrma")
         .then((animation) => {
-          console.log(animation);
           waiting = animation.userData.vrmAnimations[0];
         });
+      loader
+        .loadAsync("/gltf_models/actions/appearing.vrma")
+        .then((animation) => {
+          appearing = animation.userData.vrmAnimations[0];
+        });
+      loader.loadAsync("/gltf_models/actions/liked.vrma").then((animation) => {
+        liked = animation.userData.vrmAnimations[0];
+      });
     },
   );
 
@@ -40,10 +51,9 @@ function Person({ setMapInit }: any) {
 
   useEffect(() => {
     if (userData?.vrm?.scene) {
-      console.log(userData);
       setTimeout(() => {
         createVrmAnimationClip();
-      }, 4000);
+      }, 0);
       let bone: any = null;
       userData?.vrm?.scene.traverse((child: any) => {
         if (child.name === "Root") {
@@ -91,9 +101,65 @@ function Person({ setMapInit }: any) {
     userData.vrm.scene.add(lookAtQuatProxy);
 
     mixerRef.current = new THREE.AnimationMixer(userData.vrm.scene);
-    const clip = createVRMAnimationClip(waiting, userData.vrm);
-    mixerRef.current.clipAction(clip).play();
+
+    const appearingClip = createVRMAnimationClip(appearing, userData.vrm);
+    const appearingAction = mixerRef.current.clipAction(appearingClip);
+    appearingAction.setLoop(THREE.LoopOnce);
+    appearingAction.clampWhenFinished = true;
+    appearingAction.play();
+
+    mixerRef.current.addEventListener("finished", (e: any) => {
+      // 如果你有多个动画，可以根据名称逻辑处理
+      if (e.action === appearingAction) {
+        // const waitingClip = createVRMAnimationClip(waiting, userData.vrm);
+        // const waitingAction = mixerRef.current.clipAction(waitingClip);
+        // waitingAction.play();
+        playWaiting(appearingAction);
+      }
+    });
   };
+
+  const playWaiting = (appearingAction: any) => {
+    const waitingClip = createVRMAnimationClip(waiting, userData.vrm);
+    const waitingAction = mixerRef.current.clipAction(waitingClip);
+    waitingActionRef.current = waitingAction;
+    waitingAction.reset();
+    waitingAction.enabled = true;
+    appearingAction.crossFadeTo(waitingAction, 0.2, true);
+    waitingAction.play();
+
+    const likedClip = createVRMAnimationClip(liked, userData.vrm);
+    const likedAction = mixerRef.current.clipAction(likedClip);
+    likedActionRef.current = likedAction;
+  };
+
+  useEffect(() => {
+    if (playInfo.begin) {
+      likedActionRef.current.reset();
+      likedActionRef.current.enabled = true;
+      waitingActionRef.current.crossFadeTo(likedActionRef.current, 0.4, true);
+      likedActionRef.current.play();
+      const duration = likedActionRef.current.getClip().duration; // 获取动画总时长
+      const fadeTime = 0.8; // 切回 Idle 的混成耗时
+      const leadTime = 0.3; // 提前量（秒）：在 Wave 结束前 0.2s 就开始切回
+
+      // 计算触发切回的延迟毫秒数
+      const delay = (duration - fadeTime - leadTime) * 1000;
+
+      setTimeout(
+        () => {
+          likedActionRef.current.crossFadeTo(
+            waitingActionRef.current,
+            fadeTime,
+            true,
+          );
+          waitingActionRef.current.enabled = true;
+          waitingActionRef.current.play();
+        },
+        Math.max(0, delay),
+      );
+    }
+  }, [playInfo]);
 
   useFrame((_state, delta) => {
     if (mixerRef.current) {
@@ -111,7 +177,6 @@ function Person({ setMapInit }: any) {
       object={userData.vrm.scene}
       scale={2}
       position={[0, -2, 0]}
-      onClick={(e: any) => e.stopPropagation()}
     ></primitive>
   );
 }
@@ -119,10 +184,22 @@ function Person({ setMapInit }: any) {
 export const Component = () => {
   const { progress } = useProgress();
   const [mapInit, setMapInit] = useState<boolean>(false);
+  const [playInfo, setPlayInfo] = useState<any>({ begin: false });
 
   const render = () => {
     return (
       <div className={styles.model}>
+        <div className={styles.btns}>
+          <Button
+            onClick={() =>
+              setPlayInfo({
+                begin: true,
+              })
+            }
+          >
+            行礼
+          </Button>
+        </div>
         <Canvas
           shadows
           camera={{ position: [0, 0, 4], near: 0.1, far: 1000 }}
@@ -135,7 +212,7 @@ export const Component = () => {
           <ambientLight intensity={3} />
           <pointLight position={[10, 10, 10]} decay={0} intensity={1} />
           <Suspense fallback={<></>}>
-            <Person setMapInit={setMapInit} />
+            <Person setMapInit={setMapInit} playInfo={playInfo} />
           </Suspense>
         </Canvas>
       </div>
