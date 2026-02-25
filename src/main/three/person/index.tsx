@@ -50,7 +50,7 @@ function Person({ setMapInit, playInfo }: any) {
           toothRef.current = child;
         }
         if (child.name === "Armature") {
-          console.log(child);
+          console.log(111);
         }
       });
       beginStand();
