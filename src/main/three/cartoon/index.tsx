@@ -202,14 +202,14 @@ export const Component = () => {
         </div>
         <Canvas
           shadows
-          camera={{ position: [0, 0, 4], near: 0.1, far: 1000 }}
+          camera={{ position: [0, 0, 3], near: 0.1, far: 1000 }}
           scene={{
             background: new THREE.Color("rgb(2, 3, 34)"),
           }}
         >
           {/* <axesHelper scale={10} /> */}
           <OrbitControls makeDefault />
-          <ambientLight intensity={3} />
+          <ambientLight intensity={2} />
           <pointLight position={[10, 10, 10]} decay={0} intensity={1} />
           <Suspense fallback={<></>}>
             <Person setMapInit={setMapInit} playInfo={playInfo} />
