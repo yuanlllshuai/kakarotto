@@ -16,10 +16,12 @@
 .model {
     height: 100vh;
     transition: opacity 0.5s;
+    position: sticky;
+    top: 0
 }
 
 .page2{
-  height: 200vh;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
