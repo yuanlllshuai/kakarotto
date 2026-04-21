@@ -88,7 +88,7 @@ const Index = (props: any) => {
 
   useFrame((_, delta) => {
     console.log(movingRef.current);
-    if (ringRef.current && !movingRef.current) {
+    if (ringRef.current && (!movingRef.current || props.isScrolling.current)) {
       ringRef.current.rotation.y +=
         delta * rotationSpeed * (1 + props.progress.current * 4);
       if (props.progress.current > 0.9) {

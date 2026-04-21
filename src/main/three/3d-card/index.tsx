@@ -18,8 +18,18 @@ export const Component = () => {
   const [show, setShow] = useState(false);
 
   const scrollProgressRef = useRef<number>(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const isScrollingRef = useRef(false);
 
   const onScroll = () => {
+    isScrollingRef.current = true;
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    timerRef.current = setTimeout(() => {
+      isScrollingRef.current = false;
+    }, 500);
+
     const cardContainer = document.getElementById("3d-card-container");
     const cardCanvas = document.getElementById("3d-card-canvas");
     const cardScroll = document.getElementById("3d-card-scroll");
@@ -86,7 +96,11 @@ export const Component = () => {
           <ambientLight intensity={2} />
           <pointLight position={[10, 10, 10]} decay={0} intensity={1} />
           <Suspense fallback={<></>}>
-            <Model setMapInit={setMapInit} progress={scrollProgressRef} />
+            <Model
+              setMapInit={setMapInit}
+              progress={scrollProgressRef}
+              isScrolling={isScrollingRef}
+            />
           </Suspense>
         </Canvas>
       </div>
