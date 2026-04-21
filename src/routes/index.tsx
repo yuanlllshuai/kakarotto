@@ -57,6 +57,10 @@ const router = createHashRouter(
           lazy={() => import("@/main/three/cartoon/index")}
         />
         <Route path="face" lazy={() => import("@/main/three/face/index")} />
+        <Route
+          path="3d-card"
+          lazy={() => import("@/main/three/3d-card/index")}
+        />
       </Route>
       <Route path="cesium">
         <Route

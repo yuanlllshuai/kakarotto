@@ -33,12 +33,10 @@ a{
   text-decoration:none
 }
 
-/* 滚动条宽度 */
-::-webkit-scrollbar {
+/* ::-webkit-scrollbar {
   display: none;
 }
 
-/* 滚动条滑块 */
 ::-webkit-scrollbar-thumb {
   display: none;
-}
+} */

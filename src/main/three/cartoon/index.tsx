@@ -12,16 +12,15 @@ import {
   VRMAnimationLoaderPlugin,
   VRMLookAtQuaternionProxy,
 } from "@pixiv/three-vrm-animation";
-import { set } from "lodash";
 
 let waiting: any = null;
 let appearing: any = null;
-let liked: any = null;
+let dance: any = null;
 
 function Person({ setMapInit, playInfo }: any) {
   const mixerRef = useRef<any>();
   const waitingActionRef = useRef<any>();
-  const likedActionRef = useRef<any>();
+  const danceActionRef = useRef<any>();
 
   const { userData } = useGLTF(
     "/gltf_models/girl.vrm",
@@ -42,8 +41,8 @@ function Person({ setMapInit, playInfo }: any) {
         .then((animation) => {
           appearing = animation.userData.vrmAnimations[0];
         });
-      loader.loadAsync("/gltf_models/actions/liked.vrma").then((animation) => {
-        liked = animation.userData.vrmAnimations[0];
+      loader.loadAsync("/gltf_models/actions/dance.vrma").then((animation) => {
+        dance = animation.userData.vrmAnimations[0];
       });
     },
   );
@@ -133,18 +132,18 @@ function Person({ setMapInit, playInfo }: any) {
     appearingAction.crossFadeTo(waitingAction, 0.2, true);
     waitingAction.play();
 
-    const likedClip = createVRMAnimationClip(liked, userData.vrm);
-    const likedAction = mixerRef.current.clipAction(likedClip);
-    likedActionRef.current = likedAction;
+    const danceClip = createVRMAnimationClip(dance, userData.vrm);
+    const danceAction = mixerRef.current.clipAction(danceClip);
+    danceActionRef.current = danceAction;
   };
 
   useEffect(() => {
     if (playInfo.begin) {
-      likedActionRef.current.reset();
-      likedActionRef.current.enabled = true;
-      waitingActionRef.current.crossFadeTo(likedActionRef.current, 0.4, true);
-      likedActionRef.current.play();
-      const duration = likedActionRef.current.getClip().duration; // 获取动画总时长
+      danceActionRef.current.reset();
+      danceActionRef.current.enabled = true;
+      waitingActionRef.current.crossFadeTo(danceActionRef.current, 0.4, true);
+      danceActionRef.current.play();
+      const duration = danceActionRef.current.getClip().duration; // 获取动画总时长
       const fadeTime = 0.8; // 切回 Idle 的混成耗时
       const leadTime = 0.3; // 提前量（秒）：在 Wave 结束前 0.2s 就开始切回
 
@@ -153,7 +152,7 @@ function Person({ setMapInit, playInfo }: any) {
 
       setTimeout(
         () => {
-          likedActionRef.current.crossFadeTo(
+          danceActionRef.current.crossFadeTo(
             waitingActionRef.current,
             fadeTime,
             true,

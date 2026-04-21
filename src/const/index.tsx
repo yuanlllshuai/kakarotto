@@ -26,6 +26,7 @@ export const navConfig = [
       { key: "person", label: "数字人", path: "/three/person" },
       { key: "cartoon", label: "二次元", path: "/three/cartoon" },
       { key: "face", label: "人脸", path: "/three/face" },
+      { key: "3d-card", label: "3D卡片", path: "/three/3d-card" },
     ],
   },
   {
