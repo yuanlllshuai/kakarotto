@@ -1,6 +1,6 @@
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import { useRef, useState, useEffect } from "react";
-import { CycleRaycast, Html } from "@react-three/drei";
+import { CycleRaycast } from "@react-three/drei";
 import * as THREE from "three";
 import mapPng from "@/assets/ayumi.png";
 
@@ -45,9 +45,7 @@ void main() {
 
 const Index = (props: any) => {
   const { raycaster, camera, mouse } = useThree();
-  const [cards, setCards] = useState<any[]>(
-    Array.from({ length: 16 }).map((_, i) => i),
-  );
+  const [cards] = useState<any[]>(Array.from({ length: 16 }).map((_, i) => i));
   const ringRef = useRef<THREE.Object3D>(new THREE.Object3D());
   const movingRef = useRef(false);
   const texture = useLoader(THREE.TextureLoader, mapPng);
@@ -79,7 +77,7 @@ const Index = (props: any) => {
     }
     const intersects = raycaster.intersectObjects(ringRef.current.children);
     if (intersects.length > 0) {
-      const intersect = intersects[0];
+      // const intersect = intersects[0];
       // console.log(intersect);
       if (timerRef.current) {
         clearTimeout(timerRef.current);
@@ -97,7 +95,7 @@ const Index = (props: any) => {
 
   const onRaycastChanged = (hits: THREE.Intersection[]) => {
     if (hits.length > 0) {
-      const intersect = hits[0];
+      // const intersect = hits[0];
       movingRef.current = true;
       // console.log(intersect);
     } else {
