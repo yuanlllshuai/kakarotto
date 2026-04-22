@@ -1,19 +1,11 @@
 import { Suspense, useEffect, useState, useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import {
-  OrbitControls,
-  useProgress,
-  PerspectiveCamera,
-} from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
 import styles from "./index.module.scss";
-import ScreenFull from "@/components/ScreenFull";
-import { Progress } from "antd";
 import Model from "./model";
-import * as THREE from "three";
 import Camera from "./camera";
 
 export const Component = () => {
-  const { progress } = useProgress();
   const [mapInit, setMapInit] = useState<boolean>(false);
   const [show, setShow] = useState(false);
 
@@ -33,6 +25,8 @@ export const Component = () => {
     const cardContainer = document.getElementById("3d-card-container");
     const cardCanvas = document.getElementById("3d-card-canvas");
     const cardScroll = document.getElementById("3d-card-scroll");
+    const cardInfoTop = document.getElementById("3d-card-info-top");
+    const cardInfoBottom = document.getElementById("3d-card-info-bottom");
     if (!cardCanvas || !cardScroll || !cardContainer) return;
     const range = cardScroll.offsetHeight - cardCanvas.offsetHeight;
 
@@ -43,9 +37,18 @@ export const Component = () => {
 
     const raw = cardContainer.scrollTop / range;
     scrollProgressRef.current = Math.min(1, Math.max(0, raw));
-    // cardCanvas.style.transform = `translateY(-${scrollProgressRef.current * 200}px)`;
-    // cardCanvas.style.height = `calc(100vh + ${scrollProgressRef.current * 200}px)`;
-    // console.log(scrollProgressRef.current);
+    cardCanvas.style.opacity = `${1.5 - scrollProgressRef.current}`;
+    // console.log("scrollProgress", scrollProgressRef.current);
+    if (cardInfoTop) {
+      cardInfoTop.style.opacity = `${0.74 - scrollProgressRef.current}`;
+      cardInfoTop.style.filter = `blur(${10 * scrollProgressRef.current}px)`;
+      cardInfoTop.style.transform = `translateX(-50%) translateY(${-20 * scrollProgressRef.current}px)`;
+    }
+    if (cardInfoBottom) {
+      cardInfoBottom.style.opacity = `${0.74 - scrollProgressRef.current}`;
+      cardInfoBottom.style.filter = `blur(${10 * scrollProgressRef.current}px)`;
+      cardInfoBottom.style.transform = `translateX(-50%) translateY(${20 * scrollProgressRef.current}px)`;
+    }
   };
 
   useEffect(() => {
@@ -91,7 +94,6 @@ export const Component = () => {
         >
           <Camera progress={scrollProgressRef} />
           {/* <axesHelper scale={2} /> */}
-          {/* <OrbitControls target-y={scrollProgressRef.current * 10} /> */}
           <OrbitControls makeDefault enableZoom={false} />
           <ambientLight intensity={2} />
           <pointLight position={[10, 10, 10]} decay={0} intensity={1} />
@@ -109,18 +111,17 @@ export const Component = () => {
 
   return (
     <div className={styles.container} id="3d-card-container">
+      <div className={styles.card_info_top} id="3d-card-info-top">
+        智能写作助手
+      </div>
       <div
         id="3d-card-scroll"
-        style={{ position: "relative", height: "300vh" }}
+        style={{ position: "relative", height: "150vh" }}
       >
-        {/* {!mapInit && (
-          <div className={styles.loading}>
-            <div style={{ width: "80%" }}>
-              <Progress percent={progress} showInfo={false} />
-            </div>
-          </div>
-        )} */}
         {render()}
+      </div>
+      <div className={styles.card_info_bottom} id="3d-card-info-bottom">
+        专为医学科研打造的长文本生成引擎，深度融合四川大学医学语料，一键生成符合规范的学术论文底稿与大纲
       </div>
       <div className={styles.page2}>下一页</div>
     </div>

@@ -12,7 +12,7 @@ const Index = ({ progress }: { progress: any }) => {
         0,
         0,
         // progress.current,
-        -1.4 + progress.current * 7,
+        -1 + progress.current * 6,
       );
       cameraRef.current.position.copy(position);
       cameraRef.current.lookAt(0, 0, -10);

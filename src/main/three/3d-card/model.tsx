@@ -1,13 +1,13 @@
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import { useRef, useState, useEffect } from "react";
-import { CycleRaycast } from "@react-three/drei";
+import { CycleRaycast, Html } from "@react-three/drei";
 import * as THREE from "three";
 import mapPng from "@/assets/ayumi.png";
 
 const numCards = 16;
-const ringRadius = 3; // 大圆环半径
-const cardHeight = 0.8; // 每张卡片高度
-const cardAngle = ((Math.PI * 2) / numCards) * 0.8; // 每张卡片占据的弧度
+const gap = Math.PI / 48; // 定义间隙大小（角度）
+const cardHeight = 0.7; // 每张卡片高度
+const cardAngle = (Math.PI * 2 - gap * numCards) / numCards; // 每张卡片占据的弧度
 const rotationSpeed = 0.1; // 自动旋转速度
 
 const vertexShaderStr = `
@@ -21,8 +21,25 @@ void main() {
 const fragmentShaderStr = `
 uniform sampler2D uTexture;
 varying vec2 vUv;
+uniform vec3 borderColor;
+uniform float borderWidth;
 void main() {
-  gl_FragColor = texture2D(uTexture, vUv);
+  vec4 texColor = texture2D(uTexture, vUv);
+  float blur = 0.005;    // 模糊程度，防止锯齿
+
+  // 计算四个边界的遮罩
+  // 如果在边缘，edge 会接近 1.0
+  float h1 = smoothstep(0.0, blur, vUv.x) * (1.0 - smoothstep(1.0 - blur, 1.0, vUv.x));
+  float v1 = smoothstep(0.0, blur, vUv.y) * (1.0 - smoothstep(1.0 - blur, 1.0, vUv.y));
+  
+  // 判断内部区域（非边框区域）
+  float h2 = smoothstep(borderWidth, borderWidth + blur, vUv.x) * (1.0 - smoothstep(1.0 - borderWidth - blur, 1.0 - borderWidth, vUv.x));
+  float v2 = smoothstep(borderWidth, borderWidth + blur, vUv.y) * (1.0 - smoothstep(1.0 - borderWidth - blur, 1.0 - borderWidth, vUv.y));
+
+  float contentMask = h2 * v2; // 1.0 表示内部，0.0 表示边框区域
+  
+  // 混合颜色：如果 contentMask 是 0，则显示红色
+  gl_FragColor = vec4(mix(borderColor, texColor.rgb, contentMask), texColor.a);
 }
 `;
 
@@ -34,6 +51,9 @@ const Index = (props: any) => {
   const ringRef = useRef<THREE.Object3D>(new THREE.Object3D());
   const movingRef = useRef(false);
   const texture = useLoader(THREE.TextureLoader, mapPng);
+  const outRef = useRef<THREE.Object3D>(new THREE.Object3D());
+  const ringRadius = useRef(3); // 大圆环半径
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // 增加鼠标移动事件
   useEffect(() => {
@@ -60,79 +80,106 @@ const Index = (props: any) => {
     const intersects = raycaster.intersectObjects(ringRef.current.children);
     if (intersects.length > 0) {
       const intersect = intersects[0];
-      console.log(intersect);
+      // console.log(intersect);
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
       movingRef.current = true;
     } else {
-      movingRef.current = false;
+      if (!timerRef.current) {
+        timerRef.current = setTimeout(() => {
+          movingRef.current = false;
+        }, 200);
+      }
     }
   };
 
   const onRaycastChanged = (hits: THREE.Intersection[]) => {
-    // if (isScrollingRef.current) {
-    //   return null;
-    // }
     if (hits.length > 0) {
       const intersect = hits[0];
       movingRef.current = true;
-      console.log(intersect);
-      // clickMapName.current =
-      //   clickMapName.current === intersect.object.name
-      //     ? ""
-      //     : intersect.object.name;
+      // console.log(intersect);
     } else {
       movingRef.current = false;
     }
-    // setMapColor();
     return null;
   };
 
   useFrame((_, delta) => {
-    console.log(movingRef.current);
-    if (ringRef.current && (!movingRef.current || props.isScrolling.current)) {
-      ringRef.current.rotation.y +=
-        delta * rotationSpeed * (1 + props.progress.current * 4);
-      if (props.progress.current > 0.9) {
-        ringRef.current.position.y = props.progress.current - 0.9;
+    if (ringRef.current) {
+      if (!movingRef.current || props.isScrolling.current) {
+        // 圆环转动，速度随滚动越来越快
+        ringRef.current.rotation.y +=
+          delta * rotationSpeed * (1 + props.progress.current * 4);
+        // 圆环倾斜角度随滚动增加
+        if (props.progress.current > 0.9) {
+          ringRef.current.position.y = props.progress.current - 0.9;
+        }
       }
-      ringRef.current.rotation.x = props.progress.current * 0.3;
+      const { x, y } = mouse;
+      const targetRotationX = -y * 0.1;
+      const targetRotationY = x * 0.15;
+
+      // 圆环位置随滚动上升
+      ringRef.current.rotation.x = props.progress.current * 0.24;
+      // 圆环倾斜角度随鼠标变化
+      outRef.current.rotation.x = THREE.MathUtils.lerp(
+        outRef.current.rotation.x,
+        -targetRotationX * (1 - props.progress.current),
+        0.05,
+      );
+      outRef.current.rotation.y = THREE.MathUtils.lerp(
+        outRef.current.rotation.y,
+        -targetRotationY * (1 - props.progress.current),
+        0.05,
+      );
     }
   });
 
   return (
     <>
-      <object3D ref={ringRef} onClick={(e: any) => e.stopPropagation()}>
-        {cards.map((index) => {
-          return (
-            <mesh
-              key={index}
-              name={index}
-              position={[0, 0, 0]}
-              rotation-y={(index / 16) * Math.PI * 2}
-            >
-              <cylinderGeometry
-                args={[
-                  ringRadius, // 曲面半径（即大圆环半径）
-                  ringRadius, // 上下半径相同
-                  cardHeight, // 卡片高度
-                  48, // radialSegments（越高越平滑）
-                  1, // heightSegments
-                  true, // openEnded（无上下盖）
-                  -cardAngle / 2, // thetaStart（弧面居中）
-                  cardAngle, // thetaLength（卡片实际弧度，小于间隔角度 → 有间距）
-                ]}
-              />
-              {/* <meshStandardMaterial side={THREE.DoubleSide} color="red" /> */}
-              <shaderMaterial
-                uniforms={{
-                  uTexture: { value: texture },
-                }}
-                vertexShader={vertexShaderStr}
-                fragmentShader={fragmentShaderStr}
-                side={THREE.DoubleSide}
-              />
-            </mesh>
-          );
-        })}
+      <object3D ref={outRef} position={[0, 0, -ringRadius.current]}>
+        <object3D
+          position={[0, 0, ringRadius.current]}
+          ref={ringRef}
+          onClick={(e: any) => e.stopPropagation()}
+        >
+          {cards.map((index) => {
+            return (
+              <object3D key={index}>
+                <mesh
+                  name={index}
+                  position={[0, 0, 0]}
+                  rotation-y={(index / 16) * Math.PI * 2}
+                >
+                  <cylinderGeometry
+                    args={[
+                      ringRadius.current, // 曲面半径
+                      ringRadius.current, // 上下半径相同
+                      cardHeight, // 卡片高度
+                      48,
+                      1,
+                      true,
+                      -cardAngle / 2, // 弧面居中
+                      cardAngle, // 卡片实际弧度
+                    ]}
+                  />
+                  <shaderMaterial
+                    uniforms={{
+                      borderWidth: { value: 0.00000001 },
+                      borderColor: { value: new THREE.Color("#ccc") },
+                      uTexture: { value: texture },
+                    }}
+                    vertexShader={vertexShaderStr}
+                    fragmentShader={fragmentShaderStr}
+                    side={THREE.DoubleSide}
+                  />
+                </mesh>
+              </object3D>
+            );
+          })}
+        </object3D>
       </object3D>
       <CycleRaycast
         preventDefault={true}

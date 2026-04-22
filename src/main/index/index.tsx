@@ -22,7 +22,7 @@ export const Component = () => {
   return (
     <Bg>
       <div className={styles.app}>
-        <Header />
+        {/* <Header /> */}
         {/* <div style={{ border: '1px solid red' }}>
                     {navigation.state}
                 </div>
