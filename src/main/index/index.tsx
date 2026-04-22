@@ -6,7 +6,7 @@ import {
 } from "react-router-dom";
 import styles from "./index.module.scss";
 import Bg from "@/components/Bg";
-import Header from "../header";
+// import Header from "../header";
 
 export const Component = () => {
   // const data: any = useLoaderData();
