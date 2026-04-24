@@ -1,5 +1,5 @@
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, memo } from "react";
 import { CycleRaycast } from "@react-three/drei";
 import * as THREE from "three";
 import tech from "./img/portfolio-tech.avif";
@@ -61,7 +61,7 @@ const textureSources = [
   divertissement,
 ];
 
-const Index = (props: any) => {
+const Index = memo((props: any) => {
   const { raycaster, camera, mouse } = useThree();
   const [cards] = useState<any[]>(
     Array.from({ length: numCards }).map((_, i) => i),
@@ -209,6 +209,6 @@ const Index = (props: any) => {
       />
     </>
   );
-};
+});
 
 export default Index;
