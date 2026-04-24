@@ -126,20 +126,7 @@ const Index = memo((props: any) => {
 
   useFrame((_, delta) => {
     if (ringRef.current) {
-      const isDragging = props.isDragging?.current;
-      const dragRotationDelta = props.dragRotationDelta?.current ?? 0;
-      const dragVelocity = props.dragVelocity?.current ?? 0;
-
-      if (dragRotationDelta !== 0) {
-        ringRef.current.rotation.y += dragRotationDelta;
-        props.dragRotationDelta.current = 0;
-      } else if (!isDragging && Math.abs(dragVelocity) > 0.0001) {
-        ringRef.current.rotation.y += dragVelocity;
-        props.dragVelocity.current *= 0.94;
-      } else if (
-        (!movingRef.current || props.isScrolling.current) &&
-        !isDragging
-      ) {
+      if (!movingRef.current || props.isScrolling.current) {
         // 圆环转动，速度随滚动越来越快
         ringRef.current.rotation.y +=
           delta * rotationSpeed * (1 + props.progress.current * 4);
@@ -149,9 +136,8 @@ const Index = memo((props: any) => {
         }
       }
       const { x, y } = mouse;
-      const targetRotationX = isDragging ? 0 : -y * 0.2;
-      const targetRotationY = isDragging ? 0 : -x * 0.15;
-      const targetRotationZ = isDragging ? 0 : -x * 0.02;
+      const targetRotationX = -y * 0.1;
+      const targetRotationY = x * 0.15;
 
       // 圆环位置随滚动上升
       ringRef.current.rotation.x = props.progress.current * 0.24;
@@ -163,12 +149,7 @@ const Index = memo((props: any) => {
       );
       outRef.current.rotation.y = THREE.MathUtils.lerp(
         outRef.current.rotation.y,
-        targetRotationY * (1 - props.progress.current),
-        0.05,
-      );
-      outRef.current.rotation.z = THREE.MathUtils.lerp(
-        outRef.current.rotation.z,
-        targetRotationZ * (1 - props.progress.current),
+        -targetRotationY * (1 - props.progress.current),
         0.05,
       );
     }
