@@ -2,7 +2,15 @@ import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import { useRef, useState, useEffect } from "react";
 import { CycleRaycast } from "@react-three/drei";
 import * as THREE from "three";
-import mapPng from "@/assets/ayumi.png";
+import tech from "./img/portfolio-tech.avif";
+import immo from "./img/portfolio-immo.avif";
+import sante from "./img/portfolio-sante.avif";
+import tourisme from "./img/portfolio-tourisme.avif";
+import finance from "./img/portfolio-finance.avif";
+import pubImg from "./img/portfolio-pub.avif";
+import energie from "./img/portfolio-energie.avif";
+import divertissement from "./img/portfolio-divertissement.avif";
+import { imgArr } from "./const";
 
 const numCards = 16;
 const gap = Math.PI / 48; // 定义间隙大小（角度）
@@ -43,12 +51,28 @@ void main() {
 }
 `;
 
+const textureSources = [
+  tech,
+  immo,
+  sante,
+  tourisme,
+  finance,
+  pubImg,
+  energie,
+  divertissement,
+];
+
 const Index = (props: any) => {
   const { raycaster, camera, mouse } = useThree();
-  const [cards] = useState<any[]>(Array.from({ length: 16 }).map((_, i) => i));
+  const [cards] = useState<any[]>(
+    Array.from({ length: numCards }).map((_, i) => i),
+  );
   const ringRef = useRef<THREE.Object3D>(new THREE.Object3D());
   const movingRef = useRef(false);
-  const texture = useLoader(THREE.TextureLoader, mapPng);
+  const textures = useLoader(
+    THREE.TextureLoader,
+    textureSources.slice(0, imgArr.length),
+  );
   const outRef = useRef<THREE.Object3D>(new THREE.Object3D());
   const ringRadius = useRef(3); // 大圆环半径
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -144,12 +168,13 @@ const Index = (props: any) => {
           onClick={(e: any) => e.stopPropagation()}
         >
           {cards.map((index) => {
+            const texture = textures[index % textures.length];
             return (
               <object3D key={index}>
                 <mesh
                   name={index}
                   position={[0, 0, 0]}
-                  rotation-y={(index / 16) * Math.PI * 2}
+                  rotation-y={(index / numCards) * Math.PI * 2}
                 >
                   <cylinderGeometry
                     args={[

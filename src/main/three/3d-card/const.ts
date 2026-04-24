@@ -1,0 +1,1 @@
+export const imgArr=['tech','immo','sante','tourisme','finance','pub','energie','divertissement'] as const;
