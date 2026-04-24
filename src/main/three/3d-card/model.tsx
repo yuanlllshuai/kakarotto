@@ -10,7 +10,6 @@ import finance from "./img/portfolio-finance.avif";
 import pubImg from "./img/portfolio-pub.avif";
 import energie from "./img/portfolio-energie.avif";
 import divertissement from "./img/portfolio-divertissement.avif";
-import { imgArr } from "./const";
 
 const numCards = 16;
 const gap = Math.PI / 48; // 定义间隙大小（角度）
@@ -69,10 +68,7 @@ const Index = (props: any) => {
   );
   const ringRef = useRef<THREE.Object3D>(new THREE.Object3D());
   const movingRef = useRef(false);
-  const textures = useLoader(
-    THREE.TextureLoader,
-    textureSources.slice(0, imgArr.length),
-  );
+  const textures = useLoader(THREE.TextureLoader, textureSources);
   const outRef = useRef<THREE.Object3D>(new THREE.Object3D());
   const ringRadius = useRef(3); // 大圆环半径
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -101,8 +97,8 @@ const Index = (props: any) => {
     }
     const intersects = raycaster.intersectObjects(ringRef.current.children);
     if (intersects.length > 0) {
-      // const intersect = intersects[0];
-      // console.log(intersect);
+      const intersect = intersects[0];
+      props.cardChange(intersect);
       if (timerRef.current) {
         clearTimeout(timerRef.current);
         timerRef.current = null;
@@ -119,9 +115,9 @@ const Index = (props: any) => {
 
   const onRaycastChanged = (hits: THREE.Intersection[]) => {
     if (hits.length > 0) {
-      // const intersect = hits[0];
+      const intersect = hits[0];
       movingRef.current = true;
-      // console.log(intersect);
+      props.cardChange(intersect);
     } else {
       movingRef.current = false;
     }

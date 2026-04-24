@@ -8,6 +8,7 @@ import Camera from "./camera";
 export const Component = () => {
   const [mapInit, setMapInit] = useState<boolean>(false);
   const [show, setShow] = useState(false);
+  const [currentCard, setCurrentCard] = useState<any>();
 
   const scrollProgressRef = useRef<number>(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -102,6 +103,7 @@ export const Component = () => {
               setMapInit={setMapInit}
               progress={scrollProgressRef}
               isScrolling={isScrollingRef}
+              cardChange={cardChange}
             />
           </Suspense>
         </Canvas>
@@ -109,10 +111,16 @@ export const Component = () => {
     );
   };
 
+  const cardChange = (card: any) => {
+    if (currentCard !== card.object.name) {
+      setCurrentCard(card.object.name);
+    }
+  };
+
   return (
     <div className={styles.container} id="3d-card-container">
       <div className={styles.card_info_top} id="3d-card-info-top">
-        智能写作助手
+        {`智能写作助手${currentCard || ""}`}
       </div>
       <div
         id="3d-card-scroll"
