@@ -81,6 +81,9 @@ const Index = memo((props: any) => {
     };
   }, []);
 
+  useEffect(() => {
+    console.log(111);
+  }, [props]);
   const handleMouseMove: React.EventHandler<any> = (event) => {
     if (event.target.tagName !== "CANVAS") {
       return;

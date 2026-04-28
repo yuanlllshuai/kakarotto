@@ -30,6 +30,9 @@ const router = createHashRouter(
       <Route errorElement={<Component />}>
         <Route index lazy={() => import("@/main/home")}></Route>
       </Route>
+      <Route path="charts">
+        <Route path="test" lazy={() => import("@/main/charts/test/index")} />
+      </Route>
       <Route path="three">
         <Route path="index" lazy={() => import("@/main/three/learn/index")} />
         {/* <Route path="gltf" lazy={() => import("@/main/three/gltf/index")} /> */}
@@ -60,6 +63,10 @@ const router = createHashRouter(
         <Route
           path="3d-card"
           lazy={() => import("@/main/three/3d-card/index")}
+        />
+        <Route
+          path="3d-card2"
+          lazy={() => import("@/main/three/3d-card1/index")}
         />
       </Route>
       <Route path="cesium">

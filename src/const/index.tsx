@@ -5,9 +5,10 @@ export const navConfig = [
     label: "Echarts",
     icon: "charts",
     children: [
-      { key: "bar", label: "柱状图", path: "/bar" },
-      { key: "line", label: "折线图", path: "/line" },
-      { key: "pie", label: "饼图", path: "/pie" },
+      { key: "bar", label: "柱状图", path: "/charts/bar" },
+      { key: "line", label: "折线图", path: "/charts/line" },
+      { key: "pie", label: "饼图", path: "/charts/pie" },
+      { key: "test", label: "测试", path: "/charts/test" },
     ],
   },
   {
@@ -27,6 +28,7 @@ export const navConfig = [
       { key: "cartoon", label: "二次元", path: "/three/cartoon" },
       { key: "face", label: "人脸", path: "/three/face" },
       { key: "3d-card", label: "3D卡片", path: "/three/3d-card" },
+      { key: "3d-card2", label: "3D卡片2", path: "/three/3d-card2" },
     ],
   },
   {
