@@ -4,9 +4,33 @@ import styles from "./index.module.scss";
 import Model from "./model";
 import Camera from "./camera";
 
+import tech from "./img/portfolio-tech.avif";
+import immo from "./img/portfolio-immo.avif";
+import sante from "./img/portfolio-sante.avif";
+import tourisme from "./img/portfolio-tourisme.avif";
+import finance from "./img/portfolio-finance.avif";
+import pubImg from "./img/portfolio-pub.avif";
+import energie from "./img/portfolio-energie.avif";
+import divertissement from "./img/portfolio-divertissement.avif";
+
+const cardArr = [
+  tech,
+  immo,
+  sante,
+  tourisme,
+  finance,
+  pubImg,
+  energie,
+  divertissement,
+].map((i, index) => ({
+  title: `Card ${index}`,
+  src: i,
+}));
+
 export const Component = () => {
   const [currentCard, setCurrentCard] = useState<any>();
 
+  const cardRef = useRef<any>();
   const scrollProgressRef = useRef<number>(0);
   const isScrollingRef = useRef(false);
   const isDraggingRef = useRef(false);
@@ -63,6 +87,7 @@ export const Component = () => {
               isDragging={isDraggingRef}
               dragRotationDelta={dragRotationDeltaRef}
               dragVelocity={dragVelocityRef}
+              cardArr={cardArr}
               cardChange={cardChange}
             />
           </Suspense>
@@ -72,15 +97,15 @@ export const Component = () => {
   };
 
   const cardChange = (card: any) => {
-    if (currentCard !== card.object.name) {
-      setCurrentCard(card.object.name);
+    if (cardRef.current !== card.object.name) {
+      cardRef.current = card.object.name;
+      setCurrentCard(cardArr[card.object.name].title);
     }
   };
 
   return (
     <div className={styles.container} id="3d-card-container">
       {render()}
-      <div className={styles.page2}>下一页</div>
     </div>
   );
 };

@@ -2,14 +2,6 @@ import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import { useRef, useState, useEffect, memo } from "react";
 import { CycleRaycast } from "@react-three/drei";
 import * as THREE from "three";
-import tech from "./img/portfolio-tech.avif";
-import immo from "./img/portfolio-immo.avif";
-import sante from "./img/portfolio-sante.avif";
-import tourisme from "./img/portfolio-tourisme.avif";
-import finance from "./img/portfolio-finance.avif";
-import pubImg from "./img/portfolio-pub.avif";
-import energie from "./img/portfolio-energie.avif";
-import divertissement from "./img/portfolio-divertissement.avif";
 
 const numCards = 16;
 const gap = Math.PI / 48; // 定义间隙大小（角度）
@@ -50,17 +42,6 @@ void main() {
 }
 `;
 
-const textureSources = [
-  tech,
-  immo,
-  sante,
-  tourisme,
-  finance,
-  pubImg,
-  energie,
-  divertissement,
-];
-
 const Index = memo((props: any) => {
   const { raycaster, camera, mouse } = useThree();
   const [cards] = useState<any[]>(
@@ -68,7 +49,10 @@ const Index = memo((props: any) => {
   );
   const ringRef = useRef<THREE.Object3D>(new THREE.Object3D());
   const movingRef = useRef(false);
-  const textures = useLoader(THREE.TextureLoader, textureSources);
+  const textures = useLoader(
+    THREE.TextureLoader,
+    props.cardArr.map((i: any) => i.src),
+  ) as THREE.Texture[];
   const outRef = useRef<THREE.Object3D>(new THREE.Object3D());
   const ringRadius = useRef(3); // 大圆环半径
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -80,10 +64,6 @@ const Index = memo((props: any) => {
       window.removeEventListener("mousemove", handleMouseMove);
     };
   }, []);
-
-  useEffect(() => {
-    console.log(111);
-  }, [props]);
   const handleMouseMove: React.EventHandler<any> = (event) => {
     if (event.target.tagName !== "CANVAS") {
       return;
@@ -190,7 +170,7 @@ const Index = memo((props: any) => {
             return (
               <object3D key={index}>
                 <mesh
-                  name={index}
+                  name={`${index % textures.length}`}
                   position={[0, 0, 0]}
                   rotation-y={(index / numCards) * Math.PI * 2}
                 >
