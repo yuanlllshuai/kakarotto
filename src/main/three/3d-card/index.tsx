@@ -106,6 +106,7 @@ export const Component = () => {
   return (
     <div className={styles.container} id="3d-card-container">
       {render()}
+      <div style={{ position: "absolute" }}>{currentCard}</div>
     </div>
   );
 };
