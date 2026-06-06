@@ -26,7 +26,7 @@ const MapModel = memo(({ setMapLoaded, cameraEnd }: any) => {
       <RightBox />
       <Road />
       <object3D position={[0, 0.4, 0]}>
-        <InstancedGridOfSquares begin={cameraEnd} />
+        <InstancedGridOfSquares />
       </object3D>
     </>
   );

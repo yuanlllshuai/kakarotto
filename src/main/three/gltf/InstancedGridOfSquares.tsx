@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, memo } from "react";
-import { useThree, useFrame } from "@react-three/fiber";
+// import { useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { Grid } from "@react-three/drei";
 import { crossVertices } from "./const";
@@ -13,6 +13,27 @@ const vertexShader = `
   }
 `;
 
+const billboardVertexShader = `
+  varying float vDistance;
+  void main() {
+    // 1. 获取实例在世界空间的位置
+    vec4 instanceWorldPosition = modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+    
+    // 2. 计算距离
+    vDistance = length(instanceWorldPosition.xyz - cameraPosition);
+
+    // 3. 兼容性广告牌逻辑
+    vec4 mvPosition = viewMatrix * instanceWorldPosition;
+    
+    // 关键改动：使用 position.xyz 而不仅仅是 xy
+    // 如果你的十字架是在 xy 平面定义的，这会起作用
+    // 如果十字架有 z 轴深度，它也会被平铺到视角平面上
+    mvPosition.xyz += vec3(position.xy, 0.0); 
+
+    gl_Position = projectionMatrix * mvPosition;
+  }
+`;
+
 const fragmentShader = `
   varying float vDistance;
   void main() {
@@ -21,7 +42,13 @@ const fragmentShader = `
   }
 `;
 
-const material = new THREE.ShaderMaterial({
+const material1 = new THREE.ShaderMaterial({
+  vertexShader: billboardVertexShader,
+  fragmentShader,
+  transparent: true,
+  side: THREE.DoubleSide,
+});
+const material2 = new THREE.ShaderMaterial({
   vertexShader,
   fragmentShader,
   transparent: true,
@@ -33,9 +60,9 @@ const numSquaresPerColumn = 300;
 const crossSquaresPerRow = 100;
 
 // 将重复使用的变量提取到组件外部
-const upVector = new THREE.Vector3(0, 1, 0);
-const tempMatrix = new THREE.Matrix4();
-const tempPosition = new THREE.Vector3();
+// const upVector = new THREE.Vector3(0, 1, 0);
+// const tempMatrix = new THREE.Matrix4();
+// const tempPosition = new THREE.Vector3();
 
 const gridConfig = {
   cellSize: 0,
@@ -56,13 +83,13 @@ const crossGeometry = new THREE.BufferGeometry();
 
 crossGeometry.setAttribute(
   "position",
-  new THREE.BufferAttribute(crossVertices, 3)
+  new THREE.BufferAttribute(crossVertices, 3),
 );
 
-const InstancedGridOfSquares = memo(({ begin }: { begin: boolean }) => {
+const InstancedGridOfSquares = memo(() => {
   const instancedMeshRef = useRef<any>(null);
   const [instancedMesh, setInstancedMesh] = useState<any>(null);
-  const { camera } = useThree();
+  // const { camera } = useThree();
   const gridRef = useRef<any>(null);
 
   const [crossInstancedMesh, setCrossInstancedMesh] = useState<any>(null);
@@ -73,14 +100,14 @@ const InstancedGridOfSquares = memo(({ begin }: { begin: boolean }) => {
 
     const instancedMesh = new THREE.InstancedMesh(
       geometry,
-      material,
-      totalSquares
+      material1,
+      totalSquares,
     );
 
     const crossMesh = new THREE.InstancedMesh(
       crossGeometry,
-      material,
-      crossSquaresPerRow * crossSquaresPerRow
+      material2,
+      crossSquaresPerRow * crossSquaresPerRow,
     );
 
     for (let i = 0; i < numSquaresPerRow; i++) {
@@ -108,24 +135,24 @@ const InstancedGridOfSquares = memo(({ begin }: { begin: boolean }) => {
     setCrossInstancedMesh(crossMesh);
   }, []);
 
-  useFrame(() => {
-    if (instancedMeshRef.current && begin) {
-      const totalSquares = numSquaresPerRow * numSquaresPerColumn;
-      const cameraPosition = camera.position;
+  // useFrame(() => {
+  //   if (instancedMeshRef.current && begin) {
+  //     const totalSquares = numSquaresPerRow * numSquaresPerColumn;
+  //     const cameraPosition = camera.position;
 
-      for (let i = 0; i < totalSquares; i++) {
-        instancedMeshRef.current.getMatrixAt(i, tempMatrix);
-        tempPosition.setFromMatrixPosition(tempMatrix);
+  //     for (let i = 0; i < totalSquares; i++) {
+  //       instancedMeshRef.current.getMatrixAt(i, tempMatrix);
+  //       tempPosition.setFromMatrixPosition(tempMatrix);
 
-        // 使用quaternion直接设置旋转
-        tempMatrix.lookAt(tempPosition, cameraPosition, upVector);
-        instancedMeshRef.current.setMatrixAt(i, tempMatrix);
-      }
-      instancedMeshRef.current.instanceMatrix.needsUpdate = true;
-      // gridRef.current.material.alphaHash = true;
-      // gridRef.current.material.opacity = 0;
-    }
-  });
+  //       // 使用quaternion直接设置旋转
+  //       tempMatrix.lookAt(tempPosition, cameraPosition, upVector);
+  //       instancedMeshRef.current.setMatrixAt(i, tempMatrix);
+  //     }
+  //     instancedMeshRef.current.instanceMatrix.needsUpdate = true;
+  //     // gridRef.current.material.alphaHash = true;
+  //     // gridRef.current.material.opacity = 0;
+  //   }
+  // });
 
   if (!instancedMesh) {
     return <></>;

@@ -137,7 +137,7 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
       clearTimeout(scrollTimeout.current);
       scrollTimeout.current = setTimeout(
         () => (isScrollingRef.current = false),
-        100
+        100,
       );
     };
 
@@ -235,7 +235,7 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
       len,
       0.06,
       8,
-      false
+      false,
     );
 
     const canvas = document.createElement("canvas");
@@ -288,7 +288,7 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
     const lineGeometry = new THREE.BufferGeometry();
     lineGeometry.setAttribute(
       "position",
-      new THREE.BufferAttribute(positions, 3)
+      new THREE.BufferAttribute(positions, 3),
     );
     lineGeometry.applyMatrix4(mesh.parent.matrixWorld);
     const lineMaterial = new THREE.LineBasicMaterial({
@@ -339,7 +339,7 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
       return;
     }
     const intersects = raycaster.intersectObjects(
-      scene.children[2].children[0].children.filter((i) => filterName(i.name))
+      scene.children[2].children[0].children.filter((i) => filterName(i.name)),
     );
     if (intersects.length > 0) {
       const intersect: any = intersects[0];
@@ -397,7 +397,7 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
               child.material.color.setHSL(hsl.h, hsl.s, hsl.l);
             }
           }
-        }
+        },
       );
     }
   };
@@ -421,7 +421,7 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
         const pending = 0.4; // 动画持续时间
         animationProgress.current = Math.min(
           1,
-          animationProgress.current + delta / pending
+          animationProgress.current + delta / pending,
         );
         // Ease-out function (quadratic)  三次缓动函数
         const easedProgress = 1 - Math.pow(1 - animationProgress.current, 3);
@@ -439,7 +439,7 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
               child.position.y =
                 INITBORDERPOSITIONY + TARGETINCREASEHEIGHT * easedProgress;
             }
-          }
+          },
         );
 
         // 流光高度增加
@@ -481,16 +481,16 @@ const MapModel = memo(({ begin, setCardBegin, setMapInit }: any) => {
             weather={weather}
             weatherBegin={LightCylinderEnd}
           />
-        )
+        ),
       )}
       {mapAnimationEnd &&
         lablePoints.map(
           ({ position, label }: { position: any; label: string }) => (
             <FlyLine key={label} position={position} />
-          )
+          ),
         )}
       {mapAnimationEnd && <OriginPoint position={{ x: 0, z: 0, y: 0.6 }} />}
-      <InstancedGridOfSquares begin={begin} />
+      <InstancedGridOfSquares />
       {begin && <Wave />}
       {mapAnimationEnd &&
         borderLines.map((i) => <primitive object={i.border} key={i.name} />)}

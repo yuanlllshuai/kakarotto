@@ -93,7 +93,7 @@ const MapModel = memo(
         clearTimeout(scrollTimeout.current);
         scrollTimeout.current = setTimeout(
           () => (isScrollingRef.current = false),
-          100
+          100,
         );
       };
 
@@ -145,7 +145,7 @@ const MapModel = memo(
                   // 首次直接渲染
                   initMap(
                     JSON.parse(data1 as string),
-                    JSON.parse(data2 as string)
+                    JSON.parse(data2 as string),
                   );
                   setMapLoaded(true);
                 } else {
@@ -161,16 +161,16 @@ const MapModel = memo(
                     .onComplete(() => {
                       initMap(
                         JSON.parse(data1 as string),
-                        JSON.parse(data2 as string)
+                        JSON.parse(data2 as string),
                       );
                       setMapLoaded(true);
                     })
                     .start();
                 }
                 lastPrvince.current = prvince;
-              }
+              },
             );
-          }
+          },
         );
       }
     }, [prvince]);
@@ -259,14 +259,14 @@ const MapModel = memo(
               (child.material as THREE.MeshBasicMaterial[])[0].color.setHSL(
                 hsl.h,
                 hsl.s,
-                hsl.l
+                hsl.l,
               );
             } else {
               const hsl = { ...mapHslRef.current };
               (child.material as THREE.MeshBasicMaterial[])[0].color.setHSL(
                 hsl.h,
                 hsl.s,
-                hsl.l
+                hsl.l,
               );
             }
           }
@@ -347,7 +347,7 @@ const MapModel = memo(
         depth,
         center,
         scale,
-      }: { depth: number; center: [number, number]; scale: number }
+      }: { depth: number; center: [number, number]; scale: number },
     ) => {
       let areaPolygons: [number, number][][] = [];
       map.features.forEach((elem: any) => {
@@ -373,7 +373,7 @@ const MapModel = memo(
           center,
           scale,
         },
-        false
+        false,
       );
       setFlowLight(flowLightArr);
       setFlowLightTexture(flowLightTextureArr);
@@ -387,7 +387,7 @@ const MapModel = memo(
         center,
         scale,
       }: { depth: number; center: [number, number]; scale: number },
-      isBlock: boolean // 区块还是整个地图
+      isBlock: boolean, // 区块还是整个地图
     ) => {
       const projection = d3
         .geoMercator()
@@ -528,7 +528,7 @@ const MapModel = memo(
         .forEach((elem: any, index1: number) => {
           // 各区块中心标签数据
           const [centerX, centerZ] = projectionCenter(
-            elem.properties.centroid || elem.properties.center
+            elem.properties.centroid || elem.properties.center,
           ) as [number, number];
           labelArr.push({
             position: new THREE.Vector3(centerX, depth * scale, centerZ),
@@ -567,7 +567,7 @@ const MapModel = memo(
 
                 const geometry = new THREE.ExtrudeGeometry(
                   shape,
-                  extrudeSettings
+                  extrudeSettings,
                 );
                 const material = new THREE.MeshBasicMaterial({
                   color: "#204e8f",
@@ -582,7 +582,7 @@ const MapModel = memo(
                 });
                 lineGeometry.setAttribute(
                   "position",
-                  new THREE.BufferAttribute(positions, 3)
+                  new THREE.BufferAttribute(positions, 3),
                 );
                 const line = new THREE.Line(lineGeometry, lineMaterial);
                 const name = elem.properties.name + index1 + index2 + index3;
@@ -628,7 +628,7 @@ const MapModel = memo(
 
               const geometry = new THREE.ExtrudeGeometry(
                 shape,
-                extrudeSettings
+                extrudeSettings,
               );
               const material = new THREE.MeshBasicMaterial({
                 color: "#204e8f",
@@ -643,7 +643,7 @@ const MapModel = memo(
               });
               lineGeometry.setAttribute(
                 "position",
-                new THREE.BufferAttribute(positions, 3)
+                new THREE.BufferAttribute(positions, 3),
               );
               const line = new THREE.Line(lineGeometry, lineMaterial);
               const name = elem.properties.name + index1 + index2;
@@ -674,7 +674,7 @@ const MapModel = memo(
           center,
           scale,
         },
-        true
+        true,
       );
       setBlockFlowLight(flowLightArr);
       setBlockFlowLightTexture(flowLightTextureArr);
@@ -699,7 +699,7 @@ const MapModel = memo(
     const dealFlowLight = (
       vertices: THREE.Vector3[],
       scale: number,
-      isBlock: boolean
+      isBlock: boolean,
     ) => {
       const tubeWidth = (isBlock ? 0.003 : 0.006) * (8.78266872973055 / scale);
       const len = vertices.length;
@@ -711,7 +711,7 @@ const MapModel = memo(
         len,
         tubeWidth,
         8,
-        false
+        false,
       );
 
       const canvas = document.createElement("canvas");
@@ -825,7 +825,7 @@ const MapModel = memo(
           }
         />
         <object3D position={[0, 0.4, 0]}>
-          <InstancedGridOfSquares begin={mapDepthEnd} />
+          <InstancedGridOfSquares />
         </object3D>
         {mapDepthEnd && <Wave />}
         {mapDepthEnd && (
@@ -847,7 +847,7 @@ const MapModel = memo(
           labels.map(
             ({ position, label }: { position: any; label: string }) => (
               <FlyLine key={label} position={position} />
-            )
+            ),
           )}
         {mapDepthEnd && (
           <LightCylinder
@@ -866,7 +866,7 @@ const MapModel = memo(
         )}
       </>
     );
-  }
+  },
 );
 
 export default MapModel;
