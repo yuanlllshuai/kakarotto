@@ -1,4 +1,4 @@
-import { useState, memo, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 const useName = () => {
   const [name, setName] = useState("");

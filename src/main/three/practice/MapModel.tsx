@@ -7,7 +7,7 @@ import LeftBox from "./LeftBox";
 import RightBox from "./RightBox";
 import EndBox from "./EndBox";
 
-const MapModel = memo(({ setMapLoaded, cameraEnd }: any) => {
+const MapModel = memo(({ setMapLoaded }: any) => {
   useEffect(() => {
     setMapLoaded(true);
   }, []);
