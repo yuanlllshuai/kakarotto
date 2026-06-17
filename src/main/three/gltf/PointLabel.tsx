@@ -31,7 +31,6 @@ const PointLabel = memo(
               transition: "all 1s",
               userSelect: "none",
             }}
-            // className={visible ? style.point_label : style.point_label_hide}
           >
             <img src={icon} style={{ width: 20, height: 26 }} />
           </Html>
@@ -72,7 +71,7 @@ const PointLabel = memo(
         <Weather begin={weatherBegin} position={position} weather={weather} />
       </>
     );
-  }
+  },
 );
 
 export default PointLabel;

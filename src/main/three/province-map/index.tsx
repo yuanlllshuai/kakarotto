@@ -1,15 +1,16 @@
-import { Suspense, useEffect, useState, useRef, memo } from "react";
+import { Suspense, useEffect, useState, useRef, memo, useCallback } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import styles from "./index.module.scss";
 import * as THREE from "three";
 import ScreenFull from "@/components/ScreenFull";
-import { Select, Switch, Progress } from "antd";
+import { Select, Switch, Progress, Breadcrumb } from "antd";
 import * as TWEEN from "@tweenjs/tween.js";
 import MapModel from "./MapModel";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
-import AnimateCard from "@/components/AnimateCard";
+import { getMapDataLevel, type NavItem } from "./mapGeo";
+// import AnimateCard from "@/components/AnimateCard";
 
 const { Option } = Select;
 
@@ -22,7 +23,7 @@ const Camera = memo(
     begin: boolean;
   }) => {
     const cameraRef = useRef<THREE.PerspectiveCamera>(null);
-    const tweenRef = useRef<any>(null);
+    const tweenRef = useRef<TWEEN.Tween<THREE.Vector3> | null>(null);
 
     useEffect(() => {
       if (!begin) {
@@ -49,22 +50,18 @@ const Camera = memo(
     }, [begin]);
 
     useFrame(() => {
-      if (tweenRef.current) {
-        tweenRef.current.update();
-      }
+      tweenRef.current?.update();
     });
 
     return (
-      <>
-        <PerspectiveCamera
-          ref={cameraRef}
-          makeDefault
-          args={[75, window.innerWidth / window.innerHeight, 0.1, 1000]}
-          position={[-8, 20, 16]}
-        />
-      </>
+      <PerspectiveCamera
+        ref={cameraRef}
+        makeDefault
+        args={[75, window.innerWidth / window.innerHeight, 0.1, 1000]}
+        position={[-8, 20, 16]}
+      />
     );
-  }
+  },
 );
 
 type Prvince = {
@@ -76,6 +73,7 @@ export const Component = () => {
   const [prvinces, setPrvinces] = useState<Prvince[]>([]);
   const [prvince, setPrvince] = useState<string>("");
   const [name, setName] = useState<string>("");
+  const [navStack, setNavStack] = useState<NavItem[]>([]);
   const [mapLoaded, setMapLoaded] = useState<boolean>(false);
   const [cameraEnd, setCameraEnd] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
@@ -94,18 +92,19 @@ export const Component = () => {
           }))
           .filter((i: Prvince) => !!i.name);
         const list = [{ adcode: "100000", name: "中华人民共和国" }].concat(
-          prvinceOptions
+          prvinceOptions,
         );
-        setPrvince(list?.[0]?.adcode);
-        setName(list?.[0]?.name);
+        const root = list[0];
+        setPrvince(root.adcode);
+        setName(root.name);
+        setNavStack([{ adcode: root.adcode, name: root.name }]);
         setPrvinces(list);
-      }
+      },
     );
   }, []);
 
   useEffect(() => {
     if (mapLoaded) {
-      // 虚假的进度条
       setProgress(50);
       setTimeout(() => {
         setProgress(99);
@@ -116,9 +115,33 @@ export const Component = () => {
     }
   }, [mapLoaded]);
 
+  const navigateTo = useCallback((stack: NavItem[]) => {
+    const current = stack[stack.length - 1];
+    setNavStack(stack);
+    setPrvince(current.adcode);
+    setName(current.name);
+  }, []);
+
+  const handleDrillDown = useCallback((adcode: string, regionName: string) => {
+    setNavStack((prev) => [...prev, { adcode, name: regionName }]);
+    setPrvince(adcode);
+    setName(regionName);
+  }, []);
+
   const handleChange = (value: string, other: any) => {
-    setPrvince(value);
-    setName(other.children);
+    const regionName = other.children as string;
+    if (value === "100000") {
+      navigateTo([{ adcode: value, name: regionName }]);
+    } else {
+      navigateTo([
+        { adcode: "100000", name: "中华人民共和国" },
+        { adcode: value, name: regionName },
+      ]);
+    }
+  };
+
+  const handleBreadcrumbClick = (index: number) => {
+    navigateTo(navStack.slice(0, index + 1));
   };
 
   const render = () => {
@@ -130,7 +153,6 @@ export const Component = () => {
           }}
         >
           <Camera setCameraEnd={setCameraEnd} begin={mapLoaded} />
-          {/* <axesHelper scale={20} /> */}
           <OrbitControls
             makeDefault
             enableRotate={cameraEnd}
@@ -146,11 +168,12 @@ export const Component = () => {
               openWeather={openWeather}
               setMapLoaded={setMapLoaded}
               setLastAnimationEnd={setLastAnimationEnd}
+              onDrillDown={handleDrillDown}
             />
           </Suspense>
           <EffectComposer>
             <Bloom
-              intensity={1.0} // The bloom intensity.
+              intensity={1.0}
               mipmapBlur
               luminanceThreshold={1}
             />
@@ -160,13 +183,16 @@ export const Component = () => {
     );
   };
 
+  const mapLevel = prvince ? getMapDataLevel(prvince) : "national";
+
   return (
     <div className={styles.container} id="province-map-container">
       <ScreenFull containerId="province-map-container">{render()}</ScreenFull>
       {prvinces.length !== 0 && (
-        <div className={styles.select}>
+        <div className={styles.toolbar}>
           <Select
-            value={prvince}
+            value={getMapDataLevel(prvince) === "city" ? undefined : prvince}
+            placeholder="快速跳转"
             style={{ width: 160 }}
             showSearch
             onChange={handleChange}
@@ -193,6 +219,25 @@ export const Component = () => {
           />
         </div>
       )}
+      {navStack.length > 0 && (
+        <div className={styles.breadcrumb}>
+          <Breadcrumb
+            items={navStack.map((item, index) => ({
+              title:
+                index === navStack.length - 1 ? (
+                  <a>{item.name}</a>
+                ) : (
+                  <a onClick={() => handleBreadcrumbClick(index)}>
+                    {item.name}
+                  </a>
+                ),
+            }))}
+          />
+          {mapLevel !== "city" && (
+            <span className={styles.hint}>点击地图区域可下钻</span>
+          )}
+        </div>
+      )}
       {progress !== 100 && (
         <div className={styles.loading}>
           <div style={{ width: "80%" }}>
@@ -200,7 +245,7 @@ export const Component = () => {
           </div>
         </div>
       )}
-      <AnimateCard begin={lastAnimationEnd} />
+      {/* <AnimateCard begin={lastAnimationEnd} /> */}
     </div>
   );
 };

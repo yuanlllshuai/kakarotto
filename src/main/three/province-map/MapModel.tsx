@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, memo } from "react";
-import { useTexture, CycleRaycast } from "@react-three/drei";
+import { useTexture } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import * as d3 from "d3";
@@ -13,7 +13,13 @@ import AnimationRing from "../gltf/AnimationRing";
 import PointLabel from "../gltf/PointLabel";
 import FlyLine from "../gltf/FlyLine";
 import * as TWEEN from "@tweenjs/tween.js";
-import { Props, Border, Shape, Label } from "./type";
+import { Props, Border, Shape, Label, RegionUserData } from "./type";
+import { computeMapData, terminateMapComputeWorker } from "./mapCompute";
+import {
+  canDrillDown,
+  getBorderGeoJsonUrl,
+  getGeoJsonUrl,
+} from "./mapGeo";
 
 const MapModel = memo(
   ({
@@ -24,6 +30,7 @@ const MapModel = memo(
     openWeather,
     setMapLoaded,
     setLastAnimationEnd,
+    onDrillDown,
   }: Props) => {
     const { gl, raycaster, camera, mouse } = useThree();
 
@@ -63,6 +70,9 @@ const MapModel = memo(
     const shapRef = useRef<any>();
     // 当前是否处于滚轮滚动状态
     const isScrollingRef = useRef(false);
+    // 当前是否处于鼠标拖拽状态
+    const isDraggingRef = useRef(false);
+    const pointerDownRef = useRef<{ x: number; y: number } | null>(null);
     // 滚动事件防抖定时器
     const scrollTimeout = useRef<any>(null);
     // 记录当前高亮区块名称
@@ -77,6 +87,8 @@ const MapModel = memo(
     const tweenEndRef = useRef<any>(null);
     // 地图颜色
     const mapHslRef = useRef<THREE.HSL | null>(null);
+    // 用于忽略过期的 worker 计算结果
+    const mapComputeIdRef = useRef(0);
 
     // 地图边缘纹理
     const [mapTexture] = useTexture([mapHeightPng]);
@@ -101,13 +113,51 @@ const MapModel = memo(
       return () => gl.domElement.removeEventListener("wheel", handleWheel);
     }, [gl]);
 
+    // 检测鼠标拖拽，避免拖动地图时触发下钻
+    useEffect(() => {
+      const el = gl.domElement;
+      const dragThreshold = 5;
+
+      const handlePointerDown = (e: PointerEvent) => {
+        isDraggingRef.current = false;
+        pointerDownRef.current = { x: e.clientX, y: e.clientY };
+      };
+
+      const handlePointerMove = (e: PointerEvent) => {
+        if (!pointerDownRef.current) return;
+        const dx = e.clientX - pointerDownRef.current.x;
+        const dy = e.clientY - pointerDownRef.current.y;
+        if (Math.hypot(dx, dy) > dragThreshold) {
+          isDraggingRef.current = true;
+        }
+      };
+
+      const handlePointerUp = () => {
+        pointerDownRef.current = null;
+      };
+
+      el.addEventListener("pointerdown", handlePointerDown);
+      el.addEventListener("pointermove", handlePointerMove);
+      el.addEventListener("pointerup", handlePointerUp);
+      el.addEventListener("pointercancel", handlePointerUp);
+
+      return () => {
+        el.removeEventListener("pointerdown", handlePointerDown);
+        el.removeEventListener("pointermove", handlePointerMove);
+        el.removeEventListener("pointerup", handlePointerUp);
+        el.removeEventListener("pointercancel", handlePointerUp);
+      };
+    }, [gl]);
+
     // 增加鼠标移动事件
     useEffect(() => {
       if (cameraEnd) {
         window.addEventListener("mousemove", handleMouseMove);
+        // gl.domElement.addEventListener("click", handleClick);
       }
       return () => {
         window.removeEventListener("mousemove", handleMouseMove);
+        // gl.domElement.removeEventListener("click", handleClick);
       };
     }, [cameraEnd]);
 
@@ -115,10 +165,8 @@ const MapModel = memo(
     useEffect(() => {
       if (cameraEnd && scale !== 0) {
         if (!lastPrvince.current) {
-          // 首次直接开始厚度动画
           setMapDepthAnimation();
         } else {
-          // 后续需要先等待500ms的地图退去动画
           setTimeout(() => {
             setMapDepthAnimation();
           }, 500);
@@ -126,71 +174,8 @@ const MapModel = memo(
       }
     }, [cameraEnd, scale]);
 
-    // 省份切换后获取地图坐标数据
-    useEffect(() => {
-      if (prvince) {
-        setMapDepthEnd(false);
-        const loader = new THREE.FileLoader();
-        // 地图边界及区块坐标
-        loader.load(
-          `https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=${prvince}${
-            prvince === "710000" ? "" : "_full"
-          }`,
-          function (data1) {
-            // 地图边界坐标，主要用于绘制地图边界流光效果
-            loader.load(
-              `https://geo.datav.aliyun.com/areas_v3/bound/geojson?code=${prvince}`,
-              function (data2) {
-                if (!lastPrvince.current) {
-                  // 首次直接渲染
-                  initMap(
-                    JSON.parse(data1 as string),
-                    JSON.parse(data2 as string),
-                  );
-                  setMapLoaded(true);
-                } else {
-                  // 省份切换后，先执行退去动画，动画完成后再渲染新的省份
-                  tweenEndRef.current = new TWEEN.Tween({ scaleY: scale })
-                    .to({ scaleY: 0 }, 500)
-                    .easing(TWEEN.Easing.Cubic.InOut)
-                    .onUpdate(({ scaleY }) => {
-                      if (parentRef.current) {
-                        parentRef.current.scale.y = scaleY;
-                      }
-                    })
-                    .onComplete(() => {
-                      initMap(
-                        JSON.parse(data1 as string),
-                        JSON.parse(data2 as string),
-                      );
-                      setMapLoaded(true);
-                    })
-                    .start();
-                }
-                lastPrvince.current = prvince;
-              },
-            );
-          },
-        );
-      }
-    }, [prvince]);
-
-    // 省份切换后改变展示名称
-    useEffect(() => {
-      if (mapDepthEnd && name !== showName) {
-        if (!showName) {
-          setShowName(name);
-        } else {
-          setTimeout(() => {
-            setShowName(name);
-          }, 500);
-        }
-      }
-    }, [mapDepthEnd, name]);
-
     // 创建地图厚度动画
     const setMapDepthAnimation = () => {
-      // 降低所有区块透明度
       if (shapRef.current) {
         (shapRef.current as any).children.forEach((child: any) => {
           if (mapHsl) {
@@ -201,7 +186,6 @@ const MapModel = memo(
           }
         });
       }
-      // 地图厚度动画
       tweenBeginRef.current = new TWEEN.Tween({ scaleY: 0 })
         .to({ scaleY: scale }, 500)
         .easing(TWEEN.Easing.Cubic.Out)
@@ -216,6 +200,68 @@ const MapModel = memo(
         .start();
     };
 
+    // 省份切换后获取地图坐标数据
+    useEffect(() => {
+      if (prvince) {
+        setMapDepthEnd(false);
+        clickMapName.current = "";
+        currMapName.current = "";
+        lastMapName.current = "";
+        const loader = new THREE.FileLoader();
+        // 地图边界及区块坐标
+        loader.load(getGeoJsonUrl(prvince), function (data1) {
+          loader.load(getBorderGeoJsonUrl(prvince), function (data2) {
+            if (!lastPrvince.current) {
+              initMap(
+                JSON.parse(data1 as string),
+                JSON.parse(data2 as string),
+              );
+              setMapLoaded(true);
+            } else {
+              tweenEndRef.current = new TWEEN.Tween({ scaleY: scale })
+                .to({ scaleY: 0 }, 500)
+                .easing(TWEEN.Easing.Cubic.InOut)
+                .onUpdate(({ scaleY }) => {
+                  if (parentRef.current) {
+                    parentRef.current.scale.y = scaleY;
+                  }
+                })
+                .onComplete(() => {
+                  initMap(
+                    JSON.parse(data1 as string),
+                    JSON.parse(data2 as string),
+                  );
+                  setMapLoaded(true);
+                })
+                .start();
+            }
+            lastPrvince.current = prvince;
+          });
+        });
+      }
+    }, [prvince]);
+
+    useEffect(() => {
+      return () => {
+        terminateMapComputeWorker();
+      };
+    }, []);
+
+    // 省份切换后改变展示名称
+    useEffect(() => {
+      if (mapDepthEnd && name !== showName) {
+        if (!showName) {
+          setShowName(name);
+        } else {
+          setTimeout(() => {
+            setShowName(name);
+          }, 500);
+        }
+      }
+    }, [mapDepthEnd, name]);
+
+
+
     // 鼠标移动事件，只在相机动画结束和在画布上移动时执行
     const handleMouseMove: React.EventHandler<any> = (event) => {
       if (event.target.tagName !== "CANVAS" || !cameraEnd) {
@@ -224,6 +270,29 @@ const MapModel = memo(
       event.preventDefault();
       handleMove();
     };
+
+    // const handleClick: React.EventHandler<any> = (event) => {
+    //   if (event.target.tagName !== "CANVAS" || !cameraEnd) {
+    //     return;
+    //   }
+    //   event.preventDefault();
+    //   // 将像素坐标转为 -1 到 +1 之间
+    //   const mouse = new THREE.Vector2();
+    //   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    //   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1; // Y轴在屏幕坐标系是向下的，需取反
+    //   // console.log(mouse,[event.clientX, event.clientY])
+    //   // 通过鼠标坐标和相机更新射线
+    //   raycaster.setFromCamera(mouse, camera);
+    //   if (!shapRef.current) {
+    //     return;
+    //   }
+    //   const intersects = raycaster.intersectObjects(shapRef.current.children);
+    //   lastMapName.current = currMapName.current;
+    //   if (intersects.length > 0) {
+    //     const point = intersects[0].point;
+    //     setMeshPoints([...meshPoints, point]);
+    //   }
+    // };
 
     // 处理移动事件，射线检测鼠标经过区域
     const handleMove = () => {
@@ -274,20 +343,31 @@ const MapModel = memo(
       }
     };
 
-    // 鼠标点击时的射线检测
-    const onRaycastChanged = (hits: THREE.Intersection[]) => {
-      if (isScrollingRef.current) {
-        return null;
+    const getRegionFromMesh = (object: THREE.Object3D) => {
+      return object.userData as RegionUserData;
+    };
+
+    const handleRegionClick = (e: any) => {
+      e.stopPropagation();
+      if (
+        !cameraEnd ||
+        !mapDepthEnd ||
+        isScrollingRef.current ||
+        isDraggingRef.current
+      ) {
+        isDraggingRef.current = false;
+        return;
       }
-      if (hits.length > 0) {
-        const intersect = hits[0];
-        clickMapName.current =
-          clickMapName.current === intersect.object.name
-            ? ""
-            : intersect.object.name;
-      }
+      if (!canDrillDown(prvince)) return;
+
+      const object = e.object as THREE.Object3D;
+      const region = getRegionFromMesh(object);
+      if (!region?.adcode || region.adcode === prvince) return;
+
+      clickMapName.current = object.name;
       setMapColor();
-      return null;
+      onDrillDown(region.adcode, region.regionName);
+      isDraggingRef.current = false;
     };
 
     // 最大区域的流光效果
@@ -425,86 +505,16 @@ const MapModel = memo(
       return { flowLightArr, flowLightTextureArr };
     };
 
-    // 计算当前省份地图厚度、缩放比例及中心点
-    const getComputeData: (map: any) => {
-      depth: number;
-      center: [number, number];
-      scale: number;
-    } = (map) => {
-      const center = map.features[0].properties.centroid;
-      const projection = d3
-        .geoMercator()
-        .center([center[0], center[1]])
-        .scale(80)
-        .translate([0, 0]);
-      let minX = 0; // x方向坐标最小值
-      let maxX = 0; // x方向坐标最大值
-      let minZ = 0; // z方向坐标最小值
-      let maxZ = 0; // z方向坐标最大值
-      let totalX = 0; // x方向坐标值总和
-      let totalZ = 0; // y方向坐标值总和
-      let total = 0; // 总坐标数
-      // 不同省份面积有大有小
-      // 首次遍历获取地图缩放比例及厚度换算公式
-      map.features
-        .filter((i: any) => !!i.properties.name)
-        .forEach((elem: any) => {
-          const coordinates = elem.geometry.coordinates;
-          coordinates.forEach((multiPolygon: any) => {
-            if (Array.isArray(coordinates[0][0][0])) {
-              multiPolygon.forEach((polygon: any) => {
-                for (let i = 0; i < polygon.length; i++) {
-                  const [x, z] = projection(polygon[i]) as [number, number];
-                  if (!isNaN(x) && !isNaN(z)) {
-                    minX = Math.min(minX, x);
-                    maxX = Math.max(maxX, x);
-                    minZ = Math.min(minZ, z);
-                    maxZ = Math.max(maxZ, z);
-                    totalX += polygon[i][0];
-                    totalZ += polygon[i][1];
-                    total += 1;
-                  }
-                }
-              });
-            } else {
-              for (let i = 0; i < multiPolygon.length; i++) {
-                const [x, z] = projection(multiPolygon[i]) as [number, number];
-                if (!isNaN(x) && !isNaN(z)) {
-                  minX = Math.min(minX, x);
-                  maxX = Math.max(maxX, x);
-                  minZ = Math.min(minZ, z);
-                  maxZ = Math.max(maxZ, z);
-                  totalX += multiPolygon[i][0];
-                  totalZ += multiPolygon[i][1];
-                  total += 1;
-                }
-              }
-            }
-          });
-        });
-      const crossX = maxX - minX; // x方向横跨距离
-      const crossZ = maxZ - minZ; // z方向横跨距离
-      // console.log(Math.max(crossX, crossZ));
-      // 设置一个基准值26，不同省份按照比例缩放，使视觉上大小显示一致
-      // 对于全国地图，使其再放大一些
-      const compScale =
-        (26 / Math.max(crossX, crossZ)) * (prvince === "100000" ? 1.5 : 1);
-      setScale(compScale);
-      // 以北京市为准（Math.max(crossX, crossZ)值为2.96），设置地图厚度为0.12，其他省份以此缩放
-      const depth = (0.12 * Math.max(crossX, crossZ)) / 2.96;
-      setDepth(depth);
-      // 纹理重复数，设置基准值1.5，其他省份以此缩放
-      mapTexture.repeat.set(1.5 * compScale, 1.5 * compScale);
-      return {
-        center: [totalX / total, totalZ / total], // 地图经过墨卡托投影后的中心点
-        depth,
-        scale: compScale,
-      };
-    };
-
     // 地图初始化
-    const initMap = (map1: any, map2: any) => {
-      const { depth, center, scale } = getComputeData(map1);
+    const initMap = async (map1: any, map2: any) => {
+      const computeId = ++mapComputeIdRef.current;
+      const { depth, center, scale } = await computeMapData(map1, prvince);
+      if (computeId !== mapComputeIdRef.current) {
+        return;
+      }
+      setScale(scale);
+      setDepth(depth);
+      mapTexture.repeat.set(1.5 * scale, 1.5 * scale);
       // 生成地图边界流光
       getFlowLight(map2, { depth, center, scale });
       const allBorders: Border[] = [];
@@ -593,6 +603,10 @@ const MapModel = memo(
                 const mesh = new THREE.Mesh(geometry, [material, material1]);
                 mesh.material[1].map = mapTexture;
                 mesh.name = name;
+                mesh.userData = {
+                  adcode: String(elem.properties.adcode),
+                  regionName: elem.properties.name,
+                } satisfies RegionUserData;
                 mapTexture.offset.y = 1.5;
                 allShaps.push({
                   mesh,
@@ -654,6 +668,10 @@ const MapModel = memo(
               const mesh = new THREE.Mesh(geometry, [material, material1]);
               mesh.material[1].map = mapTexture;
               mesh.name = name;
+              mesh.userData = {
+                adcode: String(elem.properties.adcode),
+                regionName: elem.properties.name,
+              } satisfies RegionUserData;
               mapTexture.offset.y = 1.5;
               allShaps.push({
                 mesh,
@@ -775,11 +793,9 @@ const MapModel = memo(
         texture.offset.y -= 0.0015;
       });
 
-      // 地图厚度动画
       if (tweenBeginRef.current) {
         tweenBeginRef.current.update();
       }
-      // 地图厚度动画
       if (tweenEndRef.current) {
         tweenEndRef.current.update();
       }
@@ -798,7 +814,7 @@ const MapModel = memo(
         >
           {mapDepthEnd &&
             borders.map((i) => <primitive object={i.line} key={i.name} />)}
-          <object3D ref={shapRef} onClick={(e: any) => e.stopPropagation()}>
+          <object3D ref={shapRef} onClick={handleRegionClick}>
             {shaps.map((i) => (
               <primitive
                 object={i.mesh}
@@ -853,15 +869,6 @@ const MapModel = memo(
           <LightCylinder
             position={[0, depth * scale, 0]}
             setLastAnimationEnd={setLastAnimationEnd}
-          />
-        )}
-        {mapDepthEnd && (
-          <CycleRaycast
-            preventDefault={true}
-            scroll={false}
-            keyCode={0}
-            onChanged={onRaycastChanged}
-            portal={shapRef.current}
           />
         )}
       </>

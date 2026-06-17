@@ -68,6 +68,10 @@ const router = createHashRouter(
           path="3d-card2"
           lazy={() => import("@/main/three/3d-card1/index")}
         />
+        <Route
+          path="editor"
+          lazy={() => import("@/main/three/editor/index")}
+        />
       </Route>
       <Route path="cesium">
         <Route
@@ -77,6 +81,10 @@ const router = createHashRouter(
         <Route
           path="building"
           lazy={() => import("@/main/cesium/building/index")}
+        />
+        <Route
+          path="test"
+          lazy={() => import("@/main/cesium/test/index")}
         />
       </Route>
       <Route path="settings" lazy={() => import("@/main/settings")} />

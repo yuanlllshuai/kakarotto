@@ -29,6 +29,7 @@ export const navConfig = [
       { key: "face", label: "人脸", path: "/three/face" },
       { key: "3d-card", label: "3D卡片", path: "/three/3d-card" },
       { key: "3d-card2", label: "3D卡片2", path: "/three/3d-card2" },
+      { key: "editor", label: "编辑器", path: "/three/editor" },
     ],
   },
   {
@@ -45,6 +46,11 @@ export const navConfig = [
         key: "building",
         label: "建筑",
         path: "/cesium/building",
+      },
+      {
+        key: "test",
+        label: "测试",
+        path: "/cesium/test",
       },
     ],
   },

@@ -8,6 +8,12 @@ export type Props = {
   openWeather: boolean;
   setMapLoaded: (loading: boolean) => void;
   setLastAnimationEnd: (isEnd: boolean) => void;
+  onDrillDown: (adcode: string, regionName: string) => void;
+};
+
+export type RegionUserData = {
+  adcode: string;
+  regionName: string;
 };
 
 export type Border = {
