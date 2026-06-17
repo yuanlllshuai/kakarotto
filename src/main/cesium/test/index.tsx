@@ -3,7 +3,6 @@ import * as Cesium from "cesium";
 import styles from "./index.module.scss";
 import ScreenFull from "@/components/ScreenFull";
 import { CesiumAccessToken } from "@/const";
-import { delay } from "@/utils";
 
 export const Component = () => {
   useEffect(() => {
