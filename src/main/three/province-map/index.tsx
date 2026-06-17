@@ -10,7 +10,7 @@ import * as TWEEN from "@tweenjs/tween.js";
 import MapModel from "./MapModel";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { getMapDataLevel, type NavItem } from "./mapGeo";
-// import AnimateCard from "@/components/AnimateCard";
+import AnimateCard from "@/components/AnimateCard";
 
 const { Option } = Select;
 
@@ -245,7 +245,7 @@ export const Component = () => {
           </div>
         </div>
       )}
-      {/* <AnimateCard begin={lastAnimationEnd} /> */}
+      <AnimateCard begin={lastAnimationEnd} />
     </div>
   );
 };
